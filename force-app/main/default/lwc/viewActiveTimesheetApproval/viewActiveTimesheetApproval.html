@@ -3,7 +3,7 @@
     <div class="slds-col slds-size_4-of-5">
       <span></span>
     </div>
-    <div class="slds-col slds-size_1-of-5 slds-m-around_xx-small">
+    <div class="slds-col slds-size_1-of-5 slds-m-around_xx-small slds-float_right">
       <span class="slds-m-around_xx-small">
         <lightning-button variant="brand" label="Approve" onclick={handleApprove}></lightning-button>
       </span>
@@ -59,7 +59,7 @@
             <span class="slds-assistive-text">Choose a row</span>
             <div class="slds-th__action slds-th__action_form">
               <div class="slds-checkbox">
-                <lightning-input type="checkbox-button" variant="brand"></lightning-input>
+                <lightning-input onchange={handleChecked} data-id={field.Id} type="checkbox-button" variant="brand"></lightning-input>
               </div>
             </div>
           </th>
