@@ -9,6 +9,8 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
     @api recordId
     ApproverName
 
+    @track draftTimesheet = []
+
     connectedCallback(){
         ConvertApproverName({ recordPageId : this.recordId})
         .then((res)=>{
@@ -79,6 +81,37 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
           this.results = data.uiapi.query.Timesheet__c.edges.map((edge) => edge.node);
         }
         this.errors = errors;
+    }
+
+    handleChecked(event){
+        const timesheetId = event.target.dataset.id
+
+        const duplicate = this.draftTimesheet.some((timesheet) => timesheet.recordid === timesheetId)
+        if(!duplicate) {
+            this.draftTimesheet.push({
+                recordid : timesheetId
+            })
+        }else{
+            this.draftTimesheet = this.draftTimesheet.filter(item => item.recordid !== timesheetId)
+        }
+        
+        console.log(JSON.stringify(this.draftTimesheet))
+    }
+
+    handleApprove(event){
+        this.draftTimesheet.forEach(item => {
+            item.ApporvalStatus = 'Approve'
+        })
+
+        console.log(JSON.stringify(this.draftTimesheet))
+    }
+
+    handleReject(event){
+        this.draftTimesheet.forEach(item =>{
+            item.ApporvalStatus = 'Reject'
+        })
+
+        console.log(JSON.stringify(this.draftTimesheet))
     }
 
     get variables() {
