@@ -14,47 +14,73 @@
           </div>
         </th>
         <th class="" scope="col">
-          <div class="slds-truncate" title="Invoice Number">Invoice Number</div>
+          <div class="slds-truncate" title="SPK">SPK</div>
         </th>
         <th class="" scope="col">
-          <div class="slds-truncate" title="DPP Paid">DPP Paid</div>
+          <div class="slds-truncate" title="Project Name">Project Name</div>
         </th>
         <th class="" scope="col">
-          <div class="slds-truncate" title="Total Paid">Total Paid</div>
+          <div class="slds-truncate" title="Employee">Employee</div>
         </th>
         <th class="" scope="col">
-          <div class="slds-truncate" title="Status">Status</div>
+          <div class="slds-truncate" title="Start Date">Start Date</div>
+        </th>
+        <th class="" scope="col">
+          <div class="slds-truncate" title="End Date">End Date</div>
+        </th>
+        <th class="" scope="col">
+          <div class="slds-truncate" title="Time">Time</div>
+        </th>
+        <th class="" scope="col">
+          <div class="slds-truncate" title="Remarks">Remarks</div>
         </th>
       </tr>
     </thead>
     <tbody class="slds-scrollable">
-      <template for:each={listInvoice} for:item="field">
+      <template for:each={results} for:item="field">
         <tr class="slds-hint-parent" key={field.Id}>
           <th class="slds-text-align_right slds-cell_action-mode" scope="col" style="width:3.25rem">
             <span class="slds-assistive-text">Choose a row</span>
             <div class="slds-th__action slds-th__action_form">
               <div class="slds-checkbox">
-                <lightning-input onchange={selectedInv} type="checkbox-button" name={field.Id} data-id={field.Id} data-invid={field.Name} data-total={field.Total__c} variant="brand"></lightning-input>
+                <lightning-input type="checkbox-button" variant="brand"></lightning-input>
               </div>
             </div>
           </th>
-          <th data-label="Opportunity Name" scope="row">
-            <div class="slds-truncate" title="Cloudhub">
-              <a href="#" tabindex="-1">{field.Name}</a>
+          <th data-label="SPK" scope="row">
+            <div class="slds-truncate" title="SPK">
+              <a href="#" >{field.Project__r.SPK__c.value}</a>
             </div>
           </th>
-          <td data-label="Account Name">
-            <div class="slds-truncate" title="Cloudhub">
-              <lightning-formatted-number value={field.DPP_Paid__c} format-style="currency" currency-code="IDR" currency-display-as="symbol"></lightning-formatted-number>
+          <td data-label="Project Name">
+            <div class="slds-truncate" title="Project Name">
+              {field.Project__r.Name.value}
             </div>
           </td>
-          <td data-label="Close Date">
-            <div class="slds-truncate" title="4/14/2015">
-              <lightning-formatted-number value={field.Total_Paid__c} format-style="currency" currency-code="IDR" currency-display-as="symbol"></lightning-formatted-number>
+          <td data-label="Employee">
+            <div class="slds-truncate" title="Employee">
+              {field.Employee__r.Name.value}
             </div>
           </td>
-          <td data-label="Prospecting">
-            <div class="slds-truncate" title="Prospecting"> {field.Status__c} </div>
+          <td data-label="Start Date">
+            <div class="slds-truncate" title="Start Date">
+             {field.Start_Date__c.value}
+            </div>
+          </td>
+          <td data-label="End Date">
+            <div class="slds-truncate" title="End Date">
+              {field.End_Date__c.value}
+            </div>
+          </td>
+          <td data-label="Time">
+            <div class="slds-truncate" title="Time">
+              {field.Time__c.value}
+            </div>
+          </td>
+          <td data-label="Remarks">
+            <div class="slds-truncate" title="Remarks">
+              {field.Remarks__c.value}
+            </div>
           </td>
         </tr>
       </template>
