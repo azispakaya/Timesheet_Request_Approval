@@ -1,0 +1,63 @@
+<template>
+  <table class="slds-table slds-table_cell-buffer slds-table_bordered" aria-label="Example default base table of Opportunities">
+    <thead>
+      <tr class="slds-line-height_reset">
+        <th class="slds-text-align_right slds-cell_action-mode" scope="col" style="width:3.25rem">
+          <span class="slds-assistive-text">Choose a row</span>
+          <div class="slds-th__action slds-th__action_form">
+            <div class="slds-checkbox">
+              <!-- <lightning-input 
+                  type="checkbox"
+                  name="input1"
+                ></lightning-input> -->
+            </div>
+          </div>
+        </th>
+        <th class="" scope="col">
+          <div class="slds-truncate" title="Invoice Number">Invoice Number</div>
+        </th>
+        <th class="" scope="col">
+          <div class="slds-truncate" title="DPP Paid">DPP Paid</div>
+        </th>
+        <th class="" scope="col">
+          <div class="slds-truncate" title="Total Paid">Total Paid</div>
+        </th>
+        <th class="" scope="col">
+          <div class="slds-truncate" title="Status">Status</div>
+        </th>
+      </tr>
+    </thead>
+    <tbody class="slds-scrollable">
+      <template for:each={listInvoice} for:item="field">
+        <tr class="slds-hint-parent" key={field.Id}>
+          <th class="slds-text-align_right slds-cell_action-mode" scope="col" style="width:3.25rem">
+            <span class="slds-assistive-text">Choose a row</span>
+            <div class="slds-th__action slds-th__action_form">
+              <div class="slds-checkbox">
+                <lightning-input onchange={selectedInv} type="checkbox-button" name={field.Id} data-id={field.Id} data-invid={field.Name} data-total={field.Total__c} variant="brand"></lightning-input>
+              </div>
+            </div>
+          </th>
+          <th data-label="Opportunity Name" scope="row">
+            <div class="slds-truncate" title="Cloudhub">
+              <a href="#" tabindex="-1">{field.Name}</a>
+            </div>
+          </th>
+          <td data-label="Account Name">
+            <div class="slds-truncate" title="Cloudhub">
+              <lightning-formatted-number value={field.DPP_Paid__c} format-style="currency" currency-code="IDR" currency-display-as="symbol"></lightning-formatted-number>
+            </div>
+          </td>
+          <td data-label="Close Date">
+            <div class="slds-truncate" title="4/14/2015">
+              <lightning-formatted-number value={field.Total_Paid__c} format-style="currency" currency-code="IDR" currency-display-as="symbol"></lightning-formatted-number>
+            </div>
+          </td>
+          <td data-label="Prospecting">
+            <div class="slds-truncate" title="Prospecting"> {field.Status__c} </div>
+          </td>
+        </tr>
+      </template>
+    </tbody>
+  </table>
+</template>
