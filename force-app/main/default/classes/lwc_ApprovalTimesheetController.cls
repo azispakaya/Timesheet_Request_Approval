@@ -15,4 +15,33 @@ global with sharing class lwc_ApprovalTimesheetController {
         }
     }
 
+    public class timesheetWrapper{
+        public string recordid;
+        public string ApprovalStatus;
+    }
+
+    @AuraEnabled
+    public static string updateApprovalStatus(String Timesheets){
+        try {
+
+            List<Timesheet__c> obj_timesheets = new List<Timesheet__c>();
+            List<timesheetWrapper> listTimesheet = (List<timesheetWrapper>)JSON.deserialize(Timesheets,List<timesheetWrapper>.class);
+
+            for (timesheetWrapper singleTimesheet : listTimesheet) {
+                obj_timesheets.add(new Timesheet__c(
+                    Id = singleTimesheet.recordid, 
+                    Approval_Status__c = singleTimesheet.ApprovalStatus
+                    ));
+            }
+
+            Database.update(obj_timesheets);
+
+            return ''+obj_timesheets;
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    
+
 }
