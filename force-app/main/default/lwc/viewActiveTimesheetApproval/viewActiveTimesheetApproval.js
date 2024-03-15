@@ -1,6 +1,7 @@
 import { LightningElement, api, track, wire } from 'lwc';
-import { gql, graphql } from "lightning/uiGraphQLApi";
+import { gql, graphql,refreshGraphQL } from "lightning/uiGraphQLApi";
 import ConvertApproverName from "@salesforce/apex/lwc_ApprovalTimesheetController.ApproverName"
+import updateStatus from "@salesforce/apex/lwc_ApprovalTimesheetController.updateApprovalStatus"
 
 export default class ViewActiveTimesheetApproval extends LightningElement {
 
@@ -8,6 +9,7 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
     errors
     @api recordId
     ApproverName
+    ApprovalStatus
 
     @track draftTimesheet = []
 
@@ -15,16 +17,23 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
         ConvertApproverName({ recordPageId : this.recordId})
         .then((res)=>{
             this.ApproverName = res;
+            this.ApprovalStatus = 'Waiting for Approval'
         })
     }
 
     @wire(graphql, {
         query: gql`
-            query timesheets($ApproverName : String){
+            query timesheets($ApproverName : String, $ApprovalStatus : Picklist){
                 uiapi{
                     query{
-                        Timesheet__c(where: {Timesheet_Approver__r :{Name : { eq: $ApproverName}}})
-                        {
+                        Timesheet__c(
+                            where : {
+                                and : [
+                                    {Timesheet_Approver__r :{Name :{eq : $ApproverName}}},
+                                    {Approval_Status__c : {eq : $ApprovalStatus}}
+                                ]
+                            }
+                        ){
                             edges{
                                 node{
                                     Id
@@ -76,11 +85,14 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
         `,
         variables: "$variables",
     })
-    graphqlQueryResult({ data, errors }) {
+    graphqlQueryResult(result) {
+        const { data, errors } = result
+
         if (data) {
           this.results = data.uiapi.query.Timesheet__c.edges.map((edge) => edge.node);
         }
         this.errors = errors;
+        this.graphQlData = result
     }
 
     handleChecked(event){
@@ -98,18 +110,38 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
         console.log(JSON.stringify(this.draftTimesheet))
     }
 
-    handleApprove(event){
+    async handleApprove(event){
         this.draftTimesheet.forEach(item => {
-            item.ApporvalStatus = 'Approve'
+            item.ApprovalStatus = 'Fully Approved'
         })
+
+        await updateStatus({
+            Timesheets : JSON.stringify(this.draftTimesheet)
+        }).then((res)=>{
+            console.log(res)
+            
+        }).then(()=>{
+            refreshGraphQL(this.graphQlData)
+        })
+        
 
         console.log(JSON.stringify(this.draftTimesheet))
     }
 
-    handleReject(event){
+    async handleReject(event){
         this.draftTimesheet.forEach(item =>{
-            item.ApporvalStatus = 'Reject'
+            item.ApprovalStatus = 'Rejected'
         })
+        await updateStatus({
+            Timesheets : JSON.stringify(this.draftTimesheet)
+        }).then((res)=>{
+            console.log(res)
+            
+        }).then(()=>{
+            refreshGraphQL(this.graphQlData)
+        })
+
+        // await refreshGraphQL(this.graphQlData)
 
         console.log(JSON.stringify(this.draftTimesheet))
     }
@@ -117,8 +149,14 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
     get variables() {
         return {
           ApproverName: this.ApproverName,
+          ApprovalStatus: this.ApprovalStatus,
         };
       }
+    
+    @api
+    async refreshData(){
+        return refreshGraphQL(this.results)
+    }
     
 
 }
