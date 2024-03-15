@@ -1,0 +1,96 @@
+<template>
+  <div class="slds-grid slds-gutters">
+    <div class="slds-col slds-size_4-of-5">
+      <span></span>
+    </div>
+    <div class="slds-col slds-size_1-of-5 slds-m-around_xx-small slds-float_right">
+      <span class="slds-m-around_xx-small">
+        <lightning-button variant="brand" label="Approve" onclick={handleApprove}></lightning-button>
+      </span>
+      <span class="slds-m-around_xx-small">
+        <lightning-button variant="destructive" label="Reject" onclick={handleReject}></lightning-button>
+      </span>
+    </div>
+  </div>
+  <table class="slds-table slds-table_cell-buffer slds-table_bordered" aria-label="Example default base table of Opportunities">
+    <thead>
+      <tr class="slds-line-height_reset">
+        <th class="slds-text-align_right slds-cell_action-mode" scope="col" style="width:3.25rem">
+          <span class="slds-assistive-text">Choose a row</span>
+          <div class="slds-th__action slds-th__action_form">
+            <div class="slds-checkbox">
+              <!-- <lightning-input 
+                  type="checkbox"
+                  name="input1"
+                ></lightning-input> -->
+            </div>
+          </div>
+        </th>
+        <th class="" scope="col">
+          <div class="slds-truncate" title="SPK">SPK</div>
+        </th>
+        <th class="" scope="col">
+          <div class="slds-truncate" title="Project Name">Project Name</div>
+        </th>
+        <th class="" scope="col">
+          <div class="slds-truncate" title="Employee">Employee</div>
+        </th>
+        <th class="" scope="col">
+          <div class="slds-truncate" title="Start Date">Start Date</div>
+        </th>
+        <th class="" scope="col">
+          <div class="slds-truncate" title="End Date">End Date</div>
+        </th>
+        <th class="" scope="col">
+          <div class="slds-truncate" title="Time">Time</div>
+        </th>
+        <th class="" scope="col">
+          <div class="slds-truncate" title="Remarks">Remarks</div>
+        </th>
+        <th class="" scope="col">
+          <div class="slds-truncate" title="Remarks">Approval Status</div>
+        </th>
+      </tr>
+    </thead>
+    <tbody class="slds-scrollable">
+      <template for:each={results} for:item="field">
+        <tr class="slds-hint-parent" key={field.Id}>
+          <th class="slds-text-align_right slds-cell_action-mode" scope="col" style="width:3.25rem">
+            <span class="slds-assistive-text">Choose a row</span>
+            <div class="slds-th__action slds-th__action_form">
+              <div class="slds-checkbox">
+                <lightning-input onchange={handleChecked} data-id={field.Id} type="checkbox-button" variant="brand"></lightning-input>
+              </div>
+            </div>
+          </th>
+          <th data-label="SPK" scope="row">
+            <div class="slds-truncate" title="SPK">
+              <a href="#">{field.Project__r.SPK__c.value}</a>
+            </div>
+          </th>
+          <td data-label="Project Name">
+            <div class="slds-truncate" title="Project Name"> {field.Project__r.Name.value} </div>
+          </td>
+          <td data-label="Employee">
+            <div class="slds-truncate" title="Employee"> {field.Employee__r.Name.value} </div>
+          </td>
+          <td data-label="Start Date">
+            <div class="slds-truncate" title="Start Date"> {field.Start_Date__c.value} </div>
+          </td>
+          <td data-label="End Date">
+            <div class="slds-truncate" title="End Date"> {field.End_Date__c.value} </div>
+          </td>
+          <td data-label="Time">
+            <div class="slds-truncate" title="Time"> {field.Time__c.value} </div>
+          </td>
+          <td data-label="Remarks">
+            <div class="slds-truncate" title="Remarks"> {field.Remarks__c.value} </div>
+          </td>
+          <td data-label="Remarks">
+            <div class="slds-truncate" title="Remarks"> {field.Approval_Status__c.value} </div>
+          </td>
+        </tr>
+      </template>
+    </tbody>
+  </table>
+</template>
