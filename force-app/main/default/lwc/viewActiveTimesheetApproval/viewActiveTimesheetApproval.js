@@ -2,6 +2,10 @@ import { LightningElement, api, track, wire } from 'lwc';
 import { gql, graphql,refreshGraphQL } from "lightning/uiGraphQLApi";
 import ConvertApproverName from "@salesforce/apex/lwc_ApprovalTimesheetController.ApproverName"
 import updateStatus from "@salesforce/apex/lwc_ApprovalTimesheetController.updateApprovalStatus"
+import {
+    ShowToastEvent
+} from 'lightning/platformShowToastEvent'
+import modalEditLine from 'c/modalCommentTimesheet';
 
 export default class ViewActiveTimesheetApproval extends LightningElement {
 
@@ -10,7 +14,6 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
     @api recordId
     ApproverName
     ApprovalStatus
-
     @track draftTimesheet = []
 
     connectedCallback(){
@@ -107,43 +110,92 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
             this.draftTimesheet = this.draftTimesheet.filter(item => item.recordid !== timesheetId)
         }
         
-        console.log(JSON.stringify(this.draftTimesheet))
+        // console.log(JSON.stringify(this.draftTimesheet))
+    }
+
+    handleRefresh(event){
+
+        refreshGraphQL(this.graphQlData)
+        this.toast('Successfully Refresh', 'success', 'Info')
     }
 
     async handleApprove(event){
         this.draftTimesheet.forEach(item => {
-            item.ApprovalStatus = 'Fully Approved'
+            item.ApprovalStatus = 'Fully Approved',
+            item.Comment = 'This Timesheet Successfully Approved'
         })
 
         await updateStatus({
             Timesheets : JSON.stringify(this.draftTimesheet)
         }).then((res)=>{
-            console.log(res)
-            
-        }).then(()=>{
+
             refreshGraphQL(this.graphQlData)
+            this.toast('Successfully Approved', 'success', 'Info')
+
+        }).catch((error)=>{
+            console.log(error)
         })
         
 
-        console.log(JSON.stringify(this.draftTimesheet))
+        // console.log(JSON.stringify(this.draftTimesheet))
     }
 
     async handleReject(event){
         this.draftTimesheet.forEach(item =>{
-            item.ApprovalStatus = 'Rejected'
+            item.ApprovalStatus = 'Rejected',
+            item.Comment = 'This Timesheet has been Rejected, Please Re-Submit'
         })
         await updateStatus({
-            Timesheets : JSON.stringify(this.draftTimesheet)
-        }).then((res)=>{
-            console.log(res)
             
-        }).then(()=>{
+            Timesheets : JSON.stringify(this.draftTimesheet)
+
+        }).then((res)=>{
+
             refreshGraphQL(this.graphQlData)
+            this.toast('Successfully Rejected', 'warning', 'Info')
+
+        }).catch((error)=>{
+            console.log(error)
         })
 
-        // await refreshGraphQL(this.graphQlData)
 
-        console.log(JSON.stringify(this.draftTimesheet))
+        // console.log(JSON.stringify(this.draftTimesheet))
+    }
+
+    async handleEditLine(event){
+
+        let singleTimesheet = []
+        const timesheetId = event.target.dataset.id
+
+        
+        const resultComment = await modalEditLine.open({
+            headerLabel: 'Add Comment',
+            // timesheets: this.draftTimesheet
+        })
+
+        singleTimesheet.push({
+            recordid : timesheetId,
+            Comment : resultComment.split(';')[0],
+            ApprovalStatus : resultComment.split(';')[1]
+        })
+
+        if(resultComment != 'cancel'){
+            await updateStatus({
+
+                Timesheets : JSON.stringify(singleTimesheet)
+
+            }).then((res)=>{
+                refreshGraphQL(this.graphQlData)
+                this.toast('Updated Successfully','success','Success') 
+            }).catch((e)=>{
+                console.log(e)
+            })
+        }
+       
+
+        // console.log(JSON.stringify(singleTimesheet));
+
+        
     }
 
     get variables() {
@@ -156,6 +208,15 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
     @api
     async refreshData(){
         return refreshGraphQL(this.results)
+    }
+
+    toast(message, variant, title) {
+        const callToast = new ShowToastEvent({
+            title: title,
+            message: message,
+            variant: variant
+        })
+        this.dispatchEvent(callToast);
     }
     
 

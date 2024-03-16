@@ -4,11 +4,14 @@
         <div class="slds-page-header__col-title">
           <div class="slds-media">
             <div class="slds-media__figure">
-              <span class="slds-icon_container slds-icon-standard-opportunity" title="opportunity">
-                <svg class="slds-icon slds-page-header__icon" aria-hidden="true">
-                  <use xlink:href="/assets/icons/standard-sprite/svg/symbols.svg#opportunity"></use>
-                </svg>
-                <span class="slds-assistive-text">opportunity</span>
+              <span title="TimesheetApproval">
+                <lightning-icon 
+                  icon-name="standard:people" 
+                  alternative-text="Approver" 
+                  size="medium" 
+                  title="large size"
+                ></lightning-icon>
+                <span class="slds-assistive-text">TimesheetApproval</span>
               </span>
             </div>
             <template for:each={results} for:item="field">

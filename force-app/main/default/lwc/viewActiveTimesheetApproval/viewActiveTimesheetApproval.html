@@ -10,6 +10,9 @@
       <span class="slds-m-around_xx-small">
         <lightning-button variant="destructive" label="Reject" onclick={handleReject}></lightning-button>
       </span>
+      <span class="slds-m-around_xx-small">
+        <lightning-button variant="outline-brand" label="Refresh" onclick={handleRefresh}></lightning-button>
+      </span>
     </div>
   </div>
   <table class="slds-table slds-table_cell-buffer slds-table_bordered" aria-label="Example default base table of Opportunities">
@@ -27,7 +30,7 @@
           </div>
         </th>
         <th class="" scope="col">
-          <div class="slds-truncate" title="SPK">SPK</div>
+          <div class="slds-truncate" title="SPK">Timesheet</div>
         </th>
         <th class="" scope="col">
           <div class="slds-truncate" title="Project Name">Project Name</div>
@@ -50,6 +53,9 @@
         <th class="" scope="col">
           <div class="slds-truncate" title="Remarks">Approval Status</div>
         </th>
+        <th scope="col">
+          <abbr class="slds-hidden" title="Action"></abbr>
+        </th>
       </tr>
     </thead>
     <tbody class="slds-scrollable">
@@ -65,11 +71,11 @@
           </th>
           <th data-label="SPK" scope="row">
             <div class="slds-truncate" title="SPK">
-              <a href="#">{field.Project__r.SPK__c.value}</a>
+              <a href="#">{field.Name.value}</a>
             </div>
           </th>
           <td data-label="Project Name">
-            <div class="slds-truncate" title="Project Name"> {field.Project__r.Name.value} </div>
+            <div class="slds-truncate" title="Project Name">{field.Project__r.SPK__c.value}::{field.Project__r.Name.value} </div>
           </td>
           <td data-label="Employee">
             <div class="slds-truncate" title="Employee"> {field.Employee__r.Name.value} </div>
@@ -88,6 +94,17 @@
           </td>
           <td data-label="Remarks">
             <div class="slds-truncate" title="Remarks"> {field.Approval_Status__c.value} </div>
+          </td>
+          <td data-label="Action">
+            <lightning-button-icon 
+              icon-name="utility:edit_form"
+              alternative-text="editline"
+              class=""
+              type="button"
+              variant="outline-brand"
+              onclick={handleEditLine}
+              data-id={field.Id}
+            ></lightning-button-icon>
           </td>
         </tr>
       </template>

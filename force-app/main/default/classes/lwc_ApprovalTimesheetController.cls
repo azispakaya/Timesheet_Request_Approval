@@ -42,6 +42,64 @@ global with sharing class lwc_ApprovalTimesheetController {
         }
     }
 
+    @AuraEnabled
+    public static string getProjectManager(Id ProjectId){
+        try {
+            
+            List<Project__c> listProject = [
+                SELECT Id, Project_Manager__c
+                FROM Project__c
+                WHERE Id = : ProjectId limit 1
+                
+            ];
+            if (listProject[0].Project_Manager__c == null) {
+                return ''+System.label.assignApprover;
+            }
+            return listProject[0].Project_Manager__c;
+
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    public class mapTimesheetRecord{
+        public string ProjectId;
+        public string Approver;
+        public string start_date;
+        public string end_date;
+        public string stime;
+        public string EmployeeID;
+        public string remark;
+    }
+
+    @AuraEnabled
+    public static string createMultiTimesheet(String Timesheet){
+        try {
+            List<Timesheet__c> createTimesheet = new List<Timesheet__c>();
+
+            List<mapTimesheetRecord> timesheetList = (List<mapTimesheetRecord>)JSON.deserialize(Timesheet,List<mapTimesheetRecord>.class);
+
+            for(mapTimesheetRecord singleTimesheet : timesheetList){
+
+                createTimesheet.add(new Timesheet__c(
+                    Project__c = singleTimesheet.ProjectId,
+                    Timesheet_Approver__c = singleTimesheet.Approver,
+                    Employee__c = singleTimesheet.EmployeeID,
+                    Start_Date__c = Date.valueOf(singleTimesheet.start_date),
+                    End_Date__c = Date.valueOf(singleTimesheet.end_date),
+                    Time__c = singleTimesheet.stime,
+                    Remarks__c = singleTimesheet.remark
+                ));
+            }
+
+            Database.insert(createTimesheet);
+
+            return '{"error_msg":"Successfully Create Timesheet", "error_code":"000" }';
+
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
     
 
 }
