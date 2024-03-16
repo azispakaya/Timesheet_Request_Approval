@@ -1,0 +1,31 @@
+<template>
+    <!-- this should be incapsulated in its own component, see https://developer.salesforce.com/docs/component-library/bundle/lightning-modal/documentation -->
+    <lightning-modal-header label={headerLabel}></lightning-modal-header>
+    <lightning-modal-body>
+      <div class="slds-grid slds-gutters">
+        <div class="slds-col">
+          <lightning-textarea max-length="1000" name="comment" label="Comment" placeholder="type here..." variant="standard" onblur={HandlefieldChange} ></lightning-textarea>
+          
+        </div>
+      </div>
+    </lightning-modal-body>
+    <lightning-modal-footer>
+      <div class="slds-grid">
+        <div>
+          <span>
+            <button class="slds-button slds-button_neutral  slds-m-horizontal_xx-small" onclick={handleCancel}> Cancel </button>
+          </span>
+        </div>
+        <div class="slds-col_bump-left">
+          <span>
+            <lightning-button class="slds-m-horizontal_xx-small" variant="brand" label="Revise" onclick={handleRevise}></lightning-button>
+          </span>
+        </div>
+        <div>
+          <span>
+            <lightning-button class="slds-m-horizontal_xx-small" variant="destructive" label="Reject" onclick={handleReject}></lightning-button>
+          </span>
+        </div>
+      </div>
+    </lightning-modal-footer>
+  </template>
