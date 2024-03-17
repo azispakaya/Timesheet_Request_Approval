@@ -51,7 +51,7 @@ global with sharing class lwc_ApprovalTimesheetController {
         try {
             
             List<Project__c> listProject = [
-                SELECT Id, Project_Manager__c
+                SELECT Id, Project_Manager__c, Project_Admin__c
                 FROM Project__c
                 WHERE Id = : ProjectId limit 1
                 
@@ -59,7 +59,7 @@ global with sharing class lwc_ApprovalTimesheetController {
             if (listProject[0].Project_Manager__c == null) {
                 return ''+System.label.assignApprover;
             }
-            return listProject[0].Project_Manager__c;
+            return listProject[0].Project_Manager__c+';'+listProject[0].Project_Admin__c;
 
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
@@ -74,6 +74,7 @@ global with sharing class lwc_ApprovalTimesheetController {
         public string stime;
         public string EmployeeID;
         public string remark;
+        public string Approver_Optional;
     }
 
     @AuraEnabled
@@ -93,7 +94,8 @@ global with sharing class lwc_ApprovalTimesheetController {
                     End_Date__c = Date.valueOf(singleTimesheet.end_date),
                     Time__c = singleTimesheet.stime,
                     Remarks__c = singleTimesheet.remark,
-                    Approval_Status__c = ApprovalStatus
+                    Approval_Status__c = ApprovalStatus,
+                    Timesheet_Approver_Optional__c = singleTimesheet.Approver_Optional
                 ));
             }
 
