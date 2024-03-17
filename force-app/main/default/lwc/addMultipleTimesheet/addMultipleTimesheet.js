@@ -119,7 +119,8 @@ export default class AddMultipleTimesheet extends LightningElement {
                                 assignApprover({
                                     ProjectId : splitRes[3]
                                 }).then((res)=>{
-                                    timesheetRow['Approver'] = res;
+                                    timesheetRow['Approver'] = res.split(';')[0];
+                                    timesheetRow['Approver_Optional'] = res.split(';')[1]
                                 })
 
                             } else if (splitCode[0] === '401') {
@@ -151,7 +152,8 @@ export default class AddMultipleTimesheet extends LightningElement {
                                 assignApprover({
                                     ProjectId : projectName[2]
                                 }).then((res)=>{
-                                    timesheetRow['Approver'] = res;
+                                    timesheetRow['Approver'] = res.split(';')[0];
+                                    timesheetRow['Approver_Optional'] = res.split(';')[1]
                                 })
                             } else {
                                 this.isValid = false
@@ -178,7 +180,8 @@ export default class AddMultipleTimesheet extends LightningElement {
                                 assignApprover({
                                     ProjectId : splitRes[3]
                                 }).then((res)=>{
-                                    timesheetRow['Approver'] = res;
+                                    timesheetRow['Approver'] = res.split(';')[0];
+                                    timesheetRow['Approver_Optional'] = res.split(';')[1]
                                 })
 
                             } else if(spliCode[0] === '401'){

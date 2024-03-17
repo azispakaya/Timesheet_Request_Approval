@@ -35,14 +35,17 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
 
     @wire(graphql, {
         query: gql`
-            query timesheets($ApproverName : String, $ApprovalStatus : Picklist){
+            query timesheets($ApproverName : ID, $ApprovalStatus : Picklist){
                 uiapi{
                     query{
                         Timesheet__c(
                             where : {
                                 and : [
-                                    {Timesheet_Approver__r :{Name :{eq : $ApproverName}}},
-                                    {Approval_Status__c : {eq : $ApprovalStatus}}
+                                    {or:[
+                                        {Timesheet_Approver__r:{Id:{eq : $ApproverName}}},
+                                        {Timesheet_Approver_Optional__r:{Id:{eq : $ApproverName}}}
+                                    ]},
+                                    {Approval_Status__c:{eq : $ApprovalStatus}}
                                 ]
                             }
                         ){
@@ -84,6 +87,11 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
                                         value
                                     }
                                     Timesheet_Approver__r{
+                                        Name{
+                                            value
+                                        }
+                                    }
+                                    Timesheet_Approver_Optional__r{
                                         Name{
                                             value
                                         }
@@ -245,7 +253,7 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
 
     get variables() {
         return {
-          ApproverName: this.ApproverName,
+          ApproverName: this.ApproverId,
           ApprovalStatus: this.ApprovalStatus,
         };
       }
