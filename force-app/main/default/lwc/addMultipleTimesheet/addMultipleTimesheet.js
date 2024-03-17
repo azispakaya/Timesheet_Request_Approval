@@ -278,7 +278,14 @@ export default class AddMultipleTimesheet extends LightningElement {
     }
 
     async submitTimesheet(event) {
+        this.handlingSaveRecord('Waiting for Approval')
+    }
 
+    async saveTimesheet(event){
+        this.handlingSaveRecord('Draft')
+    }
+
+    async handlingSaveRecord(setApprovalStatus){
         try {
             //* Validate fields
             this.controlValidityField();
@@ -335,9 +342,12 @@ export default class AddMultipleTimesheet extends LightningElement {
                 this.toast('Please input at least one timesheet entry before submitting the request.', 'warning', 'Reminder!!')
                 return
             }
+
+
             this.isLoading = true
             const resSubmit = await createMultiTimesheet({
-                Timesheet: JSON.stringify(this.timesheets)
+                Timesheet: JSON.stringify(this.timesheets),
+                ApprovalStatus : setApprovalStatus
             });
 
             const [resMSG, resCode] = resSubmit.split(',');
@@ -351,6 +361,7 @@ export default class AddMultipleTimesheet extends LightningElement {
                 this.isLoading = false
             }
             // console.log(JSON.parse(resSubmit));
+            console.log(setApprovalStatus)
         } catch (error) {
             console.error('Error:', error);
             this.toast('An error occurred while processing the request.', 'error', 'Error!!');
