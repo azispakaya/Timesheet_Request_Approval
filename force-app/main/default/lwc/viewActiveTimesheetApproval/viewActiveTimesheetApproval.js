@@ -13,15 +13,24 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
     errors
     @api recordId
     ApproverName
+    ApproverId
     ApprovalStatus
     @track draftTimesheet = []
+    @track isVisible
 
     connectedCallback(){
         ConvertApproverName({ recordPageId : this.recordId})
         .then((res)=>{
-            this.ApproverName = res;
+            this.ApproverName = res.split(';')[0];
+            this.ApproverId = res.split(';')[1];
             this.ApprovalStatus = 'Waiting for Approval'
         })
+
+        if(this.draftTimesheet.length > 0){
+            this.isVisible = true
+        }else{
+            this.isVisible = false
+        }
     }
 
     @wire(graphql, {
@@ -117,12 +126,22 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
 
         refreshGraphQL(this.graphQlData)
         this.toast('Successfully Refresh', 'success', 'Info')
+        if(this.draftTimesheet.length > 0){
+            this.isVisible = false
+        }
     }
 
     async handleApprove(event){
+        
+        if(this.draftTimesheet.length == 0){
+            this.toast('Nothing to Approve, Please Select at least 1 Timesheet', 'error', 'Approve Error!!')
+            return
+        }
+        
         this.draftTimesheet.forEach(item => {
             item.ApprovalStatus = 'Fully Approved',
-            item.Comment = 'This Timesheet Successfully Approved'
+            item.Comment = 'This Timesheet Successfully Approved',
+            item.ApproveBy = this.ApproverId
         })
 
         await updateStatus({
@@ -131,6 +150,12 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
 
             refreshGraphQL(this.graphQlData)
             this.toast('Successfully Approved', 'success', 'Info')
+
+            if(this.draftTimesheet.length > 0){
+                this.isVisible = true
+            }else{
+                this.isVisible = false
+            }
 
         }).catch((error)=>{
             console.log(error)
@@ -141,9 +166,16 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
     }
 
     async handleReject(event){
+
+        if(this.draftTimesheet.length == 0){
+            this.toast('Nothing to Reject, Please Select at least 1 Timesheet', 'error', 'Reject Error!!')
+            return
+        }
+
         this.draftTimesheet.forEach(item =>{
             item.ApprovalStatus = 'Rejected',
-            item.Comment = 'This Timesheet has been Rejected, Please Re-Submit'
+            item.Comment = 'This Timesheet has been Rejected, Please Re-Submit',
+            item.ApproveBy = this.ApproverId
         })
         await updateStatus({
             
@@ -153,6 +185,12 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
 
             refreshGraphQL(this.graphQlData)
             this.toast('Successfully Rejected', 'warning', 'Info')
+
+            if(this.draftTimesheet.length > 0){
+                this.isVisible = true
+            }else{
+                this.isVisible = false
+            }
 
         }).catch((error)=>{
             console.log(error)
@@ -176,7 +214,8 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
         singleTimesheet.push({
             recordid : timesheetId,
             Comment : resultComment.split(';')[0],
-            ApprovalStatus : resultComment.split(';')[1]
+            ApprovalStatus : resultComment.split(';')[1],
+            ApproveBy : this.ApproverId
         })
 
         if(resultComment != 'cancel'){
@@ -190,6 +229,12 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
             }).catch((e)=>{
                 console.log(e)
             })
+        }
+
+        if(this.draftTimesheet.length > 0){
+            this.isVisible = true
+        }else{
+            this.isVisible = false
         }
        
 
