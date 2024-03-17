@@ -9,7 +9,7 @@ global with sharing class lwc_ApprovalTimesheetController {
                 WHERE Id = : recordPageId limit 1
                 ];
             
-            return timesheetApprovals[0].Approver__r.Name;
+            return timesheetApprovals[0].Approver__r.Name+';'+timesheetApprovals[0].Approver__c;
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
@@ -18,6 +18,8 @@ global with sharing class lwc_ApprovalTimesheetController {
     public class timesheetWrapper{
         public string recordid;
         public string ApprovalStatus;
+        public string Comment;
+        public string ApproveBy;
     }
 
     @AuraEnabled
@@ -30,7 +32,9 @@ global with sharing class lwc_ApprovalTimesheetController {
             for (timesheetWrapper singleTimesheet : listTimesheet) {
                 obj_timesheets.add(new Timesheet__c(
                     Id = singleTimesheet.recordid, 
-                    Approval_Status__c = singleTimesheet.ApprovalStatus
+                    Approval_Status__c = singleTimesheet.ApprovalStatus,
+                    Comment__c = singleTimesheet.Comment,
+                    Approved_By__c = singleTimesheet.ApproveBy
                     ));
             }
 
@@ -73,7 +77,7 @@ global with sharing class lwc_ApprovalTimesheetController {
     }
 
     @AuraEnabled
-    public static string createMultiTimesheet(String Timesheet){
+    public static string createMultiTimesheet(String Timesheet, String ApprovalStatus){
         try {
             List<Timesheet__c> createTimesheet = new List<Timesheet__c>();
 
@@ -88,7 +92,8 @@ global with sharing class lwc_ApprovalTimesheetController {
                     Start_Date__c = Date.valueOf(singleTimesheet.start_date),
                     End_Date__c = Date.valueOf(singleTimesheet.end_date),
                     Time__c = singleTimesheet.stime,
-                    Remarks__c = singleTimesheet.remark
+                    Remarks__c = singleTimesheet.remark,
+                    Approval_Status__c = ApprovalStatus
                 ));
             }
 
