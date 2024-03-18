@@ -34,13 +34,15 @@ global with sharing class lwc_ApprovalTimesheetController {
                     Id = singleTimesheet.recordid, 
                     Approval_Status__c = singleTimesheet.ApprovalStatus,
                     Comment__c = singleTimesheet.Comment,
-                    Approved_By__c = singleTimesheet.ApproveBy
+                    Approved_By__c = singleTimesheet.ApproveBy,
+                    Approved_Date__c = Date.today()
+
                     ));
             }
 
             Database.update(obj_timesheets);
 
-            return ''+obj_timesheets;
+            return '200';
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
