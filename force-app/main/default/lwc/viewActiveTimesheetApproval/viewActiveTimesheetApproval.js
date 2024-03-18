@@ -6,10 +6,11 @@ import {
     ShowToastEvent
 } from 'lightning/platformShowToastEvent'
 import modalEditLine from 'c/modalCommentTimesheet';
+import modalConfirmation from 'c/modalConfirmationPage'
 
 export default class ViewActiveTimesheetApproval extends LightningElement {
 
-    results
+    results = []
     errors
     @api recordId
     ApproverName
@@ -18,20 +19,7 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
     @track draftTimesheet = []
     @track isVisible
 
-    connectedCallback(){
-        ConvertApproverName({ recordPageId : this.recordId})
-        .then((res)=>{
-            this.ApproverName = res.split(';')[0];
-            this.ApproverId = res.split(';')[1];
-            this.ApprovalStatus = 'Waiting for Approval'
-        })
-
-        if(this.draftTimesheet.length > 0){
-            this.isVisible = true
-        }else{
-            this.isVisible = false
-        }
-    }
+    
 
     @wire(graphql, {
         query: gql`
@@ -47,6 +35,11 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
                                     ]},
                                     {Approval_Status__c:{eq : $ApprovalStatus}}
                                 ]
+                            }
+                            orderBy :{
+                                Start_Date__c: {
+                                    order: DESC
+                                }
                             }
                         ){
                             edges{
@@ -115,6 +108,16 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
         this.graphQlData = result
     }
 
+    connectedCallback(){
+        ConvertApproverName({ recordPageId : this.recordId})
+        .then((res)=>{
+            this.ApproverName = res.split(';')[0];
+            this.ApproverId = res.split(';')[1];
+            this.ApprovalStatus = 'Waiting for Approval'
+        })
+
+    }
+
     handleChecked(event){
         const timesheetId = event.target.dataset.id
 
@@ -151,23 +154,34 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
             item.Comment = 'This Timesheet Successfully Approved',
             item.ApproveBy = this.ApproverId
         })
+        const countTimesheet = this.draftTimesheet.length
 
-        await updateStatus({
-            Timesheets : JSON.stringify(this.draftTimesheet)
-        }).then((res)=>{
-
-            refreshGraphQL(this.graphQlData)
-            this.toast('Successfully Approved', 'success', 'Info')
-
-            if(this.draftTimesheet.length > 0){
-                this.isVisible = true
-            }else{
-                this.isVisible = false
-            }
-
-        }).catch((error)=>{
-            console.log(error)
+        const resultModal = await modalConfirmation.open({
+            Content : 'Are You sure to Approve ('+countTimesheet+') Timesheets ?',
+            Header : 'Approval Confirmation'
         })
+
+        // console.log(resultModal);
+
+        if(resultModal == 'Save'){
+            await updateStatus({
+                Timesheets : JSON.stringify(this.draftTimesheet)
+            }).then((res)=>{
+                if(res == '200'){
+                    this.toast('Successfully Approved', 'success', 'Info')
+                    this.draftTimesheet = []
+                }
+      
+            }).then(()=>{
+
+                refreshGraphQL(this.graphQlData)
+
+            }).catch((error)=>{
+                console.log(error)
+            })
+            
+        }
+
         
 
         // console.log(JSON.stringify(this.draftTimesheet))
@@ -185,26 +199,33 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
             item.Comment = 'This Timesheet has been Rejected, Please Re-Submit',
             item.ApproveBy = this.ApproverId
         })
-        await updateStatus({
-            
-            Timesheets : JSON.stringify(this.draftTimesheet)
-
-        }).then((res)=>{
-
-            refreshGraphQL(this.graphQlData)
-            this.toast('Successfully Rejected', 'warning', 'Info')
-
-            if(this.draftTimesheet.length > 0){
-                this.isVisible = true
-            }else{
-                this.isVisible = false
-            }
-
-        }).catch((error)=>{
-            console.log(error)
+        let countTimesheet = this.draftTimesheet.length
+        const resultModal = await modalConfirmation.open({
+            Content : 'Are You sure to Approve ('+countTimesheet+') Timesheets ?',
+            Header : 'Approval Confirmation'
         })
 
-
+        if(resultModal=='Save'){
+            await updateStatus({
+            
+                Timesheets : JSON.stringify(this.draftTimesheet)
+    
+            }).then((res)=>{
+                
+                if(res == '200'){
+                    this.toast('Successfully Rejected', 'warning', 'Info')
+                    this.draftTimesheet = []
+                }
+                
+    
+            }).then(()=>{
+                refreshGraphQL(this.graphQlData)
+                
+            }).catch((error)=>{
+                console.log(error)
+            })
+        }
+      
         // console.log(JSON.stringify(this.draftTimesheet))
     }
 
@@ -232,23 +253,22 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
                 Timesheets : JSON.stringify(singleTimesheet)
 
             }).then((res)=>{
-                refreshGraphQL(this.graphQlData)
-                this.toast('Updated Successfully','success','Success') 
+
+                if(res == '200'){
+                    this.toast('Updated Successfully','success','Success') 
+                    refreshGraphQL(this.graphQlData)
+                }
+                
+            }).then(()=>{
+                singleTimesheet = []
+
             }).catch((e)=>{
                 console.log(e)
             })
+
+            
         }
 
-        if(this.draftTimesheet.length > 0){
-            this.isVisible = true
-        }else{
-            this.isVisible = false
-        }
-       
-
-        // console.log(JSON.stringify(singleTimesheet));
-
-        
     }
 
     get variables() {

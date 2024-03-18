@@ -1,16 +1,35 @@
 <template>
   <div class="slds-grid slds-gutters">
-    <div class="slds-col slds-size_4-of-5">
-      <span></span>
+    <div class="slds-col slds-size_1-of-2 slds-m-around_x-small">
+      <div class="slds-grid">
+        <div class="slds-m-horizontal_x-small">
+          <span >
+            <lightning-input 
+              type="date" 
+              name="StartDate" 
+              value="2023-06-08"
+            ></lightning-input>
+          </span>
+        </div>
+        <div>
+          <span>
+            <lightning-input 
+              type="date" 
+              name="EndDate" 
+              value="2023-06-08"
+            ></lightning-input>
+          </span>
+        </div>
+      </div>
     </div>
-    <div class="slds-col slds-size_1-of-5 slds-m-around_xx-small slds-float_right">
-      <span class="slds-m-around_xx-small">
+    <div class="slds-col slds-size_2-of-2 slds-m-around_x-small slds-p-top_medium slds-float_right sf-right">
+      <span class="slds-m-top_small slds-m-horizontal_xx-small">
         <lightning-button variant="brand" label="Approve" onclick={handleApprove}></lightning-button>
       </span>
-      <span class="slds-m-around_xx-small">
+      <span class="slds-m-top_small slds-m-horizontal_xx-small">
         <lightning-button variant="destructive" label="Reject" onclick={handleReject}></lightning-button>
       </span>
-      <span class="slds-m-around_xx-small">
+      <span class="slds-m-top_small slds-m-horizontal_xx-small">
         <lightning-button variant="outline-brand" label="Refresh" onclick={handleRefresh}></lightning-button>
       </span>
     </div>
@@ -159,11 +178,11 @@
             <div class="slds-truncate" title="Employee">Employee</div>
           </th>
           <th class="" scope="col">
-            <div class="slds-truncate" title="Start Date">Start Date</div>
+            <div class="slds-truncate" title="Date">Date</div>
           </th>
-          <th class="" scope="col">
+          <!-- <th class="" scope="col">
             <div class="slds-truncate" title="End Date">End Date</div>
-          </th>
+          </th> -->
           <th class="" scope="col">
             <div class="slds-truncate" title="Time">Time</div>
           </th>
@@ -200,12 +219,12 @@
             <td data-label="Employee">
               <div class="slds-truncate" title="Employee"> {field.Employee__r.Name.value} </div>
             </td>
-            <td data-label="Start Date">
-              <div class="slds-truncate" title="Start Date"> {field.Start_Date__c.value} </div>
+            <td data-label="Date">
+              <div class="slds-truncate" title="Date"> {field.Start_Date__c.value} </div>
             </td>
-            <td data-label="End Date">
+            <!-- <td data-label="End Date">
               <div class="slds-truncate" title="End Date"> {field.End_Date__c.value} </div>
-            </td>
+            </td> -->
             <td data-label="Time">
               <div class="slds-truncate" title="Time"> {field.Time__c.value} </div>
             </td>
