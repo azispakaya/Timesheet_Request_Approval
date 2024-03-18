@@ -1,0 +1,6 @@
+SELECT 
+    Id, Start_Date__c, End_Date__c, Approval_Status__c, 
+    Time__c, Project__r.SPK__c, Project__r.Name, 
+    Employee__r.Name, Employee__r.Employee_ID__c, Remarks__c
+FROM Timesheet__c
+WHERE Approval_Status__c = 'Fully Approved'
