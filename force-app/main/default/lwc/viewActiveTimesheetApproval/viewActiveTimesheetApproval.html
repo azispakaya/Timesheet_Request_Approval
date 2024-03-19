@@ -1,6 +1,6 @@
 <template>
-  <div class="slds-grid slds-gutters">
-    <div class="slds-col slds-size_1-of-2 slds-m-around_x-small">
+  <div class="slds-grid slds-grid_align-end">
+    <!-- <div class="slds-col slds-size_1-of-2 slds-m-around_x-small">
       <div class="slds-grid">
         <div class="slds-m-horizontal_x-small">
           <span >
@@ -21,16 +21,24 @@
           </span>
         </div>
       </div>
-    </div>
-    <div class="slds-col slds-size_2-of-2 slds-m-around_x-small slds-p-top_medium slds-float_right sf-right">
+    </div> -->
+    <div class="slds-col slds-m-around_x-small slds-p-top_medium">
       <span class="slds-m-top_small slds-m-horizontal_xx-small">
         <lightning-button variant="brand" label="Approve" onclick={handleApprove}></lightning-button>
       </span>
       <span class="slds-m-top_small slds-m-horizontal_xx-small">
         <lightning-button variant="destructive" label="Reject" onclick={handleReject}></lightning-button>
       </span>
-      <span class="slds-m-top_small slds-m-horizontal_xx-small">
-        <lightning-button variant="outline-brand" label="Refresh" onclick={handleRefresh}></lightning-button>
+      <span class="slds-m-top_xx-small slds-m-horizontal_xx-small">
+        <lightning-button-icon 
+          icon-name="utility:refresh"
+          alternative-text="Refresh"
+          name="btn-refresh"
+          size="medium"
+          variant="outline-brand"
+          onclick={handleRefresh}
+        ></lightning-button-icon>
+        <!-- <lightning-button variant="outline-brand" label="Refresh" onclick={handleRefresh}></lightning-button> -->
       </span>
     </div>
   </div>
@@ -249,6 +257,24 @@
         </template>
       </tbody>
     </table>
+      <div class="slds-grid slds-grid_align-start slds-m-around_small">
+        <div class="slds-col">
+          <span if:true={hasNext}>
+            <lightning-button 
+              variant="brand-outline"
+              label="Show More" 
+              onclick={loadMore} 
+            ></lightning-button>
+          </span>
+          <span if:false={hasNext}>
+            <lightning-button 
+              variant="brand-outline"
+              label="Show Less" 
+              onclick={loadLess} 
+            ></lightning-button>
+          </span>
+        </div>
+    </div>
   </template>
   
 </template>

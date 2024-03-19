@@ -11,6 +11,7 @@ import modalConfirmation from 'c/modalConfirmationPage'
 export default class ViewActiveTimesheetApproval extends LightningElement {
 
     results = []
+    totalCountRecord = 0
     errors
     @api recordId
     ApproverName
@@ -18,15 +19,26 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
     ApprovalStatus
     @track draftTimesheet = []
     @track isVisible
+    after = null
+    pageInfo
+    showRecord = 5
+    hasNext = true
 
     
 
     @wire(graphql, {
         query: gql`
-            query timesheets($ApproverName : ID, $ApprovalStatus : Picklist){
+            query timesheets(
+                    $ApproverName : ID, 
+                    $ApprovalStatus : Picklist,
+                    $nextCursor : String,
+                    $recordCount : Int
+                ){
                 uiapi{
                     query{
                         Timesheet__c(
+                            first : $recordCount
+                            after : $nextCursor
                             where : {
                                 and : [
                                     {or:[
@@ -34,6 +46,7 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
                                         {Timesheet_Approver_Optional__r:{Id:{eq : $ApproverName}}}
                                     ]},
                                     {Approval_Status__c:{eq : $ApprovalStatus}}
+
                                 ]
                             }
                             orderBy :{
@@ -90,6 +103,14 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
                                         }
                                     }
                                 }
+                                cursor
+                            }
+                            totalCount
+                            pageInfo{
+                                startCursor
+                                endCursor
+                                hasNextPage
+                                hasPreviousPage
                             }
                         }
                     }
@@ -103,6 +124,10 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
 
         if (data) {
           this.results = data.uiapi.query.Timesheet__c.edges.map((edge) => edge.node);
+          this.totalCountRecord = data.uiapi.query.Timesheet__c.totalCount
+          this.pageInfo = data.uiapi.query?.Timesheet__c?.pageInfo
+          this.hasNext = this.pageInfo.hasNextPage
+          
         }
         this.errors = errors;
         this.graphQlData = result
@@ -115,6 +140,7 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
             this.ApproverId = res.split(';')[1];
             this.ApprovalStatus = 'Waiting for Approval'
         })
+
 
     }
 
@@ -271,10 +297,31 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
 
     }
 
+    loadMore(event){
+        event.preventDefault();
+        if(this.pageInfo.hasNextPage && this.pageInfo){
+            // this.after = this.pageInfo.endCursor
+            this.showRecord = this.showRecord + 5
+        }else{
+            this.after = null
+        }
+    }
+
+    loadLess(event){
+        event.preventDefault();
+        if(!this.pageInfo.hasNextPage && this.pageInfo){
+            this.showRecord = this.showRecord - 5
+        }else{
+            this.after = null
+        }
+    }
+
     get variables() {
         return {
           ApproverName: this.ApproverId,
           ApprovalStatus: this.ApprovalStatus,
+          nextCursor : this.after,
+          recordCount : this.showRecord
         };
       }
     
