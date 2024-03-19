@@ -31,6 +31,7 @@ global class Batch_TimesheetRequest implements Database.Batchable<sObject>,Datab
         TimesheetModel timesheetModel = new TimesheetModel();
         TimesheetModel.cls_timesheet timesheetField = new TimesheetModel.cls_timesheet();
         List<TimesheetModel.cls_timesheet> listTimesheet = new List<TimesheetModel.cls_timesheet>();
+        List<Timesheet__c> newTimesheet = new List<Timesheet__c>();
 
         for (Timesheet__c singleTimesheet : scope) {
             
@@ -46,6 +47,25 @@ global class Batch_TimesheetRequest implements Database.Batchable<sObject>,Datab
             timesheetModel.timesheet = listTimesheet;
 
             request.setBody(JSON.serialize(timesheetModel));
+
+            HttpResponse res = http.send(request);
+            String responseBody;
+
+            if(res.getStatusCode() == 200){
+                Map<String, Object> mapObject = (Map<String, Object>)JSON.deserializeUntyped(JSON.serialize(res));
+
+                if ((String)mapObject.get('error_code') == '000') {
+                    responseBody = (String)mapObject.get('error_code');
+                    
+                }else{
+                    responseBody = (String)mapObject.get('error_msg');
+                }
+            }
+
+            newTimesheet.add(new Timesheet__c(
+                Id = singleTimesheet.Id,
+                response__c = responseBody
+            ));
         }
 
         System.debug(''+request.getBody());
