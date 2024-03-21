@@ -36,14 +36,16 @@ public without sharing class lwc_RequestTimesheetController {
 
         try {
             list<Employee__c> employee = [
-                SELECT Id, Name, Employee_ID__c FROM Employee__c WHERE Id =: RecordID LIMIT 1
+                SELECT Id, Name, Employee_ID__c, Email__c FROM Employee__c WHERE Id =: RecordID LIMIT 1
             ];
             if (employee.size() > 0) {
                 
                 if (render == 'loadData') {
                     return String.valueOf(employee[0].Name) + ' - ' + String.valueOf(employee[0].Employee_ID__c);
+                }else if(render == 'apex'){
+                    return employee[0].Employee_ID__c;
                 }else{
-                    return String.valueOf(employee[0].Employee_ID__c);
+                    return employee[0].Employee_ID__c+';'+employee[0].Email__c;
                 }
 
             }

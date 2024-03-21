@@ -1,12 +1,14 @@
 <template>
       <lightning-modal-header label={Header}></lightning-modal-header>
-      <lightning-modal-body>{Content}</lightning-modal-body>
+      <lightning-modal-body>
+          {Content}
+      </lightning-modal-body>
       <lightning-modal-footer>
         <div class="slds-grid slds-grid_align-end">
             <div class="slds-col">
                 <lightning-button 
                   variant="neutral"
-                  label="No" 
+                  label="Cancel" 
                   onclick={handleCancel} 
                   class="slds-m-around_xx-small"
                 ></lightning-button>
@@ -15,7 +17,7 @@
             <div class="slds-col">
                 <lightning-button 
                 variant="brand"
-                label="Yes" 
+                label="Confirm" 
                 onclick={handleSave}
                 class="slds-m-around_xx-small" 
               ></lightning-button>

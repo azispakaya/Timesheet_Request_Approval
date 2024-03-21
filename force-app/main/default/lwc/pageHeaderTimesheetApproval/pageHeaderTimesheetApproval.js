@@ -1,15 +1,18 @@
 import { LightningElement, api, wire } from 'lwc';
 import { gql, graphql } from "lightning/uiGraphQLApi";
+import employee from "@salesforce/apex/lwc_ApprovalTimesheetController.ApproverName"
 
 export default class PageHeaderTimesheetApproval extends LightningElement {
 
-    results
+    resultEmployees
+    totalTimesheets
     errors
     @api recordId
+    employeId
 
     @wire(graphql, {
         query : gql`
-            query approver($ApproverId : ID){
+            query approver($ApproverId : ID, $employeID : ID, $approvalStatus : Picklist){
                 uiapi{
                     query{
                         Timesheet_Approval__c(where :{Id:{ eq : $ApproverId}}){
@@ -33,9 +36,29 @@ export default class PageHeaderTimesheetApproval extends LightningElement {
                                         Department__c{
                                             value
                                         }
+                                        Email__c{
+                                            value
+                                        }
+                                        Mobile_Phone__c{
+                                            value
+                                        }
                                     }
                                 }
                             }
+                        }
+                        Timesheet__c(
+                            where:{
+                                and:[
+                                    {or:[
+                                        {Timesheet_Approver__c:{eq : $employeID}},
+                                        {Timesheet_Approver_Optional__c:{eq: $employeID}}
+                                    ]},
+                                    {Approval_Status__c:{eq: $approvalStatus}}
+                                ]
+                                
+                            }
+                        ){
+                            totalCount
                         }
                     }
                 }
@@ -45,15 +68,28 @@ export default class PageHeaderTimesheetApproval extends LightningElement {
     })
     graphqlResult({data, error}){
         if(data){
-             this.results = data.uiapi.query.Timesheet_Approval__c.edges.map((edge)=> edge.node);
+             this.resultEmployees = data.uiapi.query.Timesheet_Approval__c.edges.map((edge)=> edge.node);
+             this.totalTimesheets = data.uiapi.query.Timesheet__c.totalCount;
         }else{
             this.errors = error
         }
     }
 
+    connectedCallback(){
+        employee({recordPageId:this.recordId})
+        .then((res)=>{
+            this.employeId = res.split(';')[1];
+        })
+    }
+
     get variables(){
+
         return{
-            ApproverId : this.recordId
+            ApproverId : this.recordId,
+            employeID : this.employeId,
+            approvalStatus : 'Waiting for Approval'
         }
     }
+
+    
 }

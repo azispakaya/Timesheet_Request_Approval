@@ -117,7 +117,8 @@ export default class AddMultipleTimesheet extends LightningElement {
                                 timesheetRow['type'] = 'case'
 
                                 assignApprover({
-                                    ProjectId : splitRes[3]
+                                    ProjectId : splitRes[3],
+                                    EmployeeID : this.recordId
                                 }).then((res)=>{
                                     timesheetRow['Approver'] = res.split(';')[0];
                                     timesheetRow['Approver_Optional'] = res.split(';')[1]
@@ -150,7 +151,8 @@ export default class AddMultipleTimesheet extends LightningElement {
                                 timesheetRow['type'] = 'project';
 
                                 assignApprover({
-                                    ProjectId : projectName[2]
+                                    ProjectId : projectName[2],
+                                    EmployeeID : this.recordId
                                 }).then((res)=>{
                                     timesheetRow['Approver'] = res.split(';')[0];
                                     timesheetRow['Approver_Optional'] = res.split(';')[1]
@@ -178,7 +180,8 @@ export default class AddMultipleTimesheet extends LightningElement {
                                 timesheetRow['type'] = 'poc'
 
                                 assignApprover({
-                                    ProjectId : splitRes[3]
+                                    ProjectId : splitRes[3],
+                                    EmployeeID : this.recordId
                                 }).then((res)=>{
                                     timesheetRow['Approver'] = res.split(';')[0];
                                     timesheetRow['Approver_Optional'] = res.split(';')[1]
@@ -316,14 +319,15 @@ export default class AddMultipleTimesheet extends LightningElement {
             }
 
             //* Fetch PicName
-            const employeNIK = await convertPicName({
+            const employe = await convertPicName({
                 RecordID: this.recordId,
                 render: 'submit'
             });
 
             //* Assign PicName and set billable flag
             this.timesheets.forEach(record => {
-                record.pic_name = employeNIK;
+                record.pic_name = employe.split(';')[0];
+                record.Email = employe.split(';')[1]
                 record.EmployeeID = this.recordId;
                 record.billable = '1';
             });

@@ -34,8 +34,8 @@ global with sharing class lwc_ApprovalTimesheetController {
                     Id = singleTimesheet.recordid, 
                     Approval_Status__c = singleTimesheet.ApprovalStatus,
                     Comment__c = singleTimesheet.Comment,
-                    Approved_By__c = singleTimesheet.ApproveBy,
-                    Approved_Date__c = Date.today()
+                    Action_By__c = singleTimesheet.ApproveBy,
+                    Action_Date__c = Date.today()
 
                     ));
             }
@@ -49,7 +49,7 @@ global with sharing class lwc_ApprovalTimesheetController {
     }
 
     @AuraEnabled
-    public static string getProjectManager(Id ProjectId){
+    public static string getProjectManager(Id ProjectId, Id EmployeeID){
         try {
             
             List<Project__c> listProject = [
@@ -58,8 +58,18 @@ global with sharing class lwc_ApprovalTimesheetController {
                 WHERE Id = : ProjectId limit 1
                 
             ];
-            if (listProject[0].Project_Manager__c == null) {
-                return ''+System.label.assignApprover;
+
+            List<Employee__c> listEmployee = [
+                    SELECT Id, Name, Supervisor__c, Manager__c, Timesheet_User__c
+                    FROM Employee__c
+                    WHERE Id =:EmployeeID
+                    LIMIT 1
+            ];
+                
+            if (listProject[0].Project_Manager__c == null || listEmployee[0].Timesheet_Approver__c) {
+
+                return listEmployee[0].Manager__c+';'+listEmployee[0].Supervisorr__c;
+
             }
             return listProject[0].Project_Manager__c+';'+listProject[0].Project_Admin__c;
 
@@ -77,6 +87,7 @@ global with sharing class lwc_ApprovalTimesheetController {
         public string EmployeeID;
         public string remark;
         public string Approver_Optional;
+        public string Email;
     }
 
     @AuraEnabled
@@ -97,7 +108,8 @@ global with sharing class lwc_ApprovalTimesheetController {
                     Time__c = singleTimesheet.stime,
                     Remarks__c = singleTimesheet.remark,
                     Approval_Status__c = ApprovalStatus,
-                    Timesheet_Approver_Optional__c = singleTimesheet.Approver_Optional
+                    Timesheet_Approver_Optional__c = singleTimesheet.Approver_Optional,
+                    Email__c = singleTimesheet.Email
                 ));
             }
 

@@ -18,11 +18,14 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
     ApproverId
     ApprovalStatus
     @track draftTimesheet = []
-    @track isVisible
+    isVisible
     after = null
     pageInfo
     showRecord = 5
     hasNext = true
+    hasPrev = true
+    setStartDate
+    setEndDate
 
     
 
@@ -32,7 +35,9 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
                     $ApproverName : ID, 
                     $ApprovalStatus : Picklist,
                     $nextCursor : String,
-                    $recordCount : Int
+                    $recordCount : Int,
+                    $startDate : Date,
+                    $endDate : Date
                 ){
                 uiapi{
                     query{
@@ -45,7 +50,9 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
                                         {Timesheet_Approver__r:{Id:{eq : $ApproverName}}},
                                         {Timesheet_Approver_Optional__r:{Id:{eq : $ApproverName}}}
                                     ]},
-                                    {Approval_Status__c:{eq : $ApprovalStatus}}
+                                    {Approval_Status__c:{eq : $ApprovalStatus}},
+                                    {Start_Date__c:{ gte:{value: $startDate}}},
+                                    {End_Date__c : {lte:{value: $endDate}}}
 
                                 ]
                             }
@@ -127,6 +134,13 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
           this.totalCountRecord = data.uiapi.query.Timesheet__c.totalCount
           this.pageInfo = data.uiapi.query?.Timesheet__c?.pageInfo
           this.hasNext = this.pageInfo.hasNextPage
+          this.hasPrev = this.pageInfo.hasPreviousPage
+
+          if(this.totalCountRecord > 0){
+            this.isVisible = false
+          }else{
+            this.isVisible = true
+          }
           
         }
         this.errors = errors;
@@ -141,7 +155,29 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
             this.ApprovalStatus = 'Waiting for Approval'
         })
 
+        let currentDate = new Date().toJSON().slice(0, 10);
+        const date = new Date();
 
+        let day = "01";
+        let month = "0".concat(date.getMonth() + 1).slice(-2);
+        let year = date.getFullYear();
+        let currentMonth = `${year}-${month}-${day}`;
+
+        this.setStartDate = currentMonth
+        this.setEndDate = currentDate
+
+
+    }
+
+    fieldChangeHandler(event){
+         let fieldName = event?.target.name
+         let fieldValue = event?.target.value
+
+         if(fieldName == 'StartDate'){
+            this.setStartDate = fieldValue
+         }else if(fieldName == 'EndDate'){
+            this.setEndDate = fieldValue
+         }
     }
 
     handleChecked(event){
@@ -163,8 +199,10 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
 
         refreshGraphQL(this.graphQlData)
         this.toast('Successfully Refresh', 'success', 'Info')
-        if(this.draftTimesheet.length > 0){
+        if(this.totalCountRecord > 0){
             this.isVisible = false
+        }else{
+            this.isVisible = true
         }
     }
 
@@ -184,7 +222,7 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
 
         const resultModal = await modalConfirmation.open({
             Content : 'Are You sure to Approve ('+countTimesheet+') Timesheets ?',
-            Header : 'Approval Confirmation'
+            Header : 'Approve Confirmation'
         })
 
         // console.log(resultModal);
@@ -227,8 +265,8 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
         })
         let countTimesheet = this.draftTimesheet.length
         const resultModal = await modalConfirmation.open({
-            Content : 'Are You sure to Approve ('+countTimesheet+') Timesheets ?',
-            Header : 'Approval Confirmation'
+            Content : 'Are You sure to Reject ('+countTimesheet+') Timesheets ?',
+            Header : 'Reject Confirmation'
         })
 
         if(resultModal=='Save'){
@@ -309,7 +347,7 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
 
     loadLess(event){
         event.preventDefault();
-        if(!this.pageInfo.hasNextPage && this.pageInfo){
+        if(this.totalCountRecord > 5 && this.pageInfo){
             this.showRecord = this.showRecord - 5
         }else{
             this.after = null
@@ -321,7 +359,9 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
           ApproverName: this.ApproverId,
           ApprovalStatus: this.ApprovalStatus,
           nextCursor : this.after,
-          recordCount : this.showRecord
+          recordCount : this.showRecord,
+          startDate : this.setStartDate,
+          endDate : this.setEndDate
         };
       }
     

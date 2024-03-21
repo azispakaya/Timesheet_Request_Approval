@@ -1,13 +1,14 @@
 <template>
-  <div class="slds-grid slds-grid_align-end">
-    <!-- <div class="slds-col slds-size_1-of-2 slds-m-around_x-small">
+  <div class="slds-grid slds-grid_align-spread">
+    <div class="slds-col slds-m-around_x-small">
       <div class="slds-grid">
         <div class="slds-m-horizontal_x-small">
           <span >
             <lightning-input 
               type="date" 
               name="StartDate" 
-              value="2023-06-08"
+              value={setStartDate}
+              onblur={fieldChangeHandler}
             ></lightning-input>
           </span>
         </div>
@@ -16,20 +17,32 @@
             <lightning-input 
               type="date" 
               name="EndDate" 
-              value="2023-06-08"
+              value={setEndDate}
+              onblur={fieldChangeHandler}
             ></lightning-input>
           </span>
         </div>
       </div>
-    </div> -->
+    </div>
+    <div class="slds-col">
+      <span></span>
+    </div>
     <div class="slds-col slds-m-around_x-small slds-p-top_medium">
-      <span class="slds-m-top_small slds-m-horizontal_xx-small">
+        <span class="slds-m-horizontal_xx-small" if:false={isVisible}>
+          <lightning-badge label={totalCountRecord}
+            class="slds-badge"
+            icon-alternative-text={totalCountRecord}
+            icon-name="custom:custom53"
+            icon-position="start"
+          ></lightning-badge>
+        </span>
+      <span class="slds-m-horizontal_xx-small">
         <lightning-button variant="brand" label="Approve" onclick={handleApprove}></lightning-button>
       </span>
-      <span class="slds-m-top_small slds-m-horizontal_xx-small">
+      <span class="slds-m-horizontal_xx-small">
         <lightning-button variant="destructive" label="Reject" onclick={handleReject}></lightning-button>
       </span>
-      <span class="slds-m-top_xx-small slds-m-horizontal_xx-small">
+      <span class="slds-m-horizontal_xx-small">
         <lightning-button-icon 
           icon-name="utility:refresh"
           alternative-text="Refresh"
@@ -225,22 +238,22 @@
               <div class="slds-truncate" title="Project Name">{field.Project__r.SPK__c.value}::{field.Project__r.Name.value} </div>
             </td>
             <td data-label="Employee">
-              <div class="slds-truncate" title="Employee"> {field.Employee__r.Name.value} </div>
+              <div class="slds-truncate" title="Employee">{field.Employee__r.Name.value} </div>
             </td>
             <td data-label="Date">
-              <div class="slds-truncate" title="Date"> {field.Start_Date__c.value} </div>
+              <div class="slds-truncate" title="Date">{field.Start_Date__c.value} </div>
             </td>
             <!-- <td data-label="End Date">
               <div class="slds-truncate" title="End Date"> {field.End_Date__c.value} </div>
             </td> -->
             <td data-label="Time">
-              <div class="slds-truncate" title="Time"> {field.Time__c.value} </div>
+              <div class="slds-truncate" title="Time">{field.Time__c.value} </div>
             </td>
             <td data-label="Remarks">
-              <div class="slds-truncate" title="Remarks"> {field.Remarks__c.value} </div>
+              <div class="slds-truncate" title="Remarks">{field.Remarks__c.value} </div>
             </td>
-            <td data-label="Remarks">
-              <div class="slds-truncate" title="Remarks"> {field.Approval_Status__c.value} </div>
+            <td data-label="ApprovalStatus">
+              <div class="slds-truncate slds-badge slds-badge_inverse" title="Remarks">{field.Approval_Status__c.value} </div>
             </td>
             <td data-label="Action">
               <lightning-button-icon 
@@ -259,19 +272,28 @@
     </table>
       <div class="slds-grid slds-grid_align-start slds-m-around_small">
         <div class="slds-col">
-          <span if:true={hasNext}>
-            <lightning-button 
-              variant="brand-outline"
-              label="Show More" 
-              onclick={loadMore} 
-            ></lightning-button>
+          <span if:true={hasNext} class="slds-m-around_xx-small">
+            <lightning-button-icon 
+              icon-name="utility:chevrondown"
+              alternative-text="More"
+              name="more"
+              size="medium"
+              type="button"
+              variant="bare"
+              onclick={loadMore}
+            ></lightning-button-icon>
           </span>
-          <span if:false={hasNext}>
-            <lightning-button 
-              variant="brand-outline"
-              label="Show Less" 
-              onclick={loadLess} 
-            ></lightning-button>
+          
+          <span if:true={hasPrev} class="slds-m-around_xx-small">
+            <lightning-button-icon 
+            icon-name="utility:chevronup"
+            alternative-text="Less"
+            name="less"
+            size="medium"
+            type="button"
+            variant="bare"
+            onclick={loadLess}
+          ></lightning-button-icon>
           </span>
         </div>
     </div>

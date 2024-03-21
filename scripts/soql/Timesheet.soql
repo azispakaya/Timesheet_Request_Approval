@@ -3,4 +3,4 @@ SELECT
     Time__c, Project__r.SPK__c, Project__r.Name, 
     Employee__r.Name, Employee__r.Employee_ID__c, Remarks__c
 FROM Timesheet__c
-WHERE Approval_Status__c = 'Fully Approved'
+WHERE Approval_Status__c = 'Fully Approved' AND response__c != '000'

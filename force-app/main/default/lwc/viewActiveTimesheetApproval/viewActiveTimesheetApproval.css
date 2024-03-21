@@ -3,3 +3,6 @@
     right: 0px;
     width: max-content;
 }
+.background-badge{
+    --slds-c-badge-text-color : #fff !important;
+}

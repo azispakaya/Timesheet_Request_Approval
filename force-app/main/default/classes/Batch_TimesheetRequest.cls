@@ -10,7 +10,7 @@ global class Batch_TimesheetRequest implements Database.Batchable<sObject>,Datab
                 Time__c, Project__r.SPK__c, Project__r.Name, 
                 Employee__r.Name, Employee__r.Employee_ID__c, Remarks__c
             FROM Timesheet__c
-            WHERE Approval_Status__c = 'Fully Approved'
+            WHERE Approval_Status__c = 'Fully Approved' AND response__c != '000'
         ]);
      }
   
@@ -52,7 +52,7 @@ global class Batch_TimesheetRequest implements Database.Batchable<sObject>,Datab
             String responseBody;
 
             if(res.getStatusCode() == 200){
-                Map<String, Object> mapObject = (Map<String, Object>)JSON.deserializeUntyped(JSON.serialize(res));
+                Map<String, Object> mapObject = (Map<String, Object>)JSON.deserializeUntyped(res.getBody());
 
                 if ((String)mapObject.get('error_code') == '000') {
                     responseBody = (String)mapObject.get('error_code');
@@ -67,6 +67,8 @@ global class Batch_TimesheetRequest implements Database.Batchable<sObject>,Datab
                 response__c = responseBody
             ));
         }
+
+        Database.update(newTimesheet);
 
         System.debug(''+request.getBody());
         
