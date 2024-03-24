@@ -29,6 +29,10 @@ global class Schedule_TimesheetRequest implements Schedulable {
                 Day_of_Creation__c = 25 AND Approval_Status__c = 'Waiting for Approval'
         ];
 
+        if(listTimesheet.size() == 0 ){
+            return null;
+        }
+
         for(Timesheet__c ts : listTimesheet){
             ts.Approval_Status__c = 'Fully Approved';
             ts.Auto_Approve__c = true;
