@@ -1,3 +1,11 @@
+/**
+ * @author [AcekBecek]
+ * @email [nurazispakaya16@mail.com]
+ * @create date 2024-03-24 15:44:17
+ * @modify date 2024-03-24 15:44:17
+ * @desc [Batch Method for Timesheet Request and Sync to sunfish ]
+ */
+
 global class Batch_TimesheetRequest implements Database.Batchable<sObject>,Database.AllowsCallouts{
     public Batch_TimesheetRequest() {
 

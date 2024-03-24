@@ -1,3 +1,11 @@
+/**
+ * @author [AcekBecek]
+ * @email [nurazispakaya16@mail.com]
+ * @create date 2024-03-24 15:46:12
+ * @modify date 2024-03-24 15:46:39
+ * @desc [Controller for Header Information]
+ */
+
 import { LightningElement, api, wire } from 'lwc';
 import { gql, graphql } from "lightning/uiGraphQLApi";
 import employee from "@salesforce/apex/lwc_ApprovalTimesheetController.ApproverName"

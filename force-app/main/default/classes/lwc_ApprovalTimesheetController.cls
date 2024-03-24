@@ -1,3 +1,12 @@
+/**
+ * @author [AcekBecek]
+ * @email [nurazispakaya16@mail.com]
+ * @create date 2024-03-24 15:46:50
+ * @modify date 2024-03-24 15:46:50
+ * @desc [Controller for List Approval and Action]
+ */
+
+
 global with sharing class lwc_ApprovalTimesheetController {
    
     @AuraEnabled

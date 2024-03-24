@@ -1,3 +1,10 @@
+/**
+ * @author [AcekBecek]
+ * @email [nurazispakaya16@mail.com]
+ * @create date 2024-03-24 15:41:27
+ * @modify date 2024-03-24 15:41:27
+ * @desc [Controller for Request Timesheet using multiple Method]
+ */
 public without sharing class lwc_RequestTimesheetController {
     @AuraEnabled
     public static string submitTimesheet(String listTimesheet) {

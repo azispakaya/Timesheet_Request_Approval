@@ -1,3 +1,11 @@
+/**
+ * @author [AcekBecek]
+ * @email [nurazispakaya16@mail.com]
+ * @create date 2024-03-24 15:45:40
+ * @modify date 2024-03-24 15:46:04
+ * @desc [Controller for List Timesheet Approval  Page] 
+ */
+
 import { LightningElement, api, track, wire } from 'lwc';
 import { gql, graphql,refreshGraphQL } from "lightning/uiGraphQLApi";
 import ConvertApproverName from "@salesforce/apex/lwc_ApprovalTimesheetController.ApproverName"
