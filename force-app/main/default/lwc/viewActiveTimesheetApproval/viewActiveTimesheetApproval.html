@@ -210,14 +210,22 @@
             </th>
             <th data-label="SPK" scope="row">
               <div class="slds-truncate" title="SPK">
-                <a href="#">{field.Name.value}</a>
+                <a onclick={navToRecord} data-id={field.Id} data-object-name="Timesheet__c">{field.Name.value}</a>
               </div>
             </th>
             <td data-label="Project Name">
-              <div class="slds-truncate" title="Project Name">{field.Project__r.SPK__c.value}::{field.Project__r.Name.value} </div>
+              <div class="slds-truncate" title="Project Name">
+               <a onclick={navToRecord} data-id={field.Project__r.Id} data-object-name="Project__c">
+                {field.Project__r.SPK__c.value}::{field.Project__r.Name.value}
+               </a> 
+              </div>
             </td>
             <td data-label="Employee">
-              <div class="slds-truncate" title="Employee">{field.Employee__r.Name.value} </div>
+              <div class="slds-truncate" title="Employee">
+                <a onclick={navToRecord} data-id={field.Employee__r.Id} data-object-name="Employee__c">
+                  {field.Employee__r.Name.value}
+                </a>
+              </div>
             </td>
             <td data-label="Date">
               <div class="slds-truncate" title="Date">{field.Start_Date__c.value} </div>

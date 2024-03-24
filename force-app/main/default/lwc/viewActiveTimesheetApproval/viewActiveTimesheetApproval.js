@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:45:40
- * @modify date 2024-03-24 15:46:04
+ * @modify date 2024-03-24 18:29:15
  * @desc [Controller for List Timesheet Approval  Page] 
  */
 
@@ -15,8 +15,9 @@ import {
 } from 'lightning/platformShowToastEvent'
 import modalEditLine from 'c/modalCommentTimesheet';
 import modalConfirmation from 'c/modalConfirmationPage'
+import { NavigationMixin } from 'lightning/navigation';
 
-export default class ViewActiveTimesheetApproval extends LightningElement {
+export default class ViewActiveTimesheetApproval extends NavigationMixin (LightningElement) {
 
     results = []
     totalCountRecord = 0
@@ -37,6 +38,10 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
     selectedApprovalStatus = 'Waiting for Approval'
     approvalStyle = 'slds-truncate slds-badge slds-badge_inverse'
     isDisabled = false
+
+    timesheetRecordId;
+    projectRecordId;
+    employeeRecordId;
 
     
 
@@ -80,6 +85,7 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
                                         value
                                     }
                                     Employee__r{
+                                        Id
                                         Name{
                                             value
                                         }
@@ -88,6 +94,7 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
                                         }
                                     }
                                     Project__r{
+                                        Id
                                         Name{
                                             value
                                         }
@@ -383,6 +390,17 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
         }
     }
 
+    navToRecord(event){
+        this[NavigationMixin.Navigate]({
+            type: 'standard__recordPage',
+            attributes: {
+                actionName : 'view',
+                objectApiName : event.target?.dataset.objectname,
+                recordId : event.target?.dataset.id
+            }
+        });
+    }
+
     get variables() {
         return {
           ApproverName: this.ApproverId,
@@ -415,6 +433,6 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
         })
         this.dispatchEvent(callToast);
     }
-    
+  
 
 }
