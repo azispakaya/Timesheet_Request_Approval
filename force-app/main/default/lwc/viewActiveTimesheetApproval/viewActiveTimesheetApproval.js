@@ -26,6 +26,9 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
     hasPrev = true
     setStartDate
     setEndDate
+    selectedApprovalStatus = 'Waiting for Approval'
+    approvalStyle = 'slds-truncate slds-badge slds-badge_inverse'
+    isDisabled = false
 
     
 
@@ -152,7 +155,7 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
         .then((res)=>{
             this.ApproverName = res.split(';')[0];
             this.ApproverId = res.split(';')[1];
-            this.ApprovalStatus = 'Waiting for Approval'
+            this.ApprovalStatus = this.selectedApprovalStatus
         })
 
         let currentDate = new Date().toJSON().slice(0, 10);
@@ -177,6 +180,24 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
             this.setStartDate = fieldValue
          }else if(fieldName == 'EndDate'){
             this.setEndDate = fieldValue
+         }else if(fieldName == 'ApprovalStatus'){
+            this.selectedApprovalStatus = fieldValue
+
+            switch (fieldValue) {
+                case 'Fully Approved':
+                    this.approvalStyle = 'slds-truncate slds-badge slds-theme_success'
+                    this.isDisabled = true
+                    break;
+                case 'Waiting for Approval':
+                    this.approvalStyle = 'slds-truncate slds-badge slds-badge_inverse'
+                    this.isDisabled = false
+                    break;
+                default:
+                    this.approvalStyle = 'slds-truncate slds-badge slds-theme_error'
+                    this.isDisabled = true
+                    break;
+            }
+
          }
     }
 
@@ -357,13 +378,21 @@ export default class ViewActiveTimesheetApproval extends LightningElement {
     get variables() {
         return {
           ApproverName: this.ApproverId,
-          ApprovalStatus: this.ApprovalStatus,
+          ApprovalStatus: this.selectedApprovalStatus,
           nextCursor : this.after,
           recordCount : this.showRecord,
           startDate : this.setStartDate,
           endDate : this.setEndDate
         };
       }
+    
+    get picklistStatus(){
+        return [
+            { label : 'Waiting for Approval', value : 'Waiting for Approval'},
+            { label : 'Fully Approved', value : 'Fully Approved'},
+            { label : 'Rejected', value : 'Rejected'},
+        ]
+    }
     
     @api
     async refreshData(){
