@@ -69,7 +69,7 @@ global with sharing class lwc_ApprovalTimesheetController {
             ];
 
             List<Employee__c> listEmployee = [
-                    SELECT Id, Name, Supervisor__c, Manager__c, Timesheet_User__c
+                    SELECT Id, Name, Supervisorr__c, Manager__c, Timesheet_User__c, Timesheet_Approver__c
                     FROM Employee__c
                     WHERE Id =:EmployeeID
                     LIMIT 1
