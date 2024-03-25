@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:40:38
- * @modify date 2024-03-24 15:41:17
+ * @modify date 2024-03-24 20:36:03
  * @desc [Controller for Add multiple Timehseet]
  */
 import {
@@ -375,7 +375,7 @@ export default class AddMultipleTimesheet extends LightningElement {
                 this.isLoading = false
             }
             // console.log(JSON.parse(resSubmit));
-            console.log(setApprovalStatus)
+            // console.log(setApprovalStatus)
         } catch (error) {
             console.error('Error:', error);
             this.toast('An error occurred while processing the request.', 'error', 'Error!!');
