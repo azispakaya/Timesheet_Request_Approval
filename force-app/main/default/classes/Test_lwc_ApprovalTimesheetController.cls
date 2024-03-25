@@ -1,3 +1,10 @@
+/**
+ * @author [AcekBecek]
+ * @email [nurazispakaya16@mail.com]
+ * @create date 2024-03-24 22:28:07
+ * @modify date 2024-03-25 23:42:13
+ * @desc [add Assert ]
+ */
 @isTest
 private class Test_lwc_ApprovalTimesheetController {
     
@@ -86,15 +93,26 @@ private class Test_lwc_ApprovalTimesheetController {
         lwc_ApprovalTimesheetController.getProjectManager(project.Id, staff.Id);
         lwc_ApprovalTimesheetController.createMultiTimesheet(timesheets, 'waiting for Approval');
 
+        List<Timesheet__c> countTimesheet_Waiting = [
+            SELECT Id FROM Timesheet__c WHERE Approval_Status__c = 'Waiting for Approval'
+        ];
+
+        System.assert(countTimesheet_Waiting.size() > 0);
+
         Timesheet__c listApproval = [
             SELECT Id FROM Timesheet__c WHERE Approval_Status__c = 'Waiting for Approval'
         ];
 
         String updateTimesheets = '[{"recordid":"'+listApproval.Id+'","ApprovalStatus":"Fully Approved","Comment":"","ApproveBy":"'+approver.Id+'"}]';
 
-        
         lwc_ApprovalTimesheetController.updateApprovalStatus(updateTimesheets);
-        
+
+        List<Timesheet__c> countTimesheet_Approved = [
+            SELECT Id FROM Timesheet__c WHERE Approval_Status__c = 'Fully Approved'
+        ];
+
+        System.assert(countTimesheet_Approved.size() > 0);
+
         Test.stopTest();
     }
 
