@@ -10,7 +10,7 @@ global class Schedule_TimesheetRequest implements Schedulable {
     public void execute(SchedulableContext sc){
 
         if(Date.today().day() == 25){
-            updateApprovalStatus();
+            updateApprovalStatus(25);
         }
         
 
@@ -19,14 +19,14 @@ global class Schedule_TimesheetRequest implements Schedulable {
 
     }
 
-    public static List<Database.SaveResult> updateApprovalStatus(){
+    public static List<Database.SaveResult> updateApprovalStatus(Integer days){
 
         List<Timesheet__c> listTimesheet = [
             SELECT 
                 Id, Approval_Status__c, Auto_Approve__c
             FROM Timesheet__c
             WHERE 
-                Day_of_Creation__c = 25 AND Approval_Status__c = 'Waiting for Approval'
+                Day_of_Creation__c =: days AND Approval_Status__c = 'Waiting for Approval'
         ];
 
         if(listTimesheet.size() == 0 ){
