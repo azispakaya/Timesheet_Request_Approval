@@ -1,3 +1,10 @@
+/**
+ * @author [AcekBecek]
+ * @email [nurazispakaya16@mail.com]
+ * @create date 2024-03-24 15:40:38
+ * @modify date 2024-03-24 20:36:03
+ * @desc [Controller for Add multiple Timehseet]
+ */
 import {
     LightningElement,
     api,
@@ -14,6 +21,8 @@ import convertPOCNumber from '@salesforce/apex/lwc_RequestTimesheetController.co
 import {
     CloseActionScreenEvent
 } from 'lightning/actions';
+import assignApprover from '@salesforce/apex/lwc_ApprovalTimesheetController.getProjectManager'
+import createMultiTimesheet from '@salesforce/apex/lwc_ApprovalTimesheetController.createMultiTimesheet'
 
 export default class AddMultipleTimesheet extends LightningElement {
     @api recordId
@@ -111,7 +120,17 @@ export default class AddMultipleTimesheet extends LightningElement {
                                 timesheetRow[fieldName] = splitRes[0];
                                 timesheetRow['project_name'] = splitRes[1];
                                 timesheetRow['spk'] = splitRes[2];
+                                timesheetRow['ProjectId'] = splitRes[3];
                                 timesheetRow['type'] = 'case'
+
+                                assignApprover({
+                                    ProjectId : splitRes[3],
+                                    EmployeeID : this.recordId
+                                }).then((res)=>{
+                                    timesheetRow['Approver'] = res.split(';')[0];
+                                    timesheetRow['Approver_Optional'] = res.split(';')[1]
+                                })
+
                             } else if (splitCode[0] === '401') {
                                 this.toast('You are not assigned to this Case. Please ensure proper assignment for continued request Timesheet.', 'error', 'Case Invalid!!');
                                 this.isValid = false
@@ -135,11 +154,21 @@ export default class AddMultipleTimesheet extends LightningElement {
                                 this.isValid = true;
                                 timesheetRow['project_name'] = projectName[0];
                                 timesheetRow['spk'] = projectName[1];
-                                timesheetRow['type'] = 'project'
+                                timesheetRow['ProjectId'] = projectName[2];
+                                timesheetRow['type'] = 'project';
+
+                                assignApprover({
+                                    ProjectId : projectName[2],
+                                    EmployeeID : this.recordId
+                                }).then((res)=>{
+                                    timesheetRow['Approver'] = res.split(';')[0];
+                                    timesheetRow['Approver_Optional'] = res.split(';')[1]
+                                })
                             } else {
                                 this.isValid = false
                             }
                         });
+                        
                     break;
 
                 case 'poc_name':
@@ -154,7 +183,17 @@ export default class AddMultipleTimesheet extends LightningElement {
                                 timesheetRow[fieldName] = splitRes[0];
                                 timesheetRow['project_name'] = splitRes[1];
                                 timesheetRow['spk'] = splitRes[2];
+                                timesheetRow['ProjectId'] = splitRes[3];
                                 timesheetRow['type'] = 'poc'
+
+                                assignApprover({
+                                    ProjectId : splitRes[3],
+                                    EmployeeID : this.recordId
+                                }).then((res)=>{
+                                    timesheetRow['Approver'] = res.split(';')[0];
+                                    timesheetRow['Approver_Optional'] = res.split(';')[1]
+                                })
+
                             } else if(spliCode[0] === '401'){
                                 this.toast('You are not assigned to this POC as a member or project manager. Please contact the POC administrator for further assistance.','error','POC Invalid')
                                 this.isValid = false
@@ -162,6 +201,7 @@ export default class AddMultipleTimesheet extends LightningElement {
                                 this.isValid = false;
                             }
                         });
+                        
                     break;
 
                 case 'stime' :
@@ -251,7 +291,14 @@ export default class AddMultipleTimesheet extends LightningElement {
     }
 
     async submitTimesheet(event) {
+        this.handlingSaveRecord('Waiting for Approval')
+    }
 
+    async saveTimesheet(event){
+        this.handlingSaveRecord('Draft')
+    }
+
+    async handlingSaveRecord(setApprovalStatus){
         try {
             //* Validate fields
             this.controlValidityField();
@@ -279,14 +326,16 @@ export default class AddMultipleTimesheet extends LightningElement {
             }
 
             //* Fetch PicName
-            const employeNIK = await convertPicName({
+            const employe = await convertPicName({
                 RecordID: this.recordId,
                 render: 'submit'
             });
 
             //* Assign PicName and set billable flag
             this.timesheets.forEach(record => {
-                record.pic_name = employeNIK;
+                record.pic_name = employe.split(';')[0];
+                record.Email = employe.split(';')[1]
+                record.EmployeeID = this.recordId;
                 record.billable = '1';
             });
 
@@ -307,9 +356,12 @@ export default class AddMultipleTimesheet extends LightningElement {
                 this.toast('Please input at least one timesheet entry before submitting the request.', 'warning', 'Reminder!!')
                 return
             }
+
+
             this.isLoading = true
-            const resSubmit = await submitMultiTimesheet({
-                listTimesheet: JSON.stringify(this.timesheets)
+            const resSubmit = await createMultiTimesheet({
+                Timesheet: JSON.stringify(this.timesheets),
+                ApprovalStatus : setApprovalStatus
             });
 
             const [resMSG, resCode] = resSubmit.split(',');
@@ -322,7 +374,8 @@ export default class AddMultipleTimesheet extends LightningElement {
                 this.toast(`Failed to request timesheet with error: ${resMSG.split(':')[1]}`, 'error', 'Error');
                 this.isLoading = false
             }
-            console.log(JSON.parse(resSubmit));
+            // console.log(JSON.parse(resSubmit));
+            // console.log(setApprovalStatus)
         } catch (error) {
             console.error('Error:', error);
             this.toast('An error occurred while processing the request.', 'error', 'Error!!');

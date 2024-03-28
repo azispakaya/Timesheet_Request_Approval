@@ -1,3 +1,10 @@
+/**
+ * @author [AcekBecek]
+ * @email [nurazispakaya16@mail.com]
+ * @create date 2024-03-24 15:41:27
+ * @modify date 2024-03-24 15:41:27
+ * @desc [Controller for Request Timesheet using multiple Method]
+ */
 public without sharing class lwc_RequestTimesheetController {
     @AuraEnabled
     public static string submitTimesheet(String listTimesheet) {
@@ -36,14 +43,16 @@ public without sharing class lwc_RequestTimesheetController {
 
         try {
             list<Employee__c> employee = [
-                SELECT Id, Name, Employee_ID__c FROM Employee__c WHERE Id =: RecordID LIMIT 1
+                SELECT Id, Name, Employee_ID__c, Email__c FROM Employee__c WHERE Id =: RecordID LIMIT 1
             ];
             if (employee.size() > 0) {
                 
                 if (render == 'loadData') {
                     return String.valueOf(employee[0].Name) + ' - ' + String.valueOf(employee[0].Employee_ID__c);
+                }else if(render == 'apex'){
+                    return employee[0].Employee_ID__c;
                 }else{
-                    return String.valueOf(employee[0].Employee_ID__c);
+                    return employee[0].Employee_ID__c+';'+employee[0].Email__c;
                 }
 
             }
@@ -65,7 +74,7 @@ public without sharing class lwc_RequestTimesheetController {
             responData = 'No Data';
         } else {
             List < Project_Member__c > projectMember = [
-                SELECT Id, Name, Project__r.Name, Project__r.SPK__c
+                SELECT Id, Name, Project__r.Name, Project__r.SPK__c, Project__c
                 FROM Project_Member__c
                 WHERE
                 Project__c =: ProjectID
@@ -76,7 +85,7 @@ public without sharing class lwc_RequestTimesheetController {
 
             if (projectMember.size() > 0) {
 
-                responData = String.valueOf(projectMember[0].Project__r.Name) + ',' + String.valueOf(projectMember[0].Project__r.SPK__c);
+                responData = String.valueOf(projectMember[0].Project__r.Name) + ',' + String.valueOf(projectMember[0].Project__r.SPK__c)+','+projectMember[0].Project__c;
 
             }else{
                 List<Project__c> project = [
@@ -90,7 +99,7 @@ public without sharing class lwc_RequestTimesheetController {
                 ];
                 if(project.size() > 0){
 
-                    responData = String.valueOf(project[0].Name) + ',' + String.valueOf(project[0].SPK__c);
+                    responData = String.valueOf(project[0].Name) + ',' + String.valueOf(project[0].SPK__c)+','+project[0].Id;
 
                 }
             }
@@ -133,11 +142,11 @@ public without sharing class lwc_RequestTimesheetController {
                         LIMIT 1
                     ];
 
-                    responseData = '200;' + listCase[0].CaseNumber + ',' + listProject[0].Name + ',' + listProject[0].SPK__c;
+                    responseData = '200;' + listCase[0].CaseNumber + ',' + listProject[0].Name + ',' + listProject[0].SPK__c+','+listProject[0].Id;
 
                 } else {
 
-                    responseData = '200;' + listCase[0].CaseNumber + ',' + listCase[0].Project__r.Name + ',' + listCase[0].Project__r.SPK__c;
+                    responseData = '200;' + listCase[0].CaseNumber + ',' + listCase[0].Project__r.Name + ',' + listCase[0].Project__r.SPK__c+','+listCase[0].Project__c;
 
                 }
             }else{
@@ -170,7 +179,7 @@ public without sharing class lwc_RequestTimesheetController {
             ];
 
             if (listPOCMember.size() > 0) {
-                responseData = '200;' + listPOCMember[0].POC__r.Name + ',' + pocProject[0].Name + ',' + pocProject[0].SPK__c;
+                responseData = '200;' + listPOCMember[0].POC__r.Name + ',' + pocProject[0].Name + ',' + pocProject[0].SPK__c+','+pocProject[0].Id;
             }else{
 
                 List<POC__c> listPoc = [
@@ -182,7 +191,7 @@ public without sharing class lwc_RequestTimesheetController {
                     LIMIT 1
                 ];
                 if(listPoc.size() > 0){
-                    responseData = '200;' + listPoc[0].Name + ',' + pocProject[0].Name + ',' + pocProject[0].SPK__c;
+                    responseData = '200;' + listPoc[0].Name + ',' + pocProject[0].Name + ',' + pocProject[0].SPK__c+','+pocProject[0].Id;
                 }else{
                     responseData = '401; not Assign to POC';
                 }
