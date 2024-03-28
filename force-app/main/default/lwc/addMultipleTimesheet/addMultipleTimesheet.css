@@ -1,0 +1,39 @@
+.scrollable-size{
+    max-height: 30rem;
+    min-height: min-content;
+}
+
+.custom-icon-btn{
+    --slds-c-icon-color-foreground-default:#e51212; 
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+.custom-icon-btn:hover{
+    --slds-c-icon-color-foreground-default:#991B1B; 
+
+}
+
+.header-font{
+    font-size: 12px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: 700;
+    font-style: oblique;
+}
+header{
+    margin: 0;
+}
+.slds-spinner-text {
+    width: 320px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 16px;
+  }
+.slds-spinner--small .slds-spinner-text {
+    transform: translate(-36%, -50%) rotate(-90deg);
+}
+.slds-spinner--medium .slds-spinner-text {
+    transform: translate(-32%, -50%) rotate(-90deg);
+}
+.slds-spinner--large .slds-spinner-text {
+    transform: translate(-26%, -50%) rotate(-90deg);
+}

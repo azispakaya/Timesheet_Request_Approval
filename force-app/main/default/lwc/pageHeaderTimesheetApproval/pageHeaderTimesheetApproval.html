@@ -1,0 +1,67 @@
+<template>
+  <div class="slds-page-header slds-page-header_record-home">
+    <template for:each={resultEmployees} for:item="field">
+      <div key={field.Id}>
+        <div class="slds-page-header__row">
+          <div class="slds-page-header__col-title">
+            <div class="slds-media">
+              <div class="slds-media__figure">
+                <span class="slds-icon_container slds-icon-standard-opportunity">
+                  <lightning-icon icon-name="standard:people" alternative-text="people" size="medium" title="large size"></lightning-icon>
+                </span>
+              </div>
+              <div class="slds-media__body">
+                <div class="slds-page-header__name">
+                  <div class="slds-page-header__name-title">
+                    <h1>
+                      <span class="slds-page-header__title slds-truncate" title="Acme - 1,200 Widgets">{field.Approver__r.Name.value}</span>
+                      <span>
+                        {field.Approver__r.Role__c.value}
+                      </span>
+                    </h1>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="slds-page-header__col-actions">
+            <div class="slds-page-header__controls">
+              <div class="slds-page-header__control">
+                <ul class="slds-button-group-list">
+                  <li>
+                    <!-- <button class="slds-button slds-button_neutral">View</button> -->
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="slds-page-header__row slds-page-header__row_gutters">
+          <div class="slds-page-header__col-details">
+            <ul class="slds-page-header__detail-row">
+             
+              <li class="slds-page-header__detail-block">
+                <div class="slds-text-title slds-truncate" title="Field 1">Employee ID</div>
+                <div class="slds-truncate">
+                    {field.Approver__r.Employee_ID__c.value}
+                </div>
+              </li>
+              <li class="slds-page-header__detail-block">
+                <div class="slds-text-title slds-truncate" title="Field 3">Email</div>
+                <div class="slds-truncate">
+                    {field.Approver__r.Email__c.value}
+                </div>
+              </li>
+              <li class="slds-page-header__detail-block">
+                <div class="slds-text-title slds-truncate" title="Field 4">Mobile Phone</div>
+                <div class="slds-truncate">
+                    {field.Approver__r.Mobile_Phone__c.value}
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+</template>

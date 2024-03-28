@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
+    <brand>
+        <headerColor>#0070D2</headerColor>
+        <shouldOverrideOrgTheme>true</shouldOverrideOrgTheme>
+    </brand>
+    <formFactors>Small</formFactors>
+    <formFactors>Large</formFactors>
+    <isNavAutoTempTabsDisabled>true</isNavAutoTempTabsDisabled>
+    <isNavPersonalizationDisabled>true</isNavPersonalizationDisabled>
+    <isNavTabPersistenceDisabled>false</isNavTabPersistenceDisabled>
+    <label>Timesheet</label>
+    <navType>Standard</navType>
+    <setupExperience>all</setupExperience>
+    <tabs>standard-CmsAuthorHome</tabs>
+    <tabs>Timesheet__c</tabs>
+    <tabs>Timesheet_Approval__c</tabs>
+    <tabs>Project__c</tabs>
+    <tabs>Employee__c</tabs>
+    <uiType>Lightning</uiType>
+    <utilityBar>Timesheet_UtilityBar</utilityBar>
+</CustomApplication>
