@@ -50,11 +50,12 @@ global class Batch_TimesheetRequest implements Database.Batchable<sObject>,Datab
             timesheetField.start_date = String.valueOf(singleTimesheet.Start_Date__c);
             timesheetField.remark = singleTimesheet.Remarks__c;
             timesheetField.stime = String.valueOf(singleTimesheet.Time__c);
+            timesheetField.spk = singleTimesheet.Project__r.SPK__c;
 
             listTimesheet.add(timesheetField);            
             timesheetModel.timesheet = listTimesheet;
 
-            request.setBody(JSON.serialize(timesheetModel));
+            request.setBody(JSON.serialize(timesheetModel).replace('stime', 'time'));
 
             HttpResponse res = http.send(request);
             String responseBody;
