@@ -17,8 +17,23 @@ global with sharing class lwc_ApprovalTimesheetController {
                 FROM Timesheet_Approval__c 
                 WHERE Id = : recordPageId limit 1
                 ];
+
+            if(timesheetApprovals.size() > 0){
+                
+                return timesheetApprovals[0].Approver__r.Name+';'+timesheetApprovals[0].Approver__c;
+
+            }else{
+                
+                List<Employee__c> listEmployees = [
+                    SELECT Id, Name
+                    FROM Employee__c
+                    WHERE Id =: recordPageId 
+                    LIMIT 1
+                ];
+
+                return listEmployees[0].Name+';'+listEmployees[0].Id;
+            }    
             
-            return timesheetApprovals[0].Approver__r.Name+';'+timesheetApprovals[0].Approver__c;
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }

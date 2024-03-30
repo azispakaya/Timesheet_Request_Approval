@@ -35,6 +35,18 @@ private class Test_lwcRequestTimesheetController {
         );
         Insert engineerRole;
 
+        Employee__c PM_Admin = new Employee__c(
+            Employee_ID__c = '952300',
+            Name = 'Test Admin',
+            Email__c = 'test@gmail.com',
+            Role__c = 'Project Admin',
+            Active__c = true,
+            Department__c = 'Operation',
+            Grade__c = 'STF4',
+            Unit__c = 'Project - Wireless'
+        ) ;
+        Insert PM_Admin;
+
         Account account = new Account(
             Name = 'Test Account'
         );
@@ -77,28 +89,29 @@ private class Test_lwcRequestTimesheetController {
 
         Project_Member__c projectMember = new Project_Member__c(
             Project_Member__c = engineerRole.Id,
-            Project__c = project.Id
+            Project__c = project.Id,
+            Email__c = 'test@sample.co'
         );
         Insert projectMember;
 
         Case caseObject_withProject = new Case(
-            Subject = 'Test Subject',
+            Subject = 'Case for Project Sample',
             Description = 'Test Case Description',
             AccountId = account.Id,
             ContactId = contact.Id,
             Origin = 'Web',
-            Assigned_To__c = engineerRole.Id,
+            Assigned_To__c = PM_Admin.Id,
             Project__c = project.Id
         );
         Insert caseObject_withProject;
 
         Case caseObject_withoutProject = new Case(
-            Subject = 'Test Subject',
+            Subject = 'Case not Using Test Project',
             Description = 'Test Case Description',
             AccountId = account.Id,
             ContactId = contact.Id,
             Origin = 'Web',
-            Assigned_To__c = engineerRole.Id
+            Assigned_To__c = PM_Admin.Id
         );
         Insert caseObject_withoutProject;
 
