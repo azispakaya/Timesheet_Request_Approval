@@ -53,6 +53,11 @@ private class Test_lwc_ApprovalTimesheetController {
         );
         Insert Project;
 
+        Timesheet_Approval__c timeshetApproval = new Timesheet_Approval__c(
+             Approver__c = approver.Id
+        );
+        Insert timeshetApproval;
+
        
     }
 
