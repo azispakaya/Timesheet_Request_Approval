@@ -220,22 +220,22 @@
                </a> 
               </div>
             </td>
-            <td data-label="Employee">
-              <div class="slds-truncate" title="Employee">
+            <td data-label="Employee" class="slds-cell-wrap">
+              <div class="slds-line-wrap" title="Employee">
                 <a onclick={navToRecord} data-id={field.Employee__r.Id} data-object-name="Employee__c">
                   {field.Employee__r.Name.value}
                 </a>
               </div>
             </td>
-            <td data-label="Date">
-              <div class="slds-truncate" title="Date">{field.Start_Date__c.value} </div>
+            <td data-label="Date" class="slds-cell-wrap">
+              <div class="slds-line-wrap" title="Date">{field.Start_Date__c.value} </div>
             </td>
             <!-- <td data-label="End Date"><div class="slds-truncate" title="End Date"> {field.End_Date__c.value} </div></td> -->
             <td data-label="Time">
               <div class="slds-truncate" title="Time">{field.Time__c.value} </div>
             </td>
             <td data-label="Remarks" class="slds-cell-wrap">
-              <div class="slds-line-clamp" title="Remarks">{field.Remarks__c.value} </div>
+              <div class="slds-line-clamp_medium" title="Remarks">{field.Remarks__c.value} </div>
             </td>
             <td data-label="ApprovalStatus">
               <div class={approvalStyle} title="Remarks">{field.Approval_Status__c.value} </div>
