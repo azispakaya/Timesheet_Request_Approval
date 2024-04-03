@@ -213,8 +213,8 @@
                 <a onclick={navToRecord} data-id={field.Id} data-object-name="Timesheet__c">{field.Name.value}</a>
               </div>
             </th>
-            <td data-label="Project Name">
-              <div class="slds-truncate" title="Project Name">
+            <td data-label="Project Name" class="slds-cell-wrap">
+              <div class="slds-line-clamp" title="Project Name">
                <a onclick={navToRecord} data-id={field.Project__r.Id} data-object-name="Project__c">
                 {field.Project__r.SPK__c.value}::{field.Project__r.Name.value}
                </a> 
