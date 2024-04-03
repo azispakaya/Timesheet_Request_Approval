@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:45:40
- * @modify date 2024-03-24 18:29:15
+ * @modify date 2024-04-03 16:59:06
  * @desc [Controller for List Timesheet Approval  Page] 
  */
 
@@ -177,8 +177,8 @@ export default class ViewActiveTimesheetApproval extends NavigationMixin (Lightn
         const date = new Date();
 
         let day = "01";
-        let month = "0".concat(date.getMonth() + 1).slice(-2);
-        let year = date.getFullYear();
+        let month = "01";
+        let year = date.getFullYear()-1;
         let currentMonth = `${year}-${month}-${day}`;
 
         this.setStartDate = currentMonth
