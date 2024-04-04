@@ -1,3 +1,10 @@
+/**
+ * @author [AcekBecek]
+ * @email [nurazispakaya16@mail.com]
+ * @create date 2024-04-04 14:26:40
+ * @modify date 2024-04-04 14:26:40
+ * @desc [description]
+ */
 public class SendEmailNotification {
 
     public static void SendEmailNotificationUtils(String Address, String Subject, String Body) {
