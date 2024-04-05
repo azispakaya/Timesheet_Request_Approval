@@ -9,7 +9,7 @@ global class Schedule_TimesheetNotificationStaff implements Schedulable{
     
     public void execute(SchedulableContext sc){
         Batch_TimesheetNotificationStaff batch = new Batch_TimesheetNotificationStaff();
-        ID batchprocessid = Database.executeBatch(batch, 50);
+        ID batchprocessid = Database.executeBatch(batch, 8);
     }
 
 }
