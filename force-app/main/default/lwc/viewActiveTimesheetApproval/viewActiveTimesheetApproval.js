@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:45:40
- * @modify date 2024-04-03 16:59:06
+ * @modify date 2024-04-04 19:53:53
  * @desc [Controller for List Timesheet Approval  Page] 
  */
 
@@ -42,105 +42,105 @@ export default class ViewActiveTimesheetApproval extends NavigationMixin (Lightn
     timesheetRecordId;
     projectRecordId;
     employeeRecordId;
-
-    
+    sortName;
+  
 
     @wire(graphql, {
         query: gql`
-            query timesheets(
-                    $ApproverName : ID, 
-                    $ApprovalStatus : Picklist,
-                    $nextCursor : String,
-                    $recordCount : Int,
-                    $startDate : Date,
-                    $endDate : Date
-                ){
-                uiapi{
-                    query{
-                        Timesheet__c(
-                            first : $recordCount
-                            after : $nextCursor
-                            where : {
-                                and : [
-                                    {or:[
-                                        {Timesheet_Approver__r:{Id:{eq : $ApproverName}}},
-                                        {Timesheet_Approver_Optional__r:{Id:{eq : $ApproverName}}}
-                                    ]},
-                                    {Approval_Status__c:{eq : $ApprovalStatus}},
-                                    {Start_Date__c:{ gte:{value: $startDate}}},
-                                    {End_Date__c : {lte:{value: $endDate}}}
+        query timesheets(
+                $ApproverName : ID, 
+                $ApprovalStatus : Picklist,
+                $nextCursor : String,
+                $recordCount : Int,
+                $startDate : Date,
+                $endDate : Date
+            ){
+            uiapi{
+                query{
+                    Timesheet__c(
+                        first : $recordCount
+                        after : $nextCursor
+                        where : {
+                            and : [
+                                {or:[
+                                    {Timesheet_Approver__r:{Id:{eq : $ApproverName}}},
+                                    {Timesheet_Approver_Optional__r:{Id:{eq : $ApproverName}}}
+                                ]},
+                                {Approval_Status__c:{eq : $ApprovalStatus}},
+                                {Start_Date__c:{ gte:{value: $startDate}}},
+                                {End_Date__c : {lte:{value: $endDate}}}
 
-                                ]
+                            ]
+                        }
+                        orderBy :{
+                            Start_Date__c: {
+                                order: DESC
                             }
-                            orderBy :{
-                                Start_Date__c: {
-                                    order: DESC
+                        }
+                    ){
+                        edges{
+                            node{
+                                Id
+                                Name{
+                                    value
                                 }
-                            }
-                        ){
-                            edges{
-                                node{
+                                Employee__r{
                                     Id
                                     Name{
                                         value
                                     }
-                                    Employee__r{
-                                        Id
-                                        Name{
-                                            value
-                                        }
-                                        Employee_ID__c{
-                                            value
-                                        }
-                                    }
-                                    Project__r{
-                                        Id
-                                        Name{
-                                            value
-                                        }
-                                        SPK__c{
-                                            value
-                                        }
-                                    }
-                                    Start_Date__c{
+                                    Employee_ID__c{
                                         value
-                                    }
-                                    End_Date__c{
-                                        value
-                                    }
-                                    Time__c{
-                                        value
-                                    }
-                                    Remarks__c{
-                                        value
-                                    }
-                                    Approval_Status__c{
-                                        value
-                                    }
-                                    Timesheet_Approver__r{
-                                        Name{
-                                            value
-                                        }
-                                    }
-                                    Timesheet_Approver_Optional__r{
-                                        Name{
-                                            value
-                                        }
                                     }
                                 }
-                                cursor
+                                Project__r{
+                                    Id
+                                    Name{
+                                        value
+                                    }
+                                    SPK__c{
+                                        value
+                                    }
+                                }
+                                Start_Date__c{
+                                    value
+                                }
+                                End_Date__c{
+                                    value
+                                }
+                                Time__c{
+                                    value
+                                }
+                                Remarks__c{
+                                    value
+                                }
+                                Approval_Status__c{
+                                    value
+                                }
+                                Timesheet_Approver__r{
+                                    Name{
+                                        value
+                                    }
+                                }
+                                Timesheet_Approver_Optional__r{
+                                    Name{
+                                        value
+                                    }
+                                }
                             }
-                            totalCount
-                            pageInfo{
-                                startCursor
-                                endCursor
-                                hasNextPage
-                                hasPreviousPage
-                            }
+                            cursor
+                        }
+                        totalCount
+                        pageInfo{
+                            startCursor
+                            endCursor
+                            hasNextPage
+                            hasPreviousPage
                         }
                     }
                 }
             }
+        }
         `,
         variables: "$variables",
     })
@@ -183,6 +183,8 @@ export default class ViewActiveTimesheetApproval extends NavigationMixin (Lightn
 
         this.setStartDate = currentMonth
         this.setEndDate = currentDate
+
+        this.sortName = 'StartDate';
 
 
     }
@@ -433,6 +435,6 @@ export default class ViewActiveTimesheetApproval extends NavigationMixin (Lightn
         })
         this.dispatchEvent(callToast);
     }
-  
+
 
 }
