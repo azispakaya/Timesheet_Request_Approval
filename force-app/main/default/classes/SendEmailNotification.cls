@@ -15,6 +15,12 @@ public class SendEmailNotification {
         email.setToAddresses(toAddress);
         email.setSubject(subject);
         email.setPlainTextBody(Body);
+        OrgWideEmailAddress[] owe = [select Id from OrgWideEmailAddress where Address = 'support@msinfokom.com'];
+
+        if(owe.size() > 0 ){
+            email.setOrgWideEmailAddressId(owe[0].Id);
+        }
+        // email.setSenderDisplayName('MSInfokom Support Center');
 
         Messaging.SendEmailResult[] results = Messaging.sendEmail(new Messaging.SingleEmailMessage[] { email });
         inspectResults(results);
