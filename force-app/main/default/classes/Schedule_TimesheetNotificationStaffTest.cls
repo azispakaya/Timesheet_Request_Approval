@@ -26,10 +26,24 @@ private class Schedule_TimesheetNotificationStaffTest {
     static void positiveTest() {
         
         Schedule_TimesheetNotificationStaff st = new Schedule_TimesheetNotificationStaff();
+        Profile sysAdmin = [SELECT Id FROM Profile WHERE Name = 'System Administrator' LIMIT 1];
 
+        User admin = new user(
+            ProfileId = sysAdmin.Id,
+            LastName = 'TestAdmin',
+            Email = 'acek@test.com',
+            UserName = 'acek@test.com',
+            Alias = 'acek',
+            LocaleSidKey = 'en_US',
+            TimeZoneSidKey = 'GMT',
+            EmailEncodingKey='UTF-8',
+            LanguageLocaleKey='en_US'
+        );
         Test.startTest();
 
-        st.execute(null);
+        system.runAs(admin){
+            st.execute(null);
+        }
         Test.stopTest();
     }
 }
