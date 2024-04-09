@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:45:40
- * @modify date 2024-04-04 19:53:53
+ * @modify date 2024-04-09 20:26:37
  * @desc [Controller for List Timesheet Approval  Page] 
  */
 
@@ -19,7 +19,7 @@ import { NavigationMixin } from 'lightning/navigation';
 
 export default class ViewActiveTimesheetApproval extends NavigationMixin (LightningElement) {
 
-    results = []
+    @track results = []
     totalCountRecord = 0
     errors
     @api recordId
@@ -188,6 +188,27 @@ export default class ViewActiveTimesheetApproval extends NavigationMixin (Lightn
 
 
     }
+
+    directSort;
+    sortByName(event){
+        let curSortDirect = event.target?.value
+        
+        this.results = this.results.sort((prev, cur) => {
+            const fieldPrev = prev.Name.value.toUpperCase();
+            const fieldCur = cur.Name.value.toUpperCase();
+            
+            if (curSortDirect !== 'DESC') {
+                curSortDirect = 'ASC';
+                return fieldPrev.localeCompare(fieldCur);
+            } else {
+                curSortDirect = 'DESC';
+                return fieldCur.localeCompare(fieldPrev);
+            }
+        });
+        // console.log('Results => ',JSON.stringify(this.results))
+        console.log(this.directSort)
+    }
+    
 
     fieldChangeHandler(event){
          let fieldName = event?.target.name
