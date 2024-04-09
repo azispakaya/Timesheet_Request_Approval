@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:45:40
- * @modify date 2024-04-09 20:26:37
+ * @modify date 2024-04-09 20:30:43
  * @desc [Controller for List Timesheet Approval  Page] 
  */
 
@@ -206,7 +206,7 @@ export default class ViewActiveTimesheetApproval extends NavigationMixin (Lightn
             }
         });
         // console.log('Results => ',JSON.stringify(this.results))
-        console.log(this.directSort)
+        // console.log(this.directSort)
     }
     
 
