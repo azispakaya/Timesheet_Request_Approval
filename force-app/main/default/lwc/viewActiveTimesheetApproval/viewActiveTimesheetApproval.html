@@ -162,25 +162,30 @@
           <th class="slds-text-align_right slds-cell_action-mode" scope="col" style="width:3.25rem">
             <span class="slds-assistive-text">Choose a row</span>
             <div class="slds-th__action slds-th__action_form">
-              <div class="slds-checkbox">
-                <!-- <lightning-input 
-                    type="checkbox"
-                    name="input1"
-                  ></lightning-input> -->
-              </div>
+              <div class="slds-checkbox"></div>
             </div>
           </th>
-          <th class="" scope="col">
-            <div class="slds-truncate" title="SPK">Timesheet</div>
+          <th aria-sort="none" class="slds-is-resizable slds-is-sortable slds-cell_action-mode" scope="col">
+            <a class="slds-th__action slds-text-link_reset" role="button" tabindex="0" onclick={sortByNo}>
+              <span class="slds-assistive-text">Sort by: </span>
+              <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                <span class="slds-truncate" title="Timesheet No">Timesheet No</span>
+              </div>
+            </a>
           </th>
-          <th class="" scope="col">
-            <div class="slds-truncate" title="Project Name">Project Name</div>
+          <th aria-sort="none" class="slds-is-resizable slds-is-sortable slds-cell_action-mode" scope="col">
+            <a class="slds-th__action slds-text-link_reset" role="button" tabindex="0" onclick={sortByProject}>
+              <span class="slds-assistive-text">Sort by: </span>
+              <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                <span class="slds-truncate" title="Project">Project</span>
+              </div>
+            </a>
           </th>
           <th aria-sort="none" class="slds-is-resizable slds-is-sortable slds-cell_action-mode" scope="col">
             <a class="slds-th__action slds-text-link_reset" role="button" tabindex="0" onclick={sortByName}>
               <span class="slds-assistive-text">Sort by: </span>
               <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
-                <span class="slds-truncate" title="Name">Employee</span>
+                <span class="slds-truncate" title="Employee">Employee</span>
               </div>
             </a>
           </th>
@@ -189,8 +194,13 @@
               Employee
             </div>
           </th> -->
-          <th class="" scope="col">
-            <div class="slds-truncate" title="Date">Date</div>
+          <th aria-sort="none" class="slds-is-resizable slds-is-sortable slds-cell_action-mode" scope="col">
+            <a class="slds-th__action slds-text-link_reset" role="button" tabindex="0" onclick={sortByDate}>
+              <span class="slds-assistive-text">Sort by: </span>
+              <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                <span class="slds-truncate" title="Date">Date</span>
+              </div>
+            </a>
           </th>
           <!-- <th class="" scope="col"><div class="slds-truncate" title="End Date">End Date</div></th> -->
           <th class="" scope="col">
