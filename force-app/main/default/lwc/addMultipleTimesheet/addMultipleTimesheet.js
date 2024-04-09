@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:40:38
- * @modify date 2024-03-24 20:36:03
+ * @modify date 2024-04-09 14:08:33
  * @desc [Controller for Add multiple Timehseet]
  */
 import {
@@ -216,6 +216,14 @@ export default class AddMultipleTimesheet extends LightningElement {
                     
                     break;
 
+                case 'date' :
+                    
+                    let checkingDateField = this.validateField(fieldName, fieldValue);
+                    if(checkingDateField == 'valid'){
+                        timesheetRow['start_date'] = fieldValue
+                        timesheetRow['end_date'] = fieldValue
+                    }
+
                 default:
                     let checkingField = this.validateField(fieldName, fieldValue);
                     if (checkingField === 'valid') {
@@ -404,6 +412,10 @@ export default class AddMultipleTimesheet extends LightningElement {
         }
 
         if ((fieldName === 'start_date' || fieldName === 'end_date') && (new Date(value) > new Date() || new Date(value) <= new Date().setDate(new Date().getDate() - 9))) {
+            return 'Please enter a date that is not later than today and not more than 7 days ago.';
+        }
+
+        if (fieldName === 'date' && (new Date(value) > new Date() || new Date(value) <= new Date().setDate(new Date().getDate() - 9)) ){
             return 'Please enter a date that is not later than today and not more than 7 days ago.';
         }
 

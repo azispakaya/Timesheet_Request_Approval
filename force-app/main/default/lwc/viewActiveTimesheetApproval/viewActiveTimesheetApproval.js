@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:45:40
- * @modify date 2024-04-04 19:53:53
+ * @modify date 2024-04-09 21:48:31
  * @desc [Controller for List Timesheet Approval  Page] 
  */
 
@@ -19,7 +19,7 @@ import { NavigationMixin } from 'lightning/navigation';
 
 export default class ViewActiveTimesheetApproval extends NavigationMixin (LightningElement) {
 
-    results = []
+    @track results = []
     totalCountRecord = 0
     errors
     @api recordId
@@ -188,6 +188,49 @@ export default class ViewActiveTimesheetApproval extends NavigationMixin (Lightn
 
 
     }
+
+    @track directSort = 'ASC';
+    sortByNo(){
+        this.sortUtils('Name')
+    }
+
+    sortByDate(){
+        this.sortUtils('Start_Date__c')
+    }
+
+    sortByName(){
+        this.sortUtils('Employee__r.Name')
+    }
+
+    sortByProject(){
+        this.sortUtils('Project__r.Name')
+    }
+
+    sortUtils(fieldName){
+        // console.log('Sorting by:', fieldName);
+
+        let curSortDirect = this.directSort;
+    
+        this.results = this.results.sort((prev, cur) => {
+            const getField = (obj, path) => path.split('.').reduce((o, key) => o[key], obj);
+            const fieldPrev = getField(prev, fieldName).value.toUpperCase();
+            const fieldCur = getField(cur, fieldName).value.toUpperCase();
+    
+            // console.log('fieldPrev:', fieldPrev);
+            // console.log('fieldCur:', fieldCur);
+    
+            if (curSortDirect === 'DESC') {
+                this.directSort = 'ASC';
+                return fieldPrev.localeCompare(fieldCur);
+            } else if (curSortDirect === 'ASC') {
+                this.directSort = 'DESC';
+                return fieldCur.localeCompare(fieldPrev);
+            }
+        });
+    
+        // console.log('Direct:', this.directSort);
+    }
+    
 
     fieldChangeHandler(event){
          let fieldName = event?.target.name
