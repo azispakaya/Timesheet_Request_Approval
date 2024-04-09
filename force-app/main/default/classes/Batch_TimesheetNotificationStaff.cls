@@ -2,8 +2,9 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-04-04 13:32:31
- * @modify date 2024-04-04 13:32:31
+ * @modify date 2024-04-07 15:17:13
  * @desc [Notification sending Summary Report Timesheet for each employee]
+ * @Last Update : Fix Query Count Symmary Timesheet for each Employee
  */
  global class Batch_TimesheetNotificationStaff implements Database.Batchable<sObject>{
     
@@ -24,17 +25,17 @@
             
             Integer sumApproved = [
                 SELECT COUNT() FROM Timesheet__c
-                WHERE Action_Date__c =: Date.today() AND Approval_Status__c = 'Fully Approved'
+                WHERE Action_Date__c =: Date.today() AND Approval_Status__c = 'Fully Approved' AND Employee__c =: singleEmployee.Id
             ];
 
             Integer sumReject = [
                 SELECT COUNT() FROM Timesheet__c
-                WHERE Action_Date__c =: Date.today() AND Approval_Status__c = 'Rejected'
+                WHERE Action_Date__c =: Date.today() AND Approval_Status__c = 'Rejected' AND Employee__c =: singleEmployee.Id
             ];
 
             Integer sumRevise = [
                 SELECT COUNT() FROM Timesheet__c
-                WHERE Approval_Status__c = 'Need to Revise'
+                WHERE Approval_Status__c = 'Need to Revise' AND Employee__c =: singleEmployee.Id
             ];
 
             String subject = 'Timesheet - '+String.valueOf(Date.today())+ ' : '+String.valueOf(sumApproved)+'/'+String.valueOf(sumReject)+'/'+String.valueOf(sumRevise)+' Timesheets Approved/Rejected/Revised';
