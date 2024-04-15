@@ -36,12 +36,13 @@ global class Batch_TimesheetRequest implements Database.Batchable<sObject>,Datab
         request.setHeader('X-SFAPI-Account', 'sfapi');
         request.setHeader('X-SFAPI-RSAKey', RSAKey);
 
-        TimesheetModel timesheetModel = new TimesheetModel();
-        TimesheetModel.cls_timesheet timesheetField = new TimesheetModel.cls_timesheet();
-        List<TimesheetModel.cls_timesheet> listTimesheet = new List<TimesheetModel.cls_timesheet>();
         List<Timesheet__c> newTimesheet = new List<Timesheet__c>();
 
         for (Timesheet__c singleTimesheet : scope) {
+
+            TimesheetModel timesheetModel = new TimesheetModel();
+            TimesheetModel.cls_timesheet timesheetField = new TimesheetModel.cls_timesheet();
+            List<TimesheetModel.cls_timesheet> listTimesheet = new List<TimesheetModel.cls_timesheet>();
             
             timesheetField.billable = '1';
             timesheetField.end_date = String.valueOf(singleTimesheet.End_Date__c);
