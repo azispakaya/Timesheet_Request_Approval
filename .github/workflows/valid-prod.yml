@@ -22,7 +22,7 @@ jobs:
 
     - name: Authenticate with Salesforce
       run: |
-        sfdx force:auth:web:login --setalias myOrg --instanceurl${{ secrets.SALESFORCE_LOGIN_URL }}
+        sfdx org login web --setalias myOrg --instanceurl${{ secrets.SALESFORCE_LOGIN_URL }}
         
     - name: Deploy changes to sandbox
       run: |
