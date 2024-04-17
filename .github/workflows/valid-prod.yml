@@ -22,7 +22,7 @@ jobs:
 
     - name: Authenticate with Salesforce
       run: |
-        sfdx force:auth:web:login -u ${{ secrets.SALESFORCE_USERNAME }} -p ${{ secrets.SALESFORCE_PASSWORD }} -r ${{ secrets.SALESFORCE_LOGIN_URL }}
+        sfdx force:auth:web:login -u ${{ secrets.SALESFORCE_USERNAME }} -p ${{ secrets.SALESFORCE_PASSWORD }}
         
     - name: Deploy changes to sandbox
       run: |
