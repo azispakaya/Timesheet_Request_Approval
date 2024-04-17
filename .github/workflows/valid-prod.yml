@@ -2,28 +2,18 @@ name: Validation Production
 
 on:
   pull_request:
-    types: [closed]
-
+    branches: 
+      - Deployment
+    paths: 
+      - "force-app/**"
+    
 jobs:
-  deploy:
+  validate:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'Deployment'
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-
-    - name: Set up Salesforce CLI
-      uses: actions/setup-node@v2
-      with:
-        node-version: '16'
-    - run: |
-        npm install -g sfdx-cli
-
-    - name: Authenticate with Salesforce
-      run: |
-        sfdx org login web --setalias myOrg
-        
-    - name: Deploy changes to sandbox
-      run: |
-        sfdx force:source:deploy -p force-app -u myOrg -l RunLocalTests
+      - uses: actions/checkout@v2
+      - name: Validation on Deployment
+        uses:  salesforce/sfdx-action@v1
+        with: 
+          SFDX_AUTH_URL : ${{secrets.SFDX_AUTH_URL}}
+          DRY_RUN: true
