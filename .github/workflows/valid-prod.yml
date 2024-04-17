@@ -22,8 +22,8 @@ jobs:
 
     - name: Authenticate with Salesforce
       run: |
-        sfdx force:auth:web:login -u ${{ secrets.SALESFORCE_USERNAME }} -p ${{ secrets.SALESFORCE_PASSWORD }}
+        sfdx force:auth:web:login --setalias myOrg --instanceurl${{ secrets.SALESFORCE_LOGIN_URL }}
         
     - name: Deploy changes to sandbox
       run: |
-        sfdx force:source:deploy -p force-app -u ${{ secrets.SALESFORCE_USERNAME }} -l RunLocalTests
+        sfdx force:source:deploy -p force-app -u myOrg -l RunLocalTests
