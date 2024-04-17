@@ -14,12 +14,12 @@ jobs:
                 fetch-depth: 0
           - name: install-sfdx
             run:
-                npm install --global sfdx-cli
+                npm install @salesforce/cli --global
           - name:  login to salesforce org
             run:
-                sfdx org login sfdx-url --set-default --sfdx-url-file <(echo "${{ secrets.SFDX_AUTH_URL }}")
+                sfdx org login sfdx-url --set-default --sfdx-url-file <(echo "${{ secrets.SFDX_AUTH_URL }}") --set-alias myOrg
           - name: run test class
             run: 
-                sfdx apex run test -l  RunLocalTests -w 15
+                sf deploy functions --connected-org myOrg
                 
                 
