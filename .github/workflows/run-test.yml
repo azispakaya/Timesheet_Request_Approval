@@ -1,4 +1,4 @@
-run-name: run-test-class
+run-name: run deploy and test
 
 on:
   push:
@@ -12,14 +12,14 @@ jobs:
           - uses:  actions/checkout@v2
             with:
                 fetch-depth: 0
-          - name: install-sfdx
+          - name: install-sfdx-clis
             run:
                 npm install @salesforce/cli --global
           - name:  login to salesforce org
             run:
-                sfdx org login sfdx-url --set-default --sfdx-url-file <(echo "${{ secrets.SFDX_AUTH_URL }}") --setalias myOrg
-          - name: run test class
+                sf org login jwt --client-id ${{secrets.SFDX_JWT_KEY}} --jwt-key-file JWT/server.key --username zeus@langitkreasi.com.msiv1 --alias zeusHubOrg
+          - name: run deploy
             run: 
-                sf deploy functions --connected-org myOrg
+                sf deploy functions --connected-org zeusHubOrg
                 
                 
