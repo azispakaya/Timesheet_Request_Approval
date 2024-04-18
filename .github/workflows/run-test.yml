@@ -17,7 +17,7 @@ jobs:
                 npm install @salesforce/cli --global
           - name:  login to salesforce org
             run:
-                sf org login jwt --client-id ${{secrets.SFDX_JWT_KEY}} --jwt-key-file JWT/server.key --username zeus@langitkreasi.com.msiv1 --alias zeusHubOrg
+                sf login functions jwt --username ${{secrets.SALESFORCE_USERNAME}}  --keyfile JWT/server.key --clientid ${{secrets.SFDX_JWT_KEY}}
           - name: run deploy
             run: 
                 sf deploy functions --connected-org zeusHubOrg
