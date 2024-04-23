@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:40:38
- * @modify date 2024-04-09 14:08:33
+ * @modify date 2024-04-23 13:11:39
  * @desc [Controller for Add multiple Timehseet]
  */
 import {
@@ -98,7 +98,7 @@ export default class AddMultipleTimesheet extends LightningElement {
     fieldChangeHandler(event) {
         //* define basic variable
         let timesheetRow = this.timesheets.find(record => record.tempId == event.target.dataset.tempid)
-        let fieldValue = event.target?.value
+        let fieldValue = event.target.value
         let fieldName = event.target.name
 
         //* add validation for null field required
@@ -142,7 +142,7 @@ export default class AddMultipleTimesheet extends LightningElement {
 
                 case 'project_name':
                     convertProjectName({
-                            ProjectID: event.target?.value,
+                            ProjectID: (event.detail.value)[0],
                             memberId: this.recordId
                         })
                         .then(result => {
