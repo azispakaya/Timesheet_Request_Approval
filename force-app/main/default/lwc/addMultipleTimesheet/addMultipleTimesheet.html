@@ -130,8 +130,8 @@
           <div key={timesheet.tempId}>
             <lightning-card variant="base">
               <div>
-                <div class="slds-grid slds-grid_align-space">
-                    <div class="slds-col slds-size_2-of-8 slds-m-around_xx-small">
+                <div class={formFactorClass}>
+                    <div class="slds-col slds-m-around_xx-small">
                       <span>
                         <lightning-record-edit-form density="comfy" object-api-name="Timesheet__c">
                           <lightning-input-field class="validated" field-name="Project__c" variant="standard" onchange={fieldChangeHandler} name="project_name" data-tempid={timesheet.tempId} required></lightning-input-field>
@@ -177,8 +177,8 @@
           <div key={timesheet.tempId}>
             <lightning-card variant="base">
               <div>
-                <div class="slds-grid slds-grid_align-space">
-                    <div class="slds-col slds-size-2-of-8 slds-m-around_xx-small">
+                <div class={formFactorClass}>
+                    <div class="slds-col slds-m-around_xx-small">
                       <span>
                         <lightning-record-edit-form density="comfy" object-api-name="Timesheet__c">
                           <lightning-input-field class="validated" field-name="Case__c" variant="standard" onchange={fieldChangeHandler} name="case" data-tempid={timesheet.tempId} required></lightning-input-field>
@@ -224,8 +224,8 @@
           <div key={timesheet.tempId}>
             <lightning-card variant="base">
               <div>
-                <div class="slds-grid slds-grid_align-space">
-                    <div class="slds-col slds-size_2-of-8 slds-m-around_xx-small">
+                <div class={formFactorClass}>
+                    <div class="slds-col slds-m-around_xx-small">
                       <span>
                         <lightning-record-edit-form density="comfy" object-api-name="Timesheet__c">
                           <lightning-input-field class="validated" field-name="POC__c" variant="standard" onchange={fieldChangeHandler} name="poc_name" data-tempid={timesheet.tempId} required></lightning-input-field>
@@ -274,7 +274,7 @@
       <div class="slds-grid">
         <div>
           <span>
-            <button class="slds-button slds-button_neutral  slds-m-horizontal_xx-small" onclick={cancelHandler}> Cancel </button>
+            <button class={classBtnCancel} onclick={cancelHandler} style="display: block;"> Cancel </button>
           </span>
         </div>
         <div class="slds-col_bump-left">

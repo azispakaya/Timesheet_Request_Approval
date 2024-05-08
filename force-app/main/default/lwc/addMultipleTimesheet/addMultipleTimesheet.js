@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:40:38
- * @modify date 2024-04-23 13:11:39
+ * @modify date 2024-05-06 21:41:36
  * @desc [Controller for Add multiple Timehseet]
  */
 import {
@@ -23,6 +23,7 @@ import {
 } from 'lightning/actions';
 import assignApprover from '@salesforce/apex/lwc_ApprovalTimesheetController.getProjectManager'
 import createMultiTimesheet from '@salesforce/apex/lwc_ApprovalTimesheetController.createMultiTimesheet'
+import FORM_FACTOR from "@salesforce/client/formFactor";
 
 export default class AddMultipleTimesheet extends LightningElement {
     @api recordId
@@ -48,6 +49,9 @@ export default class AddMultipleTimesheet extends LightningElement {
     fieldApiName = 'Project__c'
 
     employeName = null
+
+    formFactorClass = 'slds-grid slds-grid_align-space'
+    classBtnCancel = 'slds-button slds-button_neutral  slds-m-horizontal_xx-small slds-visible'
 
     get PicklistObject() {
         return [{
@@ -241,6 +245,14 @@ export default class AddMultipleTimesheet extends LightningElement {
 
     //* Button Function
     addNewHandler(event) {
+
+        if(FORM_FACTOR == 'Large'){
+            this.formFactorClass = 'slds-grid slds-grid_align-space'
+            this.classBtnCancel = 'slds-button slds-button_neutral  slds-m-horizontal_xx-small slds-visible'
+        }else{
+            this.formFactorClass = 'slds-grid slds-grid_vertical'
+            this.classBtnCancel = 'slds-button slds-button_neutral  slds-m-horizontal_xx-small slds-hidden'
+        }
 
         if(this.timesheets.length > 4){
             this.toast("You've reached the maximum limit of entries. You can't add more than 5 entries.", 'error', 'Invalid')
