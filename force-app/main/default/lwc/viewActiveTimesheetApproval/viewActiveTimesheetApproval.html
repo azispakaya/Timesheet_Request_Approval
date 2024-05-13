@@ -291,15 +291,14 @@
           </div>
           <div class="slds-media__body">
             <h2 class="slds-card__header-title">
-              <a href="#" class="slds-card__header-link slds-truncate" title="Contacts (3)">
-                <span></span>
+              <a href="#" class="slds-card__header-link slds-truncate" title={totalCountRecord}>
+                <span>
+                  <lightning-badge label={totalCountRecord} class="slds-badge" icon-alternative-text={totalCountRecord} icon-name="custom:custom53" icon-position="start"></lightning-badge>
+                </span>
               </a>
             </h2>
           </div>
           <div class="slds-no-flex">
-            <div class="slds-p-around_xx-small">
-              <lightning-badge label={totalCountRecord} class="slds-badge" icon-alternative-text={totalCountRecord} icon-name="custom:custom53" icon-position="start"></lightning-badge>
-            </div>
             <div class="slds-p-around_xx-small">
               <lightning-button-group>
                 <lightning-button variant="outline" label="Approve" onclick={handleApprove}></lightning-button>
@@ -314,7 +313,7 @@
           <template for:each={results} for:item="field">
             <div key={field.Id}>
               <div class="slds-p-around_xx-small">
-                <div class="slds-grid slds-wrap">
+                <div class="slds-grid slds-gutters">
                   <div class="slds-col slds-size_2-of-12">
                     <div class="slds-th__action slds-th__action_form">
                       <div class="slds-checkbox">
