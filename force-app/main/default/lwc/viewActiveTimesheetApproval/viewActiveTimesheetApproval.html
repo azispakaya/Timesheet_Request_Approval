@@ -282,9 +282,17 @@
   </template>
   <template if:true={mobileSupport}>
     <div class="slds-region_narrow">
+      <div class="slds-card">
+        <div class="slds-p-around_xx-small">
+          <lightning-button-group>
+            <lightning-button variant="brand" label="Approve" onclick={handleApprove}></lightning-button>
+            <lightning-button variant="destructive" label="Reject" onclick={handleReject}></lightning-button>
+          </lightning-button-group>
+        </div>
+      </div>
       <template for:each={results} for:item="field">
-        <div class="slds-card slds-has-bottom-magnet" key={field.Id}>
-          <div class="slds-p-around_small">
+        <div class="slds-card" key={field.Id}>
+          <div class="slds-p-around_xx-small">
             <div class="slds-grid slds-wrap">
               <div class="slds-col slds-size_2-of-12">
                 <div class="slds-th__action slds-th__action_form">
