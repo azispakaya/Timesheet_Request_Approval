@@ -281,10 +281,10 @@
     </template>
   </template>
   <template if:true={mobileSupport}>
-    <div class="slds-region_narrow" style="width:360px">
+    <div class="slds-region_narrow slds-box" style="width:360px">
       <template for:each={results} for:item="field">
         <dl class="slds-dl_horizontal" key={field.Id}>
-          <dt class="slds-dl_horizontanl__label">
+          <dt class="slds-dl_horizontal__label">
             <b><a onclick={navToRecord} data-id={field.Id} data-object-name="Timesheet__c">{field.Name.value}</a></b>
           </dt>
           <dt class="slds-dl_horizontal__label">Project Name:</dt>
