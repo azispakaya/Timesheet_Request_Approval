@@ -285,15 +285,15 @@
       <template for:each={results} for:item="field">
         <div class="slds-card" key={field.Id}>
           <div class="slds-p-around_small">
-            <div class="slds-grid slds-gutter">
-              <div class="slds-col slds-size_1-of-3">
+            <div class="slds-grid slds-wrap">
+              <div class="slds-col slds-size_1-of-12">
                 <div class="slds-th__action slds-th__action_form">
                   <div class="slds-checkbox">
                     <lightning-input onchange={handleChecked} data-id={field.Id} type="checkbox-button" variant="brand"></lightning-input>
                   </div>
                 </div>
               </div>
-              <div class="slds-col slds-size_2-of-3">
+              <div class="slds-col slds-size_11-of-12">
                 <dl class="slds-dl_horizontal">
                   <dt class="slds-dl_horizontal__label">
                     <b><a onclick={navToRecord} data-id={field.Id} data-object-name="Timesheet__c">{field.Name.value}</a></b>
