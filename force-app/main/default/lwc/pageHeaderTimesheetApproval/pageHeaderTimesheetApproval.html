@@ -36,31 +36,45 @@
             </div>
           </div>
         </div>
-        <div class="slds-page-header__row slds-page-header__row_gutters">
-          <div class="slds-page-header__col-details">
-            <ul class="slds-page-header__detail-row">
-             
-              <li class="slds-page-header__detail-block">
-                <div class="slds-text-title slds-truncate" title="Field 1">Employee ID</div>
-                <div class="slds-truncate">
-                    {field.Approver__r.Employee_ID__c.value}
-                </div>
-              </li>
-              <li class="slds-page-header__detail-block">
-                <div class="slds-text-title slds-truncate" title="Field 3">Email</div>
-                <div class="slds-truncate">
-                    {field.Approver__r.Email__c.value}
-                </div>
-              </li>
-              <li class="slds-page-header__detail-block">
-                <div class="slds-text-title slds-truncate" title="Field 4">Mobile Phone</div>
-                <div class="slds-truncate">
-                    {field.Approver__r.Mobile_Phone__c.value}
-                </div>
-              </li>
-            </ul>
+        <template if:true={desktopSupport}>
+          <div class="slds-page-header__row slds-page-header__row_gutters">
+            <div class="slds-page-header__col-details">
+              <ul class="slds-page-header__detail-row">
+               
+                <li class="slds-page-header__detail-block">
+                  <div class="slds-text-title slds-truncate" title="Field 1">Employee ID</div>
+                  <div class="slds-truncate">
+                      {field.Approver__r.Employee_ID__c.value}
+                  </div>
+                </li>
+                <li class="slds-page-header__detail-block">
+                  <div class="slds-text-title slds-truncate" title="Field 3">Email</div>
+                  <div class="slds-truncate">
+                      {field.Approver__r.Email__c.value}
+                  </div>
+                </li>
+                <li class="slds-page-header__detail-block">
+                  <div class="slds-text-title slds-truncate" title="Field 4">Mobile Phone</div>
+                  <div class="slds-truncate">
+                      {field.Approver__r.Mobile_Phone__c.value}
+                  </div>
+                </li>
+              </ul>
+            </div>
           </div>
-        </div>
+        </template>
+        <template if:true={mobileSupport}>
+          <div class="slds-region_narrow" style="width:360px">
+            <dl class="slds-dl_horizontal">
+              <dt class="slds-dl_horizontal__label">Employee ID</dt>
+              <dd class="slds-dl_horizontal__detail">{field.Approver__r.Employee_ID__c.value}</dd>
+              <dt class="slds-dl_horizontal__label">Email</dt>
+              <dd class="slds-dl_horizontal__detail">{field.Approver__r.Email__c.value}</dd>
+              <dt class="slds-dl_horizontal__label">Mobile Phone</dt>
+              <dd class="slds-dl_horizontal__detail">{field.Approver__r.Mobile_Phone__c.value}</dd>
+            </dl>
+          </div>
+        </template>        
       </div>
     </template>
   </div>

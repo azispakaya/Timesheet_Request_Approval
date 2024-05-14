@@ -2,13 +2,14 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:46:12
- * @modify date 2024-03-24 15:46:39
+ * @modify date 2024-05-14 15:03:55
  * @desc [Controller for Header Information]
  */
 
 import { LightningElement, api, wire } from 'lwc';
 import { gql, graphql } from "lightning/uiGraphQLApi";
 import employee from "@salesforce/apex/lwc_ApprovalTimesheetController.ApproverName"
+import FORM_FACTOR from "@salesforce/client/formFactor"
 
 export default class PageHeaderTimesheetApproval extends LightningElement {
 
@@ -17,6 +18,8 @@ export default class PageHeaderTimesheetApproval extends LightningElement {
     errors
     @api recordId
     employeId
+    desktopSupport
+    mobileSupport
 
     @wire(graphql, {
         query : gql`
@@ -88,6 +91,13 @@ export default class PageHeaderTimesheetApproval extends LightningElement {
         .then((res)=>{
             this.employeId = res.split(';')[1];
         })
+
+        if(FORM_FACTOR == 'Large'){
+            this.desktopSupport = true
+        }else{
+            this.mobileSupport = true
+        }
+        
     }
 
     get variables(){
