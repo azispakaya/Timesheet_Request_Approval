@@ -320,7 +320,19 @@
           </div>
           <div class="slds-no-flex">
             <lightning-button-group>
-              <lightning-combobox style="width: min-content; margin-top: -20px;" name="objectApi" value={selectedPicklist} placeholder="Select Type ...." options={PicklistObject} onchange={handleObject}></lightning-combobox>
+              <!-- <lightning-combobox style="width: min-content; margin-top: -20px;" name="objectApi" value={selectedPicklist} placeholder="Select Type ...." options={PicklistObject} onchange={handleObject}></lightning-combobox> -->
+              <lightning-button-menu 
+                alternative-text="Show menu"
+                icon-name="utility:down"
+                icon-size="xx-small"
+                label="Add"
+                onclick={addNewHandler}
+                variant="bare"
+              >
+                <lightning-menu-item value="Project" label="Project"></lightning-menu-item>
+                <lightning-menu-item value="Case" label="Case"></lightning-menu-item>
+                <lightning-menu-item value="POC" label="POCe"></lightning-menu-item>
+              </lightning-button-menu>
               <lightning-button label="Add" title="Add New Entry" icon-name="utility:add" icon-position="left" onclick={addNewHandler}></lightning-button>
               <lightning-button label="Save" variant="brand-outline" onclick={saveTimesheet}></lightning-button>
               <lightning-button label="Submit" variant="brand" onclick={submitTimesheet}></lightning-button>
