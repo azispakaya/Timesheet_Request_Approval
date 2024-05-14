@@ -39,18 +39,21 @@
         
           <div class="slds-page-header__row slds-page-header__row_gutters">
             <div class="slds-page-header__col-details">
-
               <template if:true={mobileSupport}>
-                <div class="slds-region_narrow slds-m-botton_small" style="width:360px; background-color:antiquewhite;">
-                  <dl class="slds-dl_horizontal">
-                    <dt class="slds-dl_horizontal__label">Employee ID</dt>
-                    <dd class="slds-dl_horizontal__detail">{field.Approver__r.Employee_ID__c.value}</dd>
-                    <dt class="slds-dl_horizontal__label">Email</dt>
-                    <dd class="slds-dl_horizontal__detail">{field.Approver__r.Email__c.value}</dd>
-                    <dt class="slds-dl_horizontal__label">Mobile Phone</dt>
-                    <dd class="slds-dl_horizontal__detail">{field.Approver__r.Mobile_Phone__c.value}</dd>
-                  </dl>
-                </div>
+                <ul class="slds-page-header__detail-row">
+                  <li class="slds-page-header__detail-block">
+                    <div class="slds-region_narrow slds-m-botton_small" style="width:360px;">
+                      <dl class="slds-dl_horizontal">
+                        <dt class="slds-dl_horizontal__label">Employee ID</dt>
+                        <dd class="slds-dl_horizontal__detail">{field.Approver__r.Employee_ID__c.value}</dd>
+                        <dt class="slds-dl_horizontal__label">Email</dt>
+                        <dd class="slds-dl_horizontal__detail">{field.Approver__r.Email__c.value}</dd>
+                        <dt class="slds-dl_horizontal__label">Mobile Phone</dt>
+                        <dd class="slds-dl_horizontal__detail">{field.Approver__r.Mobile_Phone__c.value}</dd>
+                      </dl>
+                    </div>
+                  </li>
+                </ul>
               </template>  
               
               <template if:true={desktopSupport}>
