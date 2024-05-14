@@ -64,15 +64,21 @@
           </div>
         </template>
         <template if:true={mobileSupport}>
-          <div class="slds-region_narrow" style="width:360px">
-            <dl class="slds-dl_horizontal">
-              <dt class="slds-dl_horizontal__label">Employee ID</dt>
-              <dd class="slds-dl_horizontal__detail">{field.Approver__r.Employee_ID__c.value}</dd>
-              <dt class="slds-dl_horizontal__label">Email</dt>
-              <dd class="slds-dl_horizontal__detail">{field.Approver__r.Email__c.value}</dd>
-              <dt class="slds-dl_horizontal__label">Mobile Phone</dt>
-              <dd class="slds-dl_horizontal__detail">{field.Approver__r.Mobile_Phone__c.value}</dd>
-            </dl>
+          <div class="slds-page-header__row slds-page-header__row_gutters"> 
+            <div class="slds-page-header__col-details">
+              <div class="slds-page-header__detail-row">
+                <div class="slds-region_narrow" style="width:360px">
+                  <dl class="slds-dl_horizontal">
+                    <dt class="slds-dl_horizontal__label">Employee ID</dt>
+                    <dd class="slds-dl_horizontal__detail">{field.Approver__r.Employee_ID__c.value}</dd>
+                    <dt class="slds-dl_horizontal__label">Email</dt>
+                    <dd class="slds-dl_horizontal__detail">{field.Approver__r.Email__c.value}</dd>
+                    <dt class="slds-dl_horizontal__label">Mobile Phone</dt>
+                    <dd class="slds-dl_horizontal__detail">{field.Approver__r.Mobile_Phone__c.value}</dd>
+                  </dl>
+              </div>
+            </div>
+          </div>
           </div>
         </template>        
       </div>
