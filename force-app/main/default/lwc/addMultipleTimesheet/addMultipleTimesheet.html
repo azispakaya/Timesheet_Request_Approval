@@ -272,11 +272,13 @@
     <!-- !Footer -->
     <div class="slds-modal__footer">
       <div class="slds-grid">
-        <div>
-          <span>
-            <button class={classBtnCancel} onclick={cancelHandler} style="display: block;"> Cancel </button>
-          </span>
-        </div>
+        <template if:true={desktopSupport}>
+          <div>
+            <span>
+              <button class="slds-button slds-button_neutral  slds-m-horizontal_xx-small" onclick={cancelHandler} style="display: block;"> Cancel </button>
+            </span>
+          </div>
+        </template>
         <div class="slds-col_bump-left">
           <span>
             <lightning-combobox class="slds-m-horizontal_xx-small" style="width: min-content; margin-top: -15px;" name="objectApi" value={selectedPicklist} placeholder="Select Type ...." options={PicklistObject} onchange={handleObject}></lightning-combobox>
