@@ -321,13 +321,15 @@
           <div class="slds-no-flex">
             <lightning-button-group>
               <lightning-button label="Add" title="Add New Entry" icon-name="utility:add" icon-position="left" class="slds-m-horizontal_xx-small" onclick={addNewHandler}></lightning-button>
-              <lightning-button label="Save" class="slds-m-horizontal_xx-small slds-button slds-button_neutral" onclick={saveTimesheet}></lightning-button>
-              <lightning-button label="Submit" class="slds-m-horizontal_xx-small slds-button slds-button_brand" onclick={submitTimesheet}></lightning-button>
-              <lightning-button-menu alternative-text="Show menu" variant="border-filled">
-                <lightning-menu-item label="Menu Item One" value="menuOne"></lightning-menu-item>
-                <lightning-menu-item label="Menu Item Two" value="menuTwo"></lightning-menu-item>
-                <lightning-menu-item label="Menu Item Three" value="menuThree"></lightning-menu-item>
+              <lightning-combobox class="slds-m-horizontal_xx-small" style="width: min-content; margin-top: -15px;" name="objectApi" value={selectedPicklist} placeholder="Select Type ...." options={PicklistObject} onchange={handleObject}></lightning-combobox>
+              <lightning-button-menu alternative-text="Timesheet Type" variant="border-filled">
+                <lightning-menu-item label="Project" value="Project"></lightning-menu-item>
+                <lightning-menu-item label="Case" value="Case"></lightning-menu-item>
+                <lightning-menu-item label="POC" value="POC"></lightning-menu-item>
               </lightning-button-menu>
+              <lightning-button label="Save" class="slds-m-horizontal_xx-small" variant="brand-outline" onclick={saveTimesheet}></lightning-button>
+              <lightning-button label="Submit" class="slds-m-horizontal_xx-small" variant="brand" onclick={submitTimesheet}></lightning-button>
+              
             </lightning-button-group>
           </div>
         </header>
