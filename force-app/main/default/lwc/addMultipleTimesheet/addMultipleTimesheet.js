@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:40:38
- * @modify date 2024-05-14 10:37:33
+ * @modify date 2024-05-14 10:46:05
  * @desc [Controller for Add multiple Timehseet]
  */
 import {
@@ -74,9 +74,9 @@ export default class AddMultipleTimesheet extends LightningElement {
         
         if(FORM_FACTOR == 'Large'){
             this.formFactorClass = 'slds-grid slds-grid_align-space'
+            this.desktopSupport = true
         }else{
             this.formFactorClass = 'slds-grid slds-grid_vertical'
-            this.desktopSupport = true
         }
     }
 
