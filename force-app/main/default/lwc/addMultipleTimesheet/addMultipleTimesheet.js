@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:40:38
- * @modify date 2024-05-14 13:46:44
+ * @modify date 2024-05-14 13:54:41
  * @desc [Controller for Add multiple Timehseet]
  */
 import {
@@ -253,6 +253,22 @@ export default class AddMultipleTimesheet extends LightningElement {
     }
 
     //* Button Function
+
+    setPOCHandler(){
+        this.selectedPicklist = 'POC'
+        this.addNewHandler()
+    }
+
+    setProjectHandler(){
+        this.selectedPicklist = 'Project'
+        this.addNewHandler()
+    }
+    
+    setCaseHandler(){
+        this.selectedPicklist = 'Case'
+        this.addNewHandler()
+    }
+
     addNewHandler(event) {
         
         if(this.timesheets.length > 4){
@@ -260,18 +276,8 @@ export default class AddMultipleTimesheet extends LightningElement {
             return
         }
 
-        let typeTimesheet
-        let itemValue = event.detail.value
-        if(itemValue == 'Case'){
-            typeTimesheet = 'Case'
-        }else if(itemValue == 'Project'){
-            typeTimesheet = 'Project'
-        }else if(itemValue == 'POC'){
-            typeTimesheet = 'POC'
-        }else{
-            typeTimesheet = this.selectedPicklist
-        }
-        
+        let typeTimesheet = this.selectedPicklist
+
         if (typeTimesheet == 'Project') {
             this.listProjects.push({
                 tempId: Date.now()
