@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:40:38
- * @modify date 2024-05-14 13:21:14
+ * @modify date 2024-05-14 13:46:44
  * @desc [Controller for Add multiple Timehseet]
  */
 import {
@@ -261,8 +261,13 @@ export default class AddMultipleTimesheet extends LightningElement {
         }
 
         let typeTimesheet
-        if(event.detail.value == 'Case'){
+        let itemValue = event.detail.value
+        if(itemValue == 'Case'){
             typeTimesheet = 'Case'
+        }else if(itemValue == 'Project'){
+            typeTimesheet = 'Project'
+        }else if(itemValue == 'POC'){
+            typeTimesheet = 'POC'
         }else{
             typeTimesheet = this.selectedPicklist
         }
