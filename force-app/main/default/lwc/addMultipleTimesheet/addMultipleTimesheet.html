@@ -307,9 +307,10 @@
     <div class="slds-card">
 
       <!-- * CARD HEADER -->
-      <div class="slds-card__header slds-grid">
+      
+      <div class="slds-card__header slds-grid slds-einstein-header">
         <header class="slds-media slds-media_center slds-has-flexi-truncate">
-          <div class="slds-media__figure">
+          <div class="slds-einstein-header__figure">
           </div>
           <div class="slds-media__body">
             <h2 class="slds-card__header-title">
@@ -329,7 +330,7 @@
                 label="Add"
               >
                 <lightning-menu-item value="Project" label="Project" onclick={setProjectHandler}></lightning-menu-item>
-                <lightning-menu-item value="Case" label="Case" onclick={setCasehandler}></lightning-menu-item>
+                <lightning-menu-item value="Case" label="Case" onclick={setCaseHandler}></lightning-menu-item>
                 <lightning-menu-item value="POC" label="POC" onclick={setPOCHandler}></lightning-menu-item>
               </lightning-button-menu>
               <!-- <lightning-button label="Add" title="Add New Entry" icon-name="utility:add" icon-position="left" onclick={addNewHandler}></lightning-button> -->
