@@ -85,7 +85,8 @@ public without sharing class lwc_RequestTimesheetController {
 
             if (projectMember.size() > 0) {
 
-                responData = String.valueOf(projectMember[0].Project__r.Name) + ',' + String.valueOf(projectMember[0].Project__r.SPK__c)+','+projectMember[0].Project__c;
+                String ProjectName = String.valueOf(projectMember[0].Project__r.Name).replace(',','');
+                responData =  ProjectName+ ',' + String.valueOf(projectMember[0].Project__r.SPK__c)+','+projectMember[0].Project__c;
 
             }else{
                 List<Project__c> project = [
@@ -99,7 +100,8 @@ public without sharing class lwc_RequestTimesheetController {
                 ];
                 if(project.size() > 0){
 
-                    responData = String.valueOf(project[0].Name) + ',' + String.valueOf(project[0].SPK__c)+','+project[0].Id;
+                    String ProjectName = String.valueOf(project[0].Name).replace(',','');
+                    responData = ProjectName + ',' + String.valueOf(project[0].SPK__c)+','+project[0].Id;
 
                 }
             }

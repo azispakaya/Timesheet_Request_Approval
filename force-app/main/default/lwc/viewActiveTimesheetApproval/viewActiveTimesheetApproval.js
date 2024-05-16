@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:45:40
- * @modify date 2024-04-09 21:48:31
+ * @modify date 2024-05-13 14:20:03
  * @desc [Controller for List Timesheet Approval  Page] 
  */
 
@@ -16,6 +16,7 @@ import {
 import modalEditLine from 'c/modalCommentTimesheet';
 import modalConfirmation from 'c/modalConfirmationPage'
 import { NavigationMixin } from 'lightning/navigation';
+import form_factor from "@salesforce/client/formFactor";
 
 export default class ViewActiveTimesheetApproval extends NavigationMixin (LightningElement) {
 
@@ -43,6 +44,8 @@ export default class ViewActiveTimesheetApproval extends NavigationMixin (Lightn
     projectRecordId;
     employeeRecordId;
     sortName;
+    mobileSupport
+    desktopSupport
   
 
     @wire(graphql, {
@@ -172,6 +175,11 @@ export default class ViewActiveTimesheetApproval extends NavigationMixin (Lightn
             this.ApproverId = res.split(';')[1];
             this.ApprovalStatus = this.selectedApprovalStatus
         })
+        if(form_factor == 'Large'){
+            this.desktopSupport = true
+        }else{
+            this.mobileSupport = true
+        }
 
         let currentDate = new Date().toJSON().slice(0, 10);
         const date = new Date();

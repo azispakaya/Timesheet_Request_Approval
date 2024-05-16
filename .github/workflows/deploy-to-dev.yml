@@ -1,0 +1,25 @@
+name: Deploy to Dev
+
+on:
+  push:
+    paths:
+      - 'force-app/**'
+    branches: 
+      - 'Dev-*'
+
+jobs:
+    Deploy-To-Developer:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v2
+          with:
+            fetch-depth: 0
+        - name: install cli sfdx
+          run: |
+            npm install @salesforce/cli --global
+        - name: login to salesforce dev
+          run: |
+            sfdx org login sfdx-url --set-default --sfdx-url-file <(echo "${{ secrets.SFDX_AUTH_URL_SANDBOX }}") --alias devOrg
+        - name: deploy source code
+          run: |
+            sf project deploy start --ignore-conflicts -o devOrg -m ApexClass -m LightningComponentBundle
