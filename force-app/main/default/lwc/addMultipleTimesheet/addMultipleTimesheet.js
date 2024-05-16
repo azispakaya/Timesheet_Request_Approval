@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:40:38
- * @modify date 2024-05-06 21:41:36
+ * @modify date 2024-05-14 13:54:41
  * @desc [Controller for Add multiple Timehseet]
  */
 import {
@@ -51,7 +51,8 @@ export default class AddMultipleTimesheet extends LightningElement {
     employeName = null
 
     formFactorClass = 'slds-grid slds-grid_align-space'
-    classBtnCancel = 'slds-button slds-button_neutral  slds-m-horizontal_xx-small slds-visible'
+    mobileSupport
+    desktopSupport
 
     get PicklistObject() {
         return [{
@@ -70,6 +71,14 @@ export default class AddMultipleTimesheet extends LightningElement {
     }
     connectedCallback() {
         this.isVisible = true
+        
+        if(FORM_FACTOR == 'Large'){
+            this.formFactorClass = 'slds-grid slds-grid_align-space'
+            this.desktopSupport = true
+        }else{
+            this.formFactorClass = 'slds-grid slds-grid_vertical'
+            this.mobileSupport = true
+        }
     }
 
     //* Field Handling
@@ -244,22 +253,31 @@ export default class AddMultipleTimesheet extends LightningElement {
     }
 
     //* Button Function
+
+    setPOCHandler(){
+        this.selectedPicklist = 'POC'
+        this.addNewHandler()
+    }
+
+    setProjectHandler(){
+        this.selectedPicklist = 'Project'
+        this.addNewHandler()
+    }
+    
+    setCaseHandler(){
+        this.selectedPicklist = 'Case'
+        this.addNewHandler()
+    }
+
     addNewHandler(event) {
-
-        if(FORM_FACTOR == 'Large'){
-            this.formFactorClass = 'slds-grid slds-grid_align-space'
-            this.classBtnCancel = 'slds-button slds-button_neutral  slds-m-horizontal_xx-small slds-visible'
-        }else{
-            this.formFactorClass = 'slds-grid slds-grid_vertical'
-            this.classBtnCancel = 'slds-button slds-button_neutral  slds-m-horizontal_xx-small slds-hidden'
-        }
-
+        
         if(this.timesheets.length > 4){
             this.toast("You've reached the maximum limit of entries. You can't add more than 5 entries.", 'error', 'Invalid')
             return
         }
 
         let typeTimesheet = this.selectedPicklist
+
         if (typeTimesheet == 'Project') {
             this.listProjects.push({
                 tempId: Date.now()
