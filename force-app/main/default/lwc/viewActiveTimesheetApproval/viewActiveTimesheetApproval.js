@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:45:40
- * @modify date 2024-05-17 15:30:14
+ * @modify date 2024-05-17 20:51:17
  * @desc [Controller for List Timesheet Approval  Page] 
  */
 
@@ -390,10 +390,11 @@ export default class ViewActiveTimesheetApproval extends NavigationMixin (Lightn
 
         let singleTimesheet = []
         const timesheetId = event.target.dataset.id
+        const timesheetNumber = event.target.dataset.label
 
         
         const resultComment = await modalEditLine.open({
-            headerLabel: 'Add Comment',
+            headerLabel: ''+timesheetNumber,
             // timesheets: this.draftTimesheet
         })
 
