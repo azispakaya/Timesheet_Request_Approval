@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:45:40
- * @modify date 2024-05-17 15:27:31
+ * @modify date 2024-05-17 15:30:14
  * @desc [Controller for List Timesheet Approval  Page] 
  */
 
@@ -71,14 +71,13 @@ export default class ViewActiveTimesheetApproval extends NavigationMixin (Lightn
                                 ]},
                                 {Approval_Status__c:{eq : $ApprovalStatus}},
                                 {Start_Date__c:{ gte:{value: $startDate}}},
-                                {End_Date__c : {lte:{value: $endDate}}},
-                                not :{
-                                    Employee__c :{
-                                        eq : ""
-                                    }
+                                {End_Date__c : {lte:{value: $endDate}}}
+                            ],
+                            not :{
+                                Employee__c :{
+                                    eq : ""
                                 }
-
-                            ]
+                            }
                         }
                         orderBy :{
                             Start_Date__c: {
