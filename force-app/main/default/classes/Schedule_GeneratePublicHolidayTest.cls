@@ -92,4 +92,5 @@ private class Schedule_GeneratePublicHolidayTest {
         st.execute(null);
 
         Test.stopTest();
+    }
 }
