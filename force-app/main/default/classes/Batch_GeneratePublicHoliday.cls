@@ -30,7 +30,7 @@ public class Batch_GeneratePublicHoliday implements Database.Batchable<sObject> 
         Project__c Pro_holiday = [
             SELECT Id, SPK__c FROM Project__c WHERE SPK__c ='MSI006' LIMIT 1
         ];
-        List<Timesheet__c> CreateTimesheet;
+        List<Timesheet__c> CreateTimesheet = new List<Timesheet__c>();
 
         if(listHoliday.size() > 0){
             for(Employee__c singleEmployee : scope){
