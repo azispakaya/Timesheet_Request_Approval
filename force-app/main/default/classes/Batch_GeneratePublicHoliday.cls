@@ -13,11 +13,25 @@ public class Batch_GeneratePublicHoliday implements Database.Batchable<sObject> 
 
     public Database.QueryLocator start(Database.BatchableContext BC) {
         return Database.getQueryLocator([
-            SELECT Id From User
+            SELECT Id, Employee_ID__c, Name, Email__c
+            FROM Employee__c
+            WHERE Active__c = true AND Timesheet_User__c = true
+            
         ]);
     }
 
-    public void execute(Database.BatchableContext BC, List<sObject> scope) {
+    public void execute(Database.BatchableContext BC, List<Employee__c> scope) {
+        List<Holiday> listHoliday = [
+            SELECT Id, Name, ActivityDate 
+            FROM Holiday
+            WHERE ActivityDate = :System.Date()
+        ];
+        
+        if(listHoliday.size() > 0){
+            for(Employee__c singleEmployee : scope){
+                
+            }
+        }
     }
 
     public void finish(Database.BatchableContext BC) {
