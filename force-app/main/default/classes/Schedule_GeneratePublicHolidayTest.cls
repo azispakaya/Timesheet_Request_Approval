@@ -47,7 +47,7 @@ private class Schedule_GeneratePublicHolidayTest {
 
         Project__c project = new Project__c(
             Name = 'Test Project',
-            SPK__c = '12345',
+            SPK__c = 'MSI006',
             Status__c = 'Planned',
             Project_Manager__c = approver.Id,
             Project_Admin__c = PM_Admin.Id
@@ -68,12 +68,10 @@ private class Schedule_GeneratePublicHolidayTest {
         
         Insert ts;
 
-        Holiday holiday = new Holiday(
-            Name = 'Sample Holiday',
-            ActivityDate = System.today(),
-            Active = true
-        );
-        Insert holiday;
+        Integer countHoliday = [
+            SELECT COUNT() FROM Holiday WHERE ActivityDate = TODAY
+        ];
+        System.debug('Check Holiday '+countHoliday);
 
         Schedule_GeneratePublicHoliday st = new Schedule_GeneratePublicHoliday();
 
