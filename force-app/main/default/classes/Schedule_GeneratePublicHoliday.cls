@@ -4,6 +4,7 @@
  * @create date 2024-05-20 20:06:31
  * @modify date 2024-05-20 20:06:31
  * @desc [Schedule for Generate Public Holiday]
+ * @test Class [Schedule_GeneratePublicHolidayTest]
  */
 
 public class Schedule_GeneratePublicHoliday implements Schedulable {

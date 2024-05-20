@@ -1,29 +1,86 @@
 /**
- * This class contains unit tests for validating the behavior of Apex classes
- * and triggers.
- *
- * Unit tests are class methods that verify whether a particular piece
- * of code is working properly. Unit test methods take no arguments,
- * commit no data to the database, and are flagged with the testMethod
- * keyword in the method definition.
- *
- * All test methods in an org are executed whenever Apex code is deployed
- * to a production org to confirm correctness, ensure code
- * coverage, and prevent regressions. All Apex classes are
- * required to have at least 75% code coverage in order to be deployed
- * to a production org. In addition, all triggers must have some code coverage.
- * 
- * The @isTest class annotation indicates this class only contains test
- * methods. Classes defined with the @isTest annotation do not count against
- * the org size limit for all Apex scripts.
- *
- * See the Apex Language Reference for more information about Testing and Code Coverage.
+ * @author [AcekBecek]
+ * @email [nurazispakaya16@mail.com]
+ * @create date 2024-05-20 20:55:30
+ * @modify date 2024-05-20 20:55:30
+ * @desc [Test Class for Schedule Public Holiday]
  */
+
 @isTest
 private class Schedule_GeneratePublicHolidayTest {
 
     @isTest
-    static void myUnitTest() {
-        // TO DO: implement unit test
+    static void testGeneratePublicHoliday() {
+
+        Employee__c approver = new Employee__c(
+            Name = 'Project Manager',
+            Email__c = 'approver@test.com',
+            Active__c = true,
+            Role__c = 'Project Manager',
+            Employee_ID__c = 'E001',
+            Mobile_Phone__c = '087217313',
+            Timesheet_Approver__c = true
+        );
+        Insert approver;
+
+        Employee__c staff = new Employee__c(
+            Name = 'Employee Name',
+            Email__c = 'approver@test.com',
+            Employee_ID__c = 'E002',
+            Active__c = true,
+            Role__c = 'Engineer',
+            Mobile_Phone__c = '087217313',
+            Timesheet_User__c = true
+        );
+        Insert staff;
+
+        Employee__c PM_Admin = new Employee__c(
+            Name = 'Project Admin',
+            Email__c = 'approver@test.com',
+            Employee_ID__c = 'E003',
+            Active__c = true,
+            Role__c = 'Project Admin',
+            Mobile_Phone__c = '087217313',
+            Timesheet_User__c = true
+        );
+        Insert PM_Admin;
+
+        Project__c project = new Project__c(
+            Name = 'Test Project',
+            SPK__c = '12345',
+            Status__c = 'Planned',
+            Project_Manager__c = approver.Id,
+            Project_Admin__c = PM_Admin.Id
+        );
+        Insert Project;
+
+        Timesheet__c ts = new Timesheet__c(
+            Project__c = project.Id,
+            Approval_Status__c = 'Fully Approved',
+            Start_Date__c = Date.today(),
+            End_Date__c = Date.today(),
+            Remarks__c = 'Test Remarks',
+            Timesheet_Approver__c = approver.Id,
+            Timesheet_Approver_Optional__c = PM_Admin.Id,
+            Employee__c = staff.Id,
+            Time__c = '8'
+        );
+        
+        Insert ts;
+
+        Holiday holiday = new Holiday(
+            Name = 'Sample Holiday',
+            ActivityDate = System.today(),
+            Active = true
+        );
+        Insert holiday;
+
+        Schedule_GeneratePublicHoliday st = new Schedule_GeneratePublicHoliday();
+
+        Test.startTest();
+
+        st.execute(null);
+
+        Test.stopTest();
     }
 }
