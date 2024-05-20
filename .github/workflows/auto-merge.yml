@@ -1,6 +1,5 @@
 name: Auto Merge Pull Request
 
-
 on:
     pull_request_review:
         types: [submitted]
@@ -12,11 +11,13 @@ jobs:
         steps:
             - name: Checkout Repos
               uses: actions/checkout@v2
+
+            - name: Print GitHub Context
+              run: echo "${{ toJson(github) }}"
             
             - name: Auto Merge PR
-              uses: pascalgn/automerge-action@v0.14.3
-              env: 
-                GITHUB_TOKEN: ${{secrets.PERSONAL_ACCESS_TOKEN}}
+              uses: peter-evans/enable-pull-request-automerge@v2
               with:
-                mergeMethod: 'squash'
-
+                token: ${{secrets.PERSONAL_ACCESS_TOKEN}}
+                pull-request-number: ${{ github.event.pull_request.number }}
+                merge-method: squash
