@@ -40,12 +40,18 @@
                 WHERE Approval_Status__c = 'Need to Revise' AND Employee__c =: singleEmployee.Id
             ];
 
-            String subject = 'Timesheet - '+String.valueOf(Date.today())+ ' : '+String.valueOf(sumApproved)+'/'+String.valueOf(sumReject)+'/'+String.valueOf(sumRevise)+' Timesheets Approved/Rejected/Revised';
+            Integer sumDraft = [
+                SELECT COUNT() FROM Timesheet__c
+                WHERE Approval_Status__c = 'Draft' AND Employee__c =: singleEmployee.Id
+            ];
+
+            String subject = 'Timesheet - '+String.valueOf(Date.today())+ ' : '+String.valueOf(sumDraft)+'/'+String.valueOf(sumApproved)+'/'+String.valueOf(sumReject)+'/'+String.valueOf(sumRevise)+' Timesheets Approved/Rejected/Revised';
             String Body = 'Dear ' + singleEmployee.Name + ',\n\n' +
-            'I trust this email finds you well. I am writing to inform you of the status of timesheets. As of today, ' + String.valueOf(Date.today()) + ', we have processed the following timesheets:\n' +
+            'I trust this email finds you well. I am writing to inform you of the status of timesheets. As of today, ' + String.valueOf(Date.today()) + ', we have processed the following timesheets:\n\n' +
+            String.valueOf(sumDraft) + ' timesheets still in draft.\n'+
             String.valueOf(sumApproved) + ' timesheets have been approved.\n' +
             String.valueOf(sumReject) + ' timesheets have been rejected.\n' +
-            String.valueOf(sumRevise) + ' timesheets have been revised.\n' +
+            String.valueOf(sumRevise) + ' timesheets have been revised.\n\n' +
             'Please review the details of the approved, rejected, and revised timesheets accordingly. If you have any questions or require further clarification regarding these actions, please don\'t hesitate to reach out to us.\n' +
             'Thank you for your attention to this matter.\n\n' +
             'Best regards,\n' +
