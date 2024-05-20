@@ -12,7 +12,7 @@ public class Batch_GeneratePublicHoliday implements Database.Batchable<sObject> 
     }
 
     public Database.QueryLocator start(Database.BatchableContext BC) {
-        return Database.QueryLocator([
+        return Database.getQueryLocator([
             SELECT Id From User
         ]);
     }
