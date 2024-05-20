@@ -10,6 +10,7 @@
 private class Schedule_GeneratePublicHolidayTest {
 
     @isTest
+
     static void testGeneratePublicHoliday() {
 
         Employee__c approver = new Employee__c(
@@ -91,5 +92,4 @@ private class Schedule_GeneratePublicHolidayTest {
         st.execute(null);
 
         Test.stopTest();
-    }
 }
