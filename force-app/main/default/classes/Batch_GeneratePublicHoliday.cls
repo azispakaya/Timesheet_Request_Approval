@@ -4,7 +4,6 @@
  * @create date 2024-05-20 10:02:29
  * @modify date 2024-05-20 10:02:29
  * @desc [Generate Timesheet Public Holiday for All Timesheet Users]
- * @test class [Schedule_GeneratePublicHolidayTest]
  */
 
 public class Batch_GeneratePublicHoliday implements Database.Batchable<sObject> {
