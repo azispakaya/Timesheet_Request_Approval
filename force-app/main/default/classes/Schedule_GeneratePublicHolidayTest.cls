@@ -45,6 +45,17 @@ private class Schedule_GeneratePublicHolidayTest {
         );
         Insert PM_Admin;
 
+        Employee__c AutomatedUser = new Employee__c(
+            Name = 'Automated Process',
+            Email__c = 'approver@test.com',
+            Employee_ID__c = 'ADM101',
+            Active__c = true,
+            Role__c = 'Management',
+            Mobile_Phone__c = '087217313',
+            Timesheet_Approver__c = true
+        );
+        Insert AutomatedUser;
+
         Project__c project = new Project__c(
             Name = 'Test Project',
             SPK__c = 'MSI006',
