@@ -24,13 +24,28 @@ public class Batch_GeneratePublicHoliday implements Database.Batchable<sObject> 
         List<Holiday> listHoliday = [
             SELECT Id, Name, ActivityDate 
             FROM Holiday
-            WHERE ActivityDate = :System.Date()
+            WHERE ActivityDate = :System.today()
         ];
-        
+
+        Project__c Pro_holiday = [
+            SELECT Id, SPK__c FROM Project WHERE SPK__c ='MSI006' LIMIT 1
+        ];
+        List<Timesheet__c> CreateTimesheet;
+
         if(listHoliday.size() > 0){
             for(Employee__c singleEmployee : scope){
-                
+                CreateTimesheet.add(
+                    new Timesheet__c(
+                        Employee__c = singleEmployee.Id,
+                        Email__c = singleEmployee.Email__c,
+                        Start_Date__c = listHoliday[0].ActivityDate,
+                        End_Date__c = listHoliday[0].ActivityDate,
+                        Time__c = '8',
+                        Remarks__c = 'Public Holiday - '+listHoliday[0].Name
+                    )
+                );
             }
+            Database.insert(CreateTimesheet);
         }
     }
 
