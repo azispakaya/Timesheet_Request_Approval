@@ -30,6 +30,11 @@ public class Batch_GeneratePublicHoliday implements Database.Batchable<sObject> 
         Project__c Pro_holiday = [
             SELECT Id, SPK__c FROM Project__c WHERE SPK__c ='MSI006' LIMIT 1
         ];
+
+        Employee__c AutomatedUser = [
+            SELECT Id, Name, Employee_ID__c FROM Employee__c WHERE Employee_ID__c = 'ADM101'
+        ];
+
         List<Timesheet__c> CreateTimesheet = new List<Timesheet__c>();
 
         if(listHoliday.size() > 0){
@@ -42,7 +47,10 @@ public class Batch_GeneratePublicHoliday implements Database.Batchable<sObject> 
                         End_Date__c = listHoliday[0].ActivityDate,
                         Time__c = '8',
                         Remarks__c = 'Public Holiday - '+listHoliday[0].Name,
-                        Project__c = Pro_holiday.Id
+                        Project__c = Pro_holiday.Id,
+                        Approval_Status__c = 'Fully Approved',
+                        Action_By__c = AutomatedUser.Id,
+                        Action_Date__c = listHoliday[0].ActivityDate
                     )
                 );
             }
