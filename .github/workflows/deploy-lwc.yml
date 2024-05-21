@@ -1,4 +1,4 @@
-name: Deploy Apex Class
+name: Deploy LWC
 
 on:
   push:
@@ -14,7 +14,7 @@ jobs:
         - uses: actions/checkout@v2
           with:
             fetch-depth: 0
-          
+
         - name: Cache Salesforce CLI
           id: cache-sfdx
           uses: actions/cache@v2
@@ -22,8 +22,8 @@ jobs:
             path: ~/.local/share/sfdx
             key: sfdx-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
             restore-keys: |
-             sfdx-${{ runner.os }}-
-          
+                sfdx-${{ runner.os }}-
+        
         - name: Install Salesforce CLI if not cached
           if: steps.cache-sfdx.outputs.cache-hit != 'true'
           run: |
@@ -32,6 +32,7 @@ jobs:
         - name: Login to Salesforce Dev
           run: |
             sfdx org login sfdx-url --set-default --sfdx-url-file <(echo "${{ secrets.SFDX_AUTH_URL_SANDBOX }}") --alias devOrg
-        - name: deploy source code
+        
+        - name: Deploy Source Code
           run: |
-            sf project deploy start --ignore-conflicts -o devOrg -m ApexClass
+            sf project deploy start --ignore-conflicts -o devOrg -m LightningComponentBundle
