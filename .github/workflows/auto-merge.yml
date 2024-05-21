@@ -1,0 +1,23 @@
+name: Auto Merge Pull Request
+
+on:
+    pull_request_review:
+        types: [submitted]
+
+jobs:
+    auto-merge:
+        runs-on: ubuntu-latest
+        if: github.event.review.state == 'approved'
+        steps:
+            - name: Checkout Repos
+              uses: actions/checkout@v2
+
+            - name: Print GitHub Context
+              run: echo "${{ toJson(github) }}"
+            
+            - name: Auto Merge PR
+              uses: peter-evans/enable-pull-request-automerge@v2
+              with:
+                token: ${{secrets.PERSONAL_ACCESS_TOKEN}}
+                pull-request-number: ${{ github.event.pull_request.number }}
+                merge-method: squash
