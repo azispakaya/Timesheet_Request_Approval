@@ -3,7 +3,7 @@ name: Deploy LWC
 on:
   push:
     paths:
-      - 'force-app/lwc/**'
+      - 'force-app/main/default/lwc/**'
     branches: 
       - 'Dev-*'
 

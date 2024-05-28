@@ -3,7 +3,7 @@ name: Deploy Apex Class
 on:
   push:
     paths:
-      - 'force-app/class/**'
+      - 'force-app/main/default/class/**'
     branches: 
       - 'Dev-*'
 
