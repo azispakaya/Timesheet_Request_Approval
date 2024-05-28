@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:40:38
- * @modify date 2024-05-28 12:36:06
+ * @modify date 2024-05-28 13:36:42
  * @desc [Controller for Add multiple Timehseet]
  */
 import {
@@ -303,6 +303,10 @@ export default class AddMultipleTimesheet extends LightningElement {
             })
         } else if (typeTimesheet == 'POC') {
             this.listPOCs.push({
+                tempId: Date.now()
+            })
+        }else if(typeTimesheet == 'Opportunity'){
+            this.listOpportunities.oush({
                 tempId: Date.now()
             })
         }
