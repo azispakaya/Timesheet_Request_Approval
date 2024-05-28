@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:40:38
- * @modify date 2024-05-28 17:11:00
+ * @modify date 2024-05-28 17:13:26
  * @desc [Controller for Add multiple Timehseet]
  */
 import {
@@ -53,7 +53,7 @@ export default class AddMultipleTimesheet extends LightningElement {
     fieldApiName = 'Project__c'
 
     employeName = null
-    employeeRole
+    employeeRole = true
 
     formFactorClass = 'slds-grid slds-grid_align-space'
     mobileSupport
@@ -80,6 +80,7 @@ export default class AddMultipleTimesheet extends LightningElement {
            const empRole = data.split(';')[2]
 
            if(empRole == 'Presales'){
+                this.employeeRole = false 
                 this.selectedPicklist = 'Opportunity'
                 this.PicklistObject = [
                     {
