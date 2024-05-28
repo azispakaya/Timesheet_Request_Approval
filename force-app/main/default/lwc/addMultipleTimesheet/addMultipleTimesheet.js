@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:40:38
- * @modify date 2024-05-28 16:30:15
+ * @modify date 2024-05-28 17:11:00
  * @desc [Controller for Add multiple Timehseet]
  */
 import {
@@ -337,6 +337,11 @@ export default class AddMultipleTimesheet extends LightningElement {
     
     setCaseHandler(){
         this.selectedPicklist = 'Case'
+        this.addNewHandler()
+    }
+
+    setOptyHandler(){
+        this.selectedPicklist = 'Opportunity'
         this.addNewHandler()
     }
 
