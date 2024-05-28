@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:40:38
- * @modify date 2024-05-28 17:13:26
+ * @modify date 2024-05-28 22:19:22
  * @desc [Controller for Add multiple Timehseet]
  */
 import {
@@ -78,9 +78,8 @@ export default class AddMultipleTimesheet extends LightningElement {
     PicName({ error, data }) {
         if (data) {
            const empRole = data.split(';')[2]
-
            if(empRole == 'Presales'){
-                this.employeeRole = false 
+                this.employeeRole = false
                 this.selectedPicklist = 'Opportunity'
                 this.PicklistObject = [
                     {
