@@ -2,8 +2,9 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:41:27
- * @modify date 2024-03-24 15:41:27
+ * @modify date 2024-05-28 15:16:18
  * @desc [Controller for Request Timesheet using multiple Method]
+ * @desc [Function for Convert OptyId]
  */
 public without sharing class lwc_RequestTimesheetController {
     @AuraEnabled
@@ -36,14 +37,14 @@ public without sharing class lwc_RequestTimesheetController {
 
     }
 
-    @AuraEnabled
+    @AuraEnabled(cacheable=true)
     public static string convertEmployeeID(String RecordID, String render) {
 
         System.debug('Employee SFID ' + RecordID);
 
         try {
             list<Employee__c> employee = [
-                SELECT Id, Name, Employee_ID__c, Email__c FROM Employee__c WHERE Id =: RecordID LIMIT 1
+                SELECT Id, Name, Employee_ID__c, Email__c, Role__c FROM Employee__c WHERE Id =: RecordID LIMIT 1
             ];
             if (employee.size() > 0) {
                 
@@ -52,7 +53,7 @@ public without sharing class lwc_RequestTimesheetController {
                 }else if(render == 'apex'){
                     return employee[0].Employee_ID__c;
                 }else{
-                    return employee[0].Employee_ID__c+';'+employee[0].Email__c;
+                    return employee[0].Employee_ID__c+';'+employee[0].Email__c+';'+employee[0].Role__c;
                 }
 
             }
@@ -202,5 +203,31 @@ public without sharing class lwc_RequestTimesheetController {
 
         return responseData;
 
+    }
+
+    @AuraEnabled
+    public static string convertOpportuniyId(String OptyID, String memberId){
+        String responseData = '400;null';
+
+        List<Opportunity_Divide__c> listOpty = [
+            SELECT Id, Name__c, Opportunity__c, Opportunity__r.Name, Opportunity__r.SPK__c
+            FROM Opportunity_Divide__c
+            WHERE Opportunity__c =: OptyID AND Name__c =: memberId
+        ];
+        
+        List < Project__c > BusDev = [
+                SELECT Id, Name, SPK__c FROM Project__c WHERE SPK__c = 'MSI001'
+                LIMIT 1
+        ];
+
+        if(listOpty.size()>0){
+
+            responseData = '200;'+ listOpty[0].Opportunity__r.Name + ',' + BusDev[0].Name + ',' + listOpty[0].Opportunity__r.SPK__c+','+BusDev[0].Id;
+        }else{
+            responseData = '401; not Assign to Opportunity';
+        }
+
+
+        return responseData;
     }
 }
