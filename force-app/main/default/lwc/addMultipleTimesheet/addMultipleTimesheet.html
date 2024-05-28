@@ -124,7 +124,44 @@
   
       <template lwc:else>
         <div class="slds-modal__content slds-p-around_medium slds-scrollable_y scrollable-size" id="modal-content-id-1">
-  
+          
+          <!-- ! Opportunity -->
+          <template for:each={listOpportunities} for:item="timesheet">
+            <div key={timesheet.tempId}>
+              <lightning-card variant="base">
+                <div>
+                  <div class={formFactorClass}>
+                      <div class="slds-col slds-m-around_xx-small">
+                        <span>
+                          <lightning-record-edit-form density="comfy" object-api-name="Order">
+                            <lightning-input-field class="validated" field-name="OpportunityId" variant="standard" onchange={fieldChangeHandler} name="opty_name" data-tempid={timesheet.tempId} required></lightning-input-field>
+                          </lightning-record-edit-form>
+                        </span>
+                      </div>
+                      <div class="slds-col slds-size-1-of-8 slds-m-around_xx-small">
+                        <span>
+                          <lightning-input class="validated" type="date" name="date" onchange={fieldChangeHandler} data-tempid={timesheet.tempId} label="Date" required></lightning-input>
+                        </span>
+                      </div>
+                    <div class="slds-col slds-size-1-of-8 slds-m-around_xx-small">
+                      <span>
+                        <lightning-input class="validated" type="number" name="stime" onchange={fieldChangeHandler} data-tempid={timesheet.tempId} label="Time" required></lightning-input>
+                      </span>
+                    </div>
+                    <div class="slds-col slds-size-2-of-8 slds-m-around_xx-small">
+                      <span>
+                        <lightning-textarea class="validated" max-length="255" name="temp_remark" placeholder="type here..." variant="standard" onblur={fieldChangeHandler} data-tempid={timesheet.tempId} label="Remarks" required></lightning-textarea>
+                      </span>
+                    </div>
+                    <div class="slds-col slds-size-1-of-8 slds-m-around_xxx-small slds-p-top_large">
+                      <lightning-icon class="custom-icon-btn" icon-name="utility:delete" alternative-text="Remove" size="small" onclick={removeHandler} data-tempid={timesheet.tempId} data-entitytype="poc"></lightning-icon>
+                    </div>
+                  </div>
+                </div>
+              </lightning-card>
+            </div>
+          </template>
+
           <!-- ! Projects -->
           <template for:each={listProjects} for:item="timesheet">
             <div key={timesheet.tempId}>

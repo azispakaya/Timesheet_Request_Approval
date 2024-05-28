@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:40:38
- * @modify date 2024-05-14 13:54:41
+ * @modify date 2024-05-28 12:36:06
  * @desc [Controller for Add multiple Timehseet]
  */
 import {
@@ -32,6 +32,7 @@ export default class AddMultipleTimesheet extends LightningElement {
     @track listProjects = []
     @track listCases = []
     @track listPOCs = []
+    @track listOpportunities = []
 
     @track countHours = 0
     @track isLoading = false
@@ -43,6 +44,7 @@ export default class AddMultipleTimesheet extends LightningElement {
     showproject = true
     showcase = false
     showpoc = false
+    showOpty = false
     classProject = 'slds-col slds-size_2-of-8 slds-m-around_small'
 
     selectedPicklist = 'Project'
@@ -66,6 +68,10 @@ export default class AddMultipleTimesheet extends LightningElement {
             {
                 label: 'POC',
                 value: 'POC'
+            },
+            {
+                label: 'Opportunity',
+                value: 'Opportunity'
             },
         ]
     }
@@ -93,15 +99,24 @@ export default class AddMultipleTimesheet extends LightningElement {
                 this.showproject = true
                 this.showcase = false
                 this.showpoc = false
+                this.showOpty = false
             } else if (this.selectedPicklist == 'Case') {
                 this.classProject = 'slds-col slds-size_1-of-8 slds-m-around_small'
                 this.showproject = false
                 this.showcase = true
                 this.showpoc = false
+                this.showOpty = false
+            }else if (this.selectedPicklist == 'Opportunity') {
+                this.classProject = 'slds-col slds-size_1-of-8 slds-m-around_small'
+                this.showproject = false
+                this.showcase = false
+                this.showpoc = false
+                this.showOpty = true
             } else {
                 this.showproject = false
                 this.showcase = false
                 this.showpoc = true
+                this.showOpty = false
             }
         }
 
