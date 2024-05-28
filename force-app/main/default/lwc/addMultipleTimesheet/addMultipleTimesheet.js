@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:40:38
- * @modify date 2024-05-28 13:36:42
+ * @modify date 2024-05-28 13:49:00
  * @desc [Controller for Add multiple Timehseet]
  */
 import {
@@ -306,16 +306,17 @@ export default class AddMultipleTimesheet extends LightningElement {
                 tempId: Date.now()
             })
         }else if(typeTimesheet == 'Opportunity'){
-            this.listOpportunities.oush({
+            this.listOpportunities.push({
                 tempId: Date.now()
             })
         }
 
-        this.timesheets = this.listProjects.concat(this.listCases, this.listPOCs)
+        this.timesheets = this.listProjects.concat(this.listCases, this.listPOCs, this.listOpportunities)
         this.isVisible = false
         if (this.timesheets.length > 0) {
             this.toast('Succesfully Add new Timesheet Entry', 'success', 'Info')
         }
+        // console.log(this.timesheets)
 
     }
 
