@@ -124,7 +124,44 @@
   
       <template lwc:else>
         <div class="slds-modal__content slds-p-around_medium slds-scrollable_y scrollable-size" id="modal-content-id-1">
-  
+          
+          <!-- ! Opportunity -->
+          <template for:each={listOpportunities} for:item="timesheet">
+            <div key={timesheet.tempId}>
+              <lightning-card variant="base">
+                <div>
+                  <div class={formFactorClass}>
+                      <div class="slds-col slds-m-around_xx-small">
+                        <span>
+                          <lightning-record-edit-form density="comfy" object-api-name="Order">
+                            <lightning-input-field class="validated" field-name="OpportunityId" variant="standard" onchange={fieldChangeHandler} name="opty_name" data-tempid={timesheet.tempId} required></lightning-input-field>
+                          </lightning-record-edit-form>
+                        </span>
+                      </div>
+                      <div class="slds-col slds-size-1-of-8 slds-m-around_xx-small">
+                        <span>
+                          <lightning-input class="validated" type="date" name="date" onchange={fieldChangeHandler} data-tempid={timesheet.tempId} label="Date" required></lightning-input>
+                        </span>
+                      </div>
+                    <div class="slds-col slds-size-1-of-8 slds-m-around_xx-small">
+                      <span>
+                        <lightning-input class="validated" type="number" name="stime" onchange={fieldChangeHandler} data-tempid={timesheet.tempId} label="Time" required></lightning-input>
+                      </span>
+                    </div>
+                    <div class="slds-col slds-size-2-of-8 slds-m-around_xx-small">
+                      <span>
+                        <lightning-textarea class="validated" max-length="255" name="temp_remark" placeholder="type here..." variant="standard" onblur={fieldChangeHandler} data-tempid={timesheet.tempId} label="Remarks" required></lightning-textarea>
+                      </span>
+                    </div>
+                    <div class="slds-col slds-size-1-of-8 slds-m-around_xxx-small slds-p-top_large">
+                      <lightning-icon class="custom-icon-btn" icon-name="utility:delete" alternative-text="Remove" size="small" onclick={removeHandler} data-tempid={timesheet.tempId} data-entitytype="opty"></lightning-icon>
+                    </div>
+                  </div>
+                </div>
+              </lightning-card>
+            </div>
+          </template>
+
           <!-- ! Projects -->
           <template for:each={listProjects} for:item="timesheet">
             <div key={timesheet.tempId}>
@@ -143,16 +180,6 @@
                           <lightning-input class="validated" type="date" name="date" onchange={fieldChangeHandler} data-tempid={timesheet.tempId} label="Date" required></lightning-input>
                         </span>
                       </div>
-                    <!-- <div class="slds-col slds-size-1-of-8 slds-m-around_xx-small">
-                      <span>
-                        <lightning-input class="validated" type="date" name="start_date" onblur={fieldChangeHandler} data-tempid={timesheet.tempId} label="Start Date" required></lightning-input>
-                      </span>
-                    </div>
-                    <div class="slds-col slds-size-1-of-8 slds-m-around_xx-small">
-                      <span>
-                        <lightning-input class="validated" type="date" name="end_date" onblur={fieldChangeHandler} data-tempid={timesheet.tempId} label="End Date" required></lightning-input>
-                      </span>
-                    </div> -->
                     <div class="slds-col slds-size-1-of-8 slds-m-around_xx-small">
                       <span>
                         <lightning-input class="validated" type="number" name="stime" onchange={fieldChangeHandler} data-tempid={timesheet.tempId} label="Time" required></lightning-input>
@@ -190,16 +217,6 @@
                           <lightning-input class="validated" type="date" name="date" onchange={fieldChangeHandler} data-tempid={timesheet.tempId} label="Date" required></lightning-input>
                         </span>
                       </div>
-                    <!-- <div class="slds-col slds-size-1-of-8 slds-m-around_xx-small">
-                      <span>
-                        <lightning-input class="validated" type="date" name="start_date" onblur={fieldChangeHandler} data-tempid={timesheet.tempId} label="Start Date" required></lightning-input>
-                      </span>
-                    </div>
-                    <div class="slds-col slds-size-1-of-8 slds-m-around_xx-small">
-                      <span>
-                        <lightning-input class="validated" type="date" name="end_date" onblur={fieldChangeHandler} data-tempid={timesheet.tempId} label="End Date" required></lightning-input>
-                      </span>
-                    </div> -->
                     <div class="slds-col slds-size-1-of-8 slds-m-around_xx-small">
                       <span>
                         <lightning-input class="validated" type="number" name="stime" onchange={fieldChangeHandler} data-tempid={timesheet.tempId} label="Time" required></lightning-input>
@@ -237,16 +254,6 @@
                           <lightning-input class="validated" type="date" name="date" onchange={fieldChangeHandler} data-tempid={timesheet.tempId} label="Date" required></lightning-input>
                         </span>
                       </div>
-                    <!-- <div class="slds-col slds-size-1-of-8 slds-m-around_xx-small">
-                      <span>
-                        <lightning-input class="validated" type="date" name="start_date" onblur={fieldChangeHandler} data-tempid={timesheet.tempId} label="Start Date" required></lightning-input>
-                      </span>
-                    </div>
-                    <div class="slds-col slds-size-1-of-8 slds-m-around_xx-small">
-                      <span>
-                        <lightning-input class="validated" type="date" name="end_date" onblur={fieldChangeHandler} data-tempid={timesheet.tempId} label="End Date" required></lightning-input>
-                      </span>
-                    </div> -->
                     <div class="slds-col slds-size-1-of-8 slds-m-around_xx-small">
                       <span>
                         <lightning-input class="validated" type="number" name="stime" onchange={fieldChangeHandler} data-tempid={timesheet.tempId} label="Time" required></lightning-input>
@@ -289,7 +296,7 @@
           </div>
           <div>
             <span>
-              <button class="slds-m-horizontal_xx-small slds-button slds-button_neutral" onclick={saveTimesheet} > Save </button>
+              <button class="slds-m-horizontal_xx-small slds-button slds-button_neutral" onclick={saveTimesheet} > Save to Draft </button>
             </span>
           </div>
           <div>
@@ -322,9 +329,12 @@
           <div class="slds-no-flex">
             <lightning-button-group>
               <lightning-button-menu alternative-text="Add Timesheet" icon-name="utility:down" icon-size="Medium" variant="base" label="Add">
-                <lightning-menu-item value="Project" label="Project" onclick={setProjectHandler}></lightning-menu-item>
-                <lightning-menu-item value="Case" label="Case" onclick={setCaseHandler}></lightning-menu-item>
+                <template if:true={employeeRole}>
+                  <lightning-menu-item value="Project" label="Project" onclick={setProjectHandler}></lightning-menu-item>
+                  <lightning-menu-item value="Case" label="Case" onclick={setCaseHandler}></lightning-menu-item>
+                </template>
                 <lightning-menu-item value="POC" label="POC" onclick={setPOCHandler}></lightning-menu-item>
+                <lightning-menu-item value="Opportunity" label="Opportunity" onclick={setOptyHandler}></lightning-menu-item>
               </lightning-button-menu>
               <lightning-button label="Save" variant="brand-outline" onclick={saveTimesheet}></lightning-button>
               <lightning-button label="Submit" variant="brand" onclick={submitTimesheet}></lightning-button>
@@ -439,6 +449,44 @@
       <!-- !form input -->
       <template lwc:else>
         <div class="slds-modal__content slds-p-around_medium slds-scrollable_y scrollable-size">
+
+          <!-- ! Opportunity -->
+          <template for:each={listOpportunities} for:item="timesheet">
+            <div key={timesheet.tempId}>
+              <lightning-card variant="base">
+                <div>
+                  <div class={formFactorClass}>
+                      <div class="slds-col slds-m-around_xx-small">
+                        <span>
+                          <lightning-record-edit-form density="comfy" object-api-name="Order">
+                            <lightning-input-field class="validated" field-name="OpportunityId" variant="standard" onchange={fieldChangeHandler} name="opty_name" data-tempid={timesheet.tempId} required></lightning-input-field>
+                          </lightning-record-edit-form>
+                        </span>
+                      </div>
+                      <div class="slds-col slds-size-1-of-8 slds-m-around_xx-small">
+                        <span>
+                          <lightning-input class="validated" type="date" name="date" onchange={fieldChangeHandler} data-tempid={timesheet.tempId} label="Date" required></lightning-input>
+                        </span>
+                      </div>
+                    <div class="slds-col slds-size-1-of-8 slds-m-around_xx-small">
+                      <span>
+                        <lightning-input class="validated" type="number" name="stime" onchange={fieldChangeHandler} data-tempid={timesheet.tempId} label="Time" required></lightning-input>
+                      </span>
+                    </div>
+                    <div class="slds-col slds-size-2-of-8 slds-m-around_xx-small">
+                      <span>
+                        <lightning-textarea class="validated" max-length="255" name="temp_remark" placeholder="type here..." variant="standard" onblur={fieldChangeHandler} data-tempid={timesheet.tempId} label="Remarks" required></lightning-textarea>
+                      </span>
+                    </div>
+                    <div class="slds-col slds-size-1-of-8 slds-m-around_xxx-small slds-p-top_large">
+                      <lightning-icon class="custom-icon-btn" icon-name="utility:delete" alternative-text="Remove" size="small" onclick={removeHandler} data-tempid={timesheet.tempId} data-entitytype="project"></lightning-icon>
+                    </div>
+                  </div>
+                </div>
+              </lightning-card>
+            </div>
+          </template>
+
           <!-- ! Projects -->
           <template for:each={listProjects} for:item="timesheet">
             <div key={timesheet.tempId}>
@@ -457,16 +505,6 @@
                           <lightning-input class="validated" type="date" name="date" onchange={fieldChangeHandler} data-tempid={timesheet.tempId} label="Date" required></lightning-input>
                         </span>
                       </div>
-                    <!-- <div class="slds-col slds-size-1-of-8 slds-m-around_xx-small">
-                      <span>
-                        <lightning-input class="validated" type="date" name="start_date" onblur={fieldChangeHandler} data-tempid={timesheet.tempId} label="Start Date" required></lightning-input>
-                      </span>
-                    </div>
-                    <div class="slds-col slds-size-1-of-8 slds-m-around_xx-small">
-                      <span>
-                        <lightning-input class="validated" type="date" name="end_date" onblur={fieldChangeHandler} data-tempid={timesheet.tempId} label="End Date" required></lightning-input>
-                      </span>
-                    </div> -->
                     <div class="slds-col slds-size-1-of-8 slds-m-around_xx-small">
                       <span>
                         <lightning-input class="validated" type="number" name="stime" onchange={fieldChangeHandler} data-tempid={timesheet.tempId} label="Time" required></lightning-input>
@@ -504,16 +542,6 @@
                           <lightning-input class="validated" type="date" name="date" onchange={fieldChangeHandler} data-tempid={timesheet.tempId} label="Date" required></lightning-input>
                         </span>
                       </div>
-                    <!-- <div class="slds-col slds-size-1-of-8 slds-m-around_xx-small">
-                      <span>
-                        <lightning-input class="validated" type="date" name="start_date" onblur={fieldChangeHandler} data-tempid={timesheet.tempId} label="Start Date" required></lightning-input>
-                      </span>
-                    </div>
-                    <div class="slds-col slds-size-1-of-8 slds-m-around_xx-small">
-                      <span>
-                        <lightning-input class="validated" type="date" name="end_date" onblur={fieldChangeHandler} data-tempid={timesheet.tempId} label="End Date" required></lightning-input>
-                      </span>
-                    </div> -->
                     <div class="slds-col slds-size-1-of-8 slds-m-around_xx-small">
                       <span>
                         <lightning-input class="validated" type="number" name="stime" onchange={fieldChangeHandler} data-tempid={timesheet.tempId} label="Time" required></lightning-input>
@@ -551,16 +579,6 @@
                           <lightning-input class="validated" type="date" name="date" onchange={fieldChangeHandler} data-tempid={timesheet.tempId} label="Date" required></lightning-input>
                         </span>
                       </div>
-                    <!-- <div class="slds-col slds-size-1-of-8 slds-m-around_xx-small">
-                      <span>
-                        <lightning-input class="validated" type="date" name="start_date" onblur={fieldChangeHandler} data-tempid={timesheet.tempId} label="Start Date" required></lightning-input>
-                      </span>
-                    </div>
-                    <div class="slds-col slds-size-1-of-8 slds-m-around_xx-small">
-                      <span>
-                        <lightning-input class="validated" type="date" name="end_date" onblur={fieldChangeHandler} data-tempid={timesheet.tempId} label="End Date" required></lightning-input>
-                      </span>
-                    </div> -->
                     <div class="slds-col slds-size-1-of-8 slds-m-around_xx-small">
                       <span>
                         <lightning-input class="validated" type="number" name="stime" onchange={fieldChangeHandler} data-tempid={timesheet.tempId} label="Time" required></lightning-input>

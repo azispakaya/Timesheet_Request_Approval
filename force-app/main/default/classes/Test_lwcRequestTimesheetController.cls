@@ -2,8 +2,8 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-26 18:00:47
- * @modify date 2024-03-26 18:00:47
- * @desc [description]
+ * @modify date 2024-05-29 09:13:34
+ * @LastModify [Adding test Method for ConvertOpportunity]
  */
 @isTest
 private class Test_lwcRequestTimesheetController {
@@ -130,6 +130,33 @@ private class Test_lwcRequestTimesheetController {
             POC__c = poc.Id
         );
         Insert pocMember;
+
+        Opportunity opty = new Opportunity(
+            Name = 'Test Opportunty',
+            CloseDate = System.today(),
+            StageName = 'Gathering Requirements',
+            AccountId = account.Id
+        );
+        Insert opty;
+
+        Employee__c presales = new Employee__c(
+            Employee_ID__c = '12346',
+            Name = 'Test Acek Prsales',
+            Email__c = 'test@gmail.com',
+            Role__c = 'Presales',
+            Active__c = true,
+            Department__c = 'Presales',
+            Grade__c = 'TL8',
+            Unit__c = 'Project - Wireless'
+        );
+        Insert presales;
+
+        Opportunity_Divide__c optyDivide = new Opportunity_Divide__c(
+            Role__c = 'Presales',
+            Name__c = presales.Id,
+            Opportunity__c = opty.Id
+        );
+        Insert optyDivide;
         
         //! Define Test Data
         Project__c projectObject = [
@@ -156,6 +183,14 @@ private class Test_lwcRequestTimesheetController {
             SELECT Id FROM Employee__c WHERE Role__c ='Engineer' LIMIT 1
         ];
 
+        Employee__c presalesEmp = [
+            SELECT Id FROM Employee__c WHERE Role__c = 'Presales' LIMIT 1
+        ];
+
+        Opportunity optyList = [
+            SELECT Id FROM Opportunity LIMIT 1
+        ];
+
         String listTimesheet = '[{"tempId":1707657464743,"project_name":"Test Project","spk":"MSI-LKS","type":"project","start_date":"2024-02-09","end_date":"2024-02-09","stime":"8","temp_remark":"Test","pic_name":"981901","billable":"1","remark":"MSI-LKS - Test"}]';
 
         Test.startTest();
@@ -179,6 +214,10 @@ private class Test_lwcRequestTimesheetController {
         // * checking POC Members Based on Employee
         lwc_RequestTimesheetController.convertPOCNumber(pocObject.Id, engineer.Id);
         lwc_RequestTimesheetController.convertPOCNumber(pocObject.Id, pm.Id);
+
+        // * Checking Opportunity Based on Opportunity
+        lwc_RequestTimesheetController.convertOpportuniyId(optyList.Id, presalesEmp.Id);
+
 
         Test.setMock(HttpCalloutMock.class, new Mock_Timesheetv2());
         lwc_RequestTimesheetController.submitTimesheet(listTimesheet);
