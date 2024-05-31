@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:40:38
- * @modify date 2024-05-28 22:19:22
+ * @modify date 2024-05-31 08:57:59
  * @desc [Controller for Add multiple Timehseet]
  */
 import {
@@ -83,13 +83,18 @@ export default class AddMultipleTimesheet extends LightningElement {
                 this.selectedPicklist = 'Opportunity'
                 this.PicklistObject = [
                     {
-                        label: 'POC',
-                        value: 'POC'
-                    },
-                    {
                         label: 'Opportunity',
                         value: 'Opportunity'
                     },
+                    {
+                        label: 'Project',
+                        value: 'Project'
+                    },
+                    {
+                        label: 'POC',
+                        value: 'POC'
+                    }
+                    
                 ]
            }else{
                 this.selectedPicklist = 'Project'
