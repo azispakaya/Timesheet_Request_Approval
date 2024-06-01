@@ -191,7 +191,7 @@ public without sharing class lwc_RequestTimesheetController {
                     FROM POC__c
                     WHERE 
                     Id =: pocId
-                    AND Project_Manager__c =: memberId
+                    AND (Project_Manager__c =: memberId OR Presales__c = :memberId)
                     LIMIT 1
                 ];
                 if(listPoc.size() > 0){
