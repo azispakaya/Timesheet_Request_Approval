@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:40:38
- * @modify date 2024-06-01 16:07:34
+ * @modify date 2024-06-04 20:50:07
  * @desc [Controller for Add multiple Timehseet]
  */
 import {
@@ -298,8 +298,10 @@ export default class AddMultipleTimesheet extends LightningElement {
                     
                     let checkHours = this.validateField(fieldName, fieldValue);
                     if(checkHours =='valid'){
+                        timesheetRow[fieldName] = fieldValue 
                         this.countHours = this.sumTotalHours(this.timesheets)
-                        timesheetRow[fieldName] = fieldValue    
+                        // console.log('totalHours:', this.countHours);
+                        // console.log('Timesheets:', JSON.stringify(this.timesheets))
                     }else{
                         this.toast(checkHours, 'error', 'Hours Invalid!!')
                     }
