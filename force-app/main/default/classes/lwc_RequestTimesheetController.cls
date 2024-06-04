@@ -191,7 +191,7 @@ public without sharing class lwc_RequestTimesheetController {
                     FROM POC__c
                     WHERE 
                     Id =: pocId
-                    AND Project_Manager__c =: memberId
+                    AND (Project_Manager__c =: memberId OR Presales__c = :memberId)
                     LIMIT 1
                 ];
                 if(listPoc.size() > 0){
@@ -210,12 +210,19 @@ public without sharing class lwc_RequestTimesheetController {
     public static string convertOpportuniyId(String OptyID, String memberId){
         String responseData = '400;null';
 
-        List<Opportunity_Divide__c> listOpty = [
-            SELECT Id, Name__c, Opportunity__c, Opportunity__r.Name, Opportunity__r.SPK__c
-            FROM Opportunity_Divide__c
-            WHERE Opportunity__c =: OptyID AND Name__c =: memberId
-        ];
+        // List<Opportunity_Divide__c> listOpty = [
+        //     SELECT Id, Name__c, Opportunity__c, Opportunity__r.Name, Opportunity__r.SPK__c
+        //     FROM Opportunity_Divide__c
+        //     WHERE Opportunity__c =: OptyID AND Name__c =: memberId
+        // ];
         
+        List<Opportunity> listOpty = [
+            SELECT Id, Name, SPK__c
+            FROM Opportunity
+            WHERE Id =: OptyID
+            LIMIT 1
+        ];
+
         List < Project__c > BusDev = [
                 SELECT Id, Name, SPK__c FROM Project__c WHERE SPK__c = 'MSI001'
                 LIMIT 1
@@ -223,7 +230,7 @@ public without sharing class lwc_RequestTimesheetController {
 
         if(listOpty.size()>0){
 
-            responseData = '200;'+ listOpty[0].Opportunity__r.Name + ',' + BusDev[0].Name + ',' + listOpty[0].Opportunity__r.SPK__c+','+BusDev[0].Id;
+            responseData = '200;'+ listOpty[0].Name + ',' + BusDev[0].Name + ',' + listOpty[0].SPK__c+','+BusDev[0].Id;
         }else{
             responseData = '401; not Assign to Opportunity';
         }
