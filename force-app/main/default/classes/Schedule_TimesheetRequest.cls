@@ -16,7 +16,7 @@ global class Schedule_TimesheetRequest implements Schedulable {
         
 
         Batch_TimesheetRequest batch = new Batch_TimesheetRequest();
-        ID batchprocessid = Database.executeBatch(batch, 200);
+        ID batchprocessid = Database.executeBatch(batch, 50);
 
     }
 
