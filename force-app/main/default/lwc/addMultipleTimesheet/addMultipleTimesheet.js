@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:40:38
- * @modify date 2024-06-04 20:50:07
+ * @modify date 2024-06-11 10:26:54
  * @desc [Controller for Add multiple Timehseet]
  */
 import {
@@ -77,7 +77,9 @@ export default class AddMultipleTimesheet extends LightningElement {
     @wire(convertPicName, { RecordID : '$recordId', render:'submit'})
     PicName({ error, data }) {
         if (data) {
+           
            const empRole = data.split(';')[2]
+           this.employeName = data.split(';')[3]
            if(empRole == 'Presales'){
                 this.employeeRole = false
                 this.selectedPicklist = 'Opportunity'
