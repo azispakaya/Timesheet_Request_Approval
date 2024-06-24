@@ -54,7 +54,7 @@ public without sharing class lwc_RequestTimesheetController {
                 }else if(render == 'apex'){
                     return employee[0].Employee_ID__c;
                 }else{
-                    return employee[0].Employee_ID__c+';'+employee[0].Email__c+';'+employee[0].Role__c;
+                    return employee[0].Employee_ID__c+';'+employee[0].Email__c+';'+employee[0].Role__c+';'+employee[0].Name;
                 }
 
             }

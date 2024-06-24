@@ -49,9 +49,7 @@ public class Batch_GeneratePublicHoliday implements Database.Batchable<sObject> 
                         Time__c = '8',
                         Remarks__c = 'Public Holiday - '+listHoliday[0].Name,
                         Project__c = Pro_holiday.Id,
-                        Approval_Status__c = 'Fully Approved',
-                        Action_By__c = AutomatedUser.Id,
-                        Action_Date__c = listHoliday[0].ActivityDate
+                        Approval_Status__c = 'Waiting for Approval'
                     )
                 );
             }

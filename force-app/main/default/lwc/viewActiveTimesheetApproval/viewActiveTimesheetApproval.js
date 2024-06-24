@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:45:40
- * @modify date 2024-05-17 20:51:17
+ * @modify date 2024-06-19 15:41:15
  * @desc [Controller for List Timesheet Approval  Page] 
  */
 
@@ -453,8 +453,8 @@ export default class ViewActiveTimesheetApproval extends NavigationMixin (Lightn
             type: 'standard__recordPage',
             attributes: {
                 actionName : 'view',
-                objectApiName : event.target?.dataset.objectname,
-                recordId : event.target?.dataset.id
+                objectApiName : event.currentTarget.dataset.objectName,
+                recordId : event.currentTarget.dataset.id
             }
         });
     }
