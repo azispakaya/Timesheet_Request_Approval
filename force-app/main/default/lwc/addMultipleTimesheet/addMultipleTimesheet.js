@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:40:38
- * @modify date 2024-06-19 22:33:11
+ * @modify date 2024-06-24 15:40:50
  * @desc [Controller for Add multiple Timehseet]
  */
 import {
@@ -173,6 +173,7 @@ export default class AddMultipleTimesheet extends LightningElement {
         if (timesheetRow) {
             switch (fieldName) {
                 case 'case':
+                    timesheetRow['ObjectRecordId'] = fieldValue
                     convertCaseNumber({
                             caseId: fieldValue,
                             memberId: this.recordId
@@ -206,6 +207,7 @@ export default class AddMultipleTimesheet extends LightningElement {
                     break;
 
                 case 'project_name':
+                    timesheetRow['ObjectRecordId'] = fieldValue
                     convertProjectName({
                             ProjectID: (event.detail.value)[0],
                             memberId: this.recordId
@@ -237,6 +239,7 @@ export default class AddMultipleTimesheet extends LightningElement {
                     break;
 
                 case 'poc_name':
+                    timesheetRow['ObjectRecordId'] = fieldValue
                     convertPOCNumber({
                             pocId: fieldValue,
                             memberId: this.recordId
@@ -271,7 +274,7 @@ export default class AddMultipleTimesheet extends LightningElement {
                     break;
                     
                 case 'opty_name' :
-                    
+                    timesheetRow['ObjectRecordId'] = fieldValue
                     convertOpportunityId({
                         OptyID: fieldValue,
                         memberId: this.recordId
@@ -506,14 +509,14 @@ export default class AddMultipleTimesheet extends LightningElement {
                 this.toast(`Failed to request timesheet with error: ${resMSG.split(':')[1]}`, 'error', 'Error');
                 this.isLoading = false
             }
-            // console.log(JSON.parse(resSubmit));
+            // console.log('Response Apex => '+JSON.stringify(resSubmit));
             // console.log(setApprovalStatus)
         } catch (error) {
             console.error('Error:', error);
             this.toast('An error occurred while processing the request.', 'error', 'Error!!');
         }
 
-        // console.log(JSON.stringify(this.timesheets))
+        // console.log('Timesheet => '+JSON.stringify(this.timesheets))
     }
 
     //* validation Fields
