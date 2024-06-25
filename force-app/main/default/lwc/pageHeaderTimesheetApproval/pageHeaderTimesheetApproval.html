@@ -13,12 +13,12 @@
               <div class="slds-media__body">
                 <div class="slds-page-header__name">
                   <div class="slds-page-header__name-title">
-                    <h1>
-                      <span class="slds-page-header__title slds-truncate" title="Acme - 1,200 Widgets">{field.Approver__r.Name.value}</span>
+                    <h2>
                       <span>
-                        {field.Approver__r.Role__c.value}
+                        Timesheet Approver
                       </span>
-                    </h1>
+                      <span class="slds-page-header__title slds-truncate" title={field.Approver__r.Name.value}>{field.Approver__r.Name.value}</span>
+                    </h2>
                   </div>
                 </div>
               </div>
@@ -29,7 +29,6 @@
               <div class="slds-page-header__control">
                 <ul class="slds-button-group-list">
                   <li>
-                    <!-- <button class="slds-button slds-button_neutral">View</button> -->
                   </li>
                 </ul>
               </div>
@@ -59,21 +58,34 @@
               <template if:true={desktopSupport}>
                 <ul class="slds-page-header__detail-row">
                   <li class="slds-page-header__detail-block">
-                    <div class="slds-text-title slds-truncate" title="Field 1">Employee ID</div>
+                    <div class="slds-text-title slds-truncate" title="Employee ID">Employee ID</div>
                     <div class="slds-truncate">
                         {field.Approver__r.Employee_ID__c.value}
                     </div>
                   </li>
                   <li class="slds-page-header__detail-block">
-                    <div class="slds-text-title slds-truncate" title="Field 3">Email</div>
+                    <div class="slds-text-title slds-truncate" title="Email">Email</div>
                     <div class="slds-truncate">
-                        {field.Approver__r.Email__c.value}
+                      <lightning-formatted-email 
+                        value={field.Approver__r.Email__c.value}
+                        hide-icon="true"
+                        label=""
+                      ></lightning-formatted-email>
                     </div>
                   </li>
                   <li class="slds-page-header__detail-block">
-                    <div class="slds-text-title slds-truncate" title="Field 4">Mobile Phone</div>
+                    <div class="slds-text-title slds-truncate" title="Mobile Phone">Mobile Phone</div>
                     <div class="slds-truncate">
-                        {field.Approver__r.Mobile_Phone__c.value}
+                      <lightning-formatted-phone 
+                        value={field.Approver__r.Mobile_Phone__c.value}
+                        label="Mobile Phone"
+                      ></lightning-formatted-phone>
+                    </div>
+                  </li>
+                  <li>
+                    <div class="slds-text-title" title="Role">Role</div>
+                    <div class="slds-truncate">
+                      {field.Approver__r.Role__c.value}
                     </div>
                   </li>
                 </ul>

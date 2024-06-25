@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:45:40
- * @modify date 2024-06-19 15:41:15
+ * @modify date 2024-06-25 15:03:29
  * @desc [Controller for List Timesheet Approval  Page] 
  */
 
@@ -24,6 +24,7 @@ export default class ViewActiveTimesheetApproval extends NavigationMixin (Lightn
     totalCountRecord = 0
     errors
     @api recordId
+    @api objectApiName
     ApproverName
     ApproverId
     ApprovalStatus
@@ -31,7 +32,7 @@ export default class ViewActiveTimesheetApproval extends NavigationMixin (Lightn
     isVisible
     after = null
     pageInfo
-    showRecord = 5
+    showRecord = 15
     hasNext = true
     hasPrev = true
     setStartDate
@@ -46,6 +47,7 @@ export default class ViewActiveTimesheetApproval extends NavigationMixin (Lightn
     sortName;
     mobileSupport
     desktopSupport
+    timesheetApproverId
   
 
     @wire(graphql, {
@@ -134,6 +136,12 @@ export default class ViewActiveTimesheetApproval extends NavigationMixin (Lightn
                                         value
                                     }
                                 }
+                                Account_Name__c{
+                                    value
+                                }
+                                Account_Id__c{
+                                    value
+                                }
                             }
                             cursor
                         }
@@ -143,6 +151,29 @@ export default class ViewActiveTimesheetApproval extends NavigationMixin (Lightn
                             endCursor
                             hasNextPage
                             hasPreviousPage
+                        }
+                    }
+                }
+                query{
+                    Timesheet_Approval__c(
+                        where:{
+                            Approver__c:{
+                                eq : $ApproverName
+                            }
+                        }
+                    ){
+                        edges{
+                            node{
+                                Id
+                                Name{
+                                    value
+                                }
+                                Approver__r{
+                                    Name{
+                                        value
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -160,6 +191,7 @@ export default class ViewActiveTimesheetApproval extends NavigationMixin (Lightn
           this.pageInfo = data.uiapi.query?.Timesheet__c?.pageInfo
           this.hasNext = this.pageInfo.hasNextPage
           this.hasPrev = this.pageInfo.hasPreviousPage
+          this.timesheetApproverId = data.uiapi.query.Timesheet_Approval__c.edges[0].node.Id
 
           if(this.totalCountRecord > 0){
             this.isVisible = false
@@ -429,6 +461,35 @@ export default class ViewActiveTimesheetApproval extends NavigationMixin (Lightn
 
     }
 
+    get menuItemLabel(){
+        return this.objectApiName == 'Employee__c' ? 'View All' : 'View Approver'
+    }
+
+    handleViewAll(){
+        let objectName
+        let redirectId
+        
+        if(this.objectApiName == 'Employee__c'){
+            objectName = 'Timesheet_Approver__c'
+            redirectId = this.timesheetApproverId
+        }
+        else {
+            objectName = 'Employee__c'
+            redirectId = this.ApproverId
+        }
+            
+
+        this[NavigationMixin.Navigate]({
+            type: 'standard__recordPage',
+            attributes: {
+                actionName : 'view',
+                objectApiName : objectName,
+                recordId : redirectId
+            }
+        });
+        // console.log('Timesheet Approver =>',JSON.stringify(this.timesheetApproverId))
+    }
+
     loadMore(event){
         event.preventDefault();
         if(this.pageInfo.hasNextPage && this.pageInfo){
@@ -449,6 +510,7 @@ export default class ViewActiveTimesheetApproval extends NavigationMixin (Lightn
     }
 
     navToRecord(event){
+        
         this[NavigationMixin.Navigate]({
             type: 'standard__recordPage',
             attributes: {
