@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:45:40
- * @modify date 2024-06-25 15:03:29
+ * @modify date 2024-06-26 12:00:14
  * @desc [Controller for List Timesheet Approval  Page] 
  */
 
@@ -445,7 +445,28 @@ export default class ViewActiveTimesheetApproval extends NavigationMixin (Lightn
             }).then((res)=>{
 
                 if(res == '200'){
-                    this.toast('Updated Successfully','success','Success') 
+                    this[NavigationMixin.GenerateUrl]({
+                        type: "standard__recordPage",
+                        attributes: {
+                            actionName: "view",
+                            recordId: timesheetId,
+                        }
+                    }).then((url) => {
+                        const event = new ShowToastEvent({
+                            title: 'Success!',
+                            variant: 'success',
+                            message: 'Timesheet {0} Successfully {1}',
+                            messageData: [
+                                {
+                                    url,
+                                    label: timesheetNumber,
+                                },
+                                resultComment.split(';')[2]
+                            ],
+                        });
+                        this.dispatchEvent(event);
+                    });
+                    // this.toast('Timesheet '+timesheetNumber+' Successfully '+resultComment.split(';')[2] ,'success','Success') 
                     refreshGraphQL(this.graphQlData)
                 }
                 

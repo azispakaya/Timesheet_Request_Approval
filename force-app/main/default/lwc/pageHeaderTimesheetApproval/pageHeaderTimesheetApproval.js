@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:46:12
- * @modify date 2024-06-25 14:35:48
+ * @modify date 2024-06-26 11:15:59
  * @desc [Controller for Header Information]
  */
 
@@ -10,6 +10,7 @@ import { LightningElement, api, wire } from 'lwc';
 import { gql, graphql } from "lightning/uiGraphQLApi";
 import employee from "@salesforce/apex/lwc_ApprovalTimesheetController.ApproverName"
 import FORM_FACTOR from "@salesforce/client/formFactor"
+import AvatarProfile from '@salesforce/resourceUrl/DefaultProfileUser';
 
 export default class PageHeaderTimesheetApproval extends LightningElement {
 
@@ -20,6 +21,10 @@ export default class PageHeaderTimesheetApproval extends LightningElement {
     employeId
     desktopSupport
     mobileSupport
+    
+    get AvatarProfile(){
+        return 'standard:people_score'
+    }
 
     @wire(graphql, {
         query : gql`
