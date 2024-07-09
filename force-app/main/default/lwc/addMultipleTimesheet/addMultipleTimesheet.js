@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:40:38
- * @modify date 2024-06-24 15:40:50
+ * @modify date 2024-07-06 17:52:33
  * @desc [Controller for Add multiple Timehseet]
  */
 import {
@@ -26,6 +26,7 @@ import {
 import assignApprover from '@salesforce/apex/lwc_ApprovalTimesheetController.getProjectManager'
 import createMultiTimesheet from '@salesforce/apex/lwc_ApprovalTimesheetController.createMultiTimesheet'
 import FORM_FACTOR from "@salesforce/client/formFactor";
+import convertCampaign from '@salesforce/apex/lwc_RequestTimesheetController.convertCampaign';
 
 export default class AddMultipleTimesheet extends LightningElement {
     @api recordId
@@ -35,6 +36,7 @@ export default class AddMultipleTimesheet extends LightningElement {
     @track listCases = []
     @track listPOCs = []
     @track listOpportunities = []
+    @track listCampaigns = []
 
     @track countHours = 0
     @track isLoading = false
@@ -47,6 +49,7 @@ export default class AddMultipleTimesheet extends LightningElement {
     showcase = false
     showpoc = false
     showOpty = false
+    showCampaign = false
     classProject = 'slds-col slds-size_2-of-8 slds-m-around_small'
 
     selectedPicklist = 'Project'
@@ -79,7 +82,9 @@ export default class AddMultipleTimesheet extends LightningElement {
         if (data) {
            
            const empRole = data.split(';')[2]
-           this.employeName = data.split(';')[3]
+           if(data.split(';')[3] == null || data.split(';')[3] == '') this.employeName = 'Timesheet'
+           else this.employeName = data.split(';')[3]
+           
            if(empRole == 'Presales'){
                 this.employeeRole = false
                 this.selectedPicklist = 'Opportunity'
@@ -98,6 +103,20 @@ export default class AddMultipleTimesheet extends LightningElement {
                     }
                     
                 ]
+           }else if(empRole == 'Marketing'){
+                
+                this.selectedPicklist = 'Campaign'
+                this.PicklistObject = [
+                    {
+                        label : 'Campaign',
+                        value : 'Campaign'
+                    },
+                    {
+                        label : 'Project',
+                        value : 'Project'
+                    }
+                ]
+
            }else{
                 this.selectedPicklist = 'Project'
                 this.PicklistObject = [
@@ -112,11 +131,7 @@ export default class AddMultipleTimesheet extends LightningElement {
                     {
                         label: 'POC',
                         value: 'POC'
-                    },
-                    {
-                        label: 'Opportunity',
-                        value: 'Opportunity'
-                    },
+                    }
                 ]
            }
         } else if (error) {
@@ -137,23 +152,33 @@ export default class AddMultipleTimesheet extends LightningElement {
                 this.showcase = false
                 this.showpoc = false
                 this.showOpty = false
+                this.showCampaign = false
             } else if (this.selectedPicklist == 'Case') {
                 this.classProject = 'slds-col slds-size_1-of-8 slds-m-around_small'
                 this.showproject = false
                 this.showcase = true
                 this.showpoc = false
                 this.showOpty = false
+                this.showCampaign = false
             }else if (this.selectedPicklist == 'Opportunity') {
                 this.classProject = 'slds-col slds-size_1-of-8 slds-m-around_small'
                 this.showproject = false
                 this.showcase = false
                 this.showpoc = false
                 this.showOpty = true
-            } else {
+                this.showCampaign = false
+            }else if(this.selectedPicklist == 'Campaign'){
+                this.showproject = false
+                this.showcase = false
+                this.showpoc = false
+                this.showOpty = false
+                this.showCampaign = true
+            }else {
                 this.showproject = false
                 this.showcase = false
                 this.showpoc = true
                 this.showOpty = false
+                this.showCampaign = false
             }
         }
 
@@ -298,6 +323,31 @@ export default class AddMultipleTimesheet extends LightningElement {
                         }
                     })
                   break;
+                case 'campaign' :
+                    timesheetRow['ObjectRecordId'] = fieldValue
+                    convertCampaign({
+                        campaignId: fieldValue,
+                        memberId: this.recordId
+                    })
+                    .then(res => {
+                        let splitCode = res.split(';')
+                        if(splitCode[0]==='200'){
+                            this.isValid = true
+                            let splitRes = splitCode[1].split(',')
+                            timesheetRow[fieldName] = splitRes[0];
+                            timesheetRow['project_name'] = splitRes[1];
+                            timesheetRow['spk'] = splitRes[2];
+                            timesheetRow['ProjectId'] = splitRes[3];
+                            timesheetRow['type'] = 'campaign'
+                        }else if(splitCode[1] === '401'){
+                            this.toast('You are not assigned to this Opportunity. Please contact the Opportunity administrator for further assistance.','error','Opportunity Invalid')
+                            this.isValid = false
+                        }else{
+                            this.isValid = false
+                            
+                        }
+                    })
+                  break;
 
                 case 'stime' :
                     
@@ -357,6 +407,10 @@ export default class AddMultipleTimesheet extends LightningElement {
         this.selectedPicklist = 'Opportunity'
         this.addNewHandler()
     }
+    setCampaignHandler(){
+        this.selectedPicklist = 'campaign'
+        this.addNewHandler()
+    }
 
     addNewHandler(event) {
         
@@ -383,9 +437,13 @@ export default class AddMultipleTimesheet extends LightningElement {
             this.listOpportunities.push({
                 tempId: Date.now()
             })
+        }else if(typeTimesheet == 'Campaign'){
+            this.listCampaigns.push({
+                tempId: Date.now()
+            })
         }
 
-        this.timesheets = this.listProjects.concat(this.listCases, this.listPOCs, this.listOpportunities)
+        this.timesheets = this.listProjects.concat(this.listCases, this.listPOCs, this.listOpportunities, this.listCampaigns)
         this.isVisible = false
         if (this.timesheets.length > 0) {
             this.toast('Succesfully Add new Timesheet Entry', 'success', 'Info')
@@ -411,7 +469,9 @@ export default class AddMultipleTimesheet extends LightningElement {
             this.listCases = this.listCases.filter(record => record.tempId != entityId)
         }else if (entity === 'opty') {
             this.listOpportunities = this.listOpportunities.filter(record => record.tempId != entityId)
-        } else {
+        }else if (entity === 'campaign') {
+            this.listCampaigns = this.listCampaigns.filter(record => record.tempId != entityId)
+        }else {
             this.listPOCs = this.listPOCs.filter(record => record.tempId != entityId)
         }
 
@@ -646,6 +706,8 @@ export default class AddMultipleTimesheet extends LightningElement {
                 item.remark = `Project ${item.spk} - ${item.temp_remark}`;
             } else if (item.type === 'opty') {
                 item.remark = `Opportunity ${item.spk} - ${item.temp_remark}`;
+            } else if (item.type === 'campaign') {
+                item.remark = `Campaign - ${item.temp_remark}`;
             } else {
                 item.remark = `${item.poc_name} - ${item.temp_remark}`;
             }

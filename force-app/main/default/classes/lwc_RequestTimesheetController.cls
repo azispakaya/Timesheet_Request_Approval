@@ -238,4 +238,25 @@ public without sharing class lwc_RequestTimesheetController {
 
         return responseData;
     }
+
+    @AuraEnabled
+    public static string convertCampaign(String campaignId, String memberId){
+        try {
+            Project__c pro = [
+                SELECT Id, SPK__c, Name
+                FROM Project__c
+                WHERE SPK__c = 'MSI009'
+            ];
+
+            Campaign camp = [
+                SELECT Id, Name
+                FROM Campaign
+                WHERE Id =:campaignId
+            ];
+
+            return '200;'+camp.Name+','+pro.Name+','+pro.SPK__c+','+pro.Id;
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
 }
