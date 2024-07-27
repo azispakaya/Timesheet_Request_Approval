@@ -16,7 +16,7 @@ global class Batch_TimesheetRequest implements Database.Batchable<sObject>,Datab
             SELECT 
                 Id, Start_Date__c, End_Date__c, Approval_Status__c, 
                 Time__c, Project__r.SPK__c, Project__r.Name, 
-                Employee__r.Name, Employee__r.Employee_ID__c, Remarks__c
+                Employee__r.Name, Employee__r.Employee_ID__c, Remarks__c, Billable__c
             FROM Timesheet__c
             WHERE Approval_Status__c = 'Fully Approved' AND response__c != '000'
         ]);
@@ -44,7 +44,7 @@ global class Batch_TimesheetRequest implements Database.Batchable<sObject>,Datab
             TimesheetModel.cls_timesheet timesheetField = new TimesheetModel.cls_timesheet();
             List<TimesheetModel.cls_timesheet> listTimesheet = new List<TimesheetModel.cls_timesheet>();
             
-            timesheetField.billable = '1';
+            timesheetField.billable = ''+singleTimesheet.Billable__c;
             timesheetField.end_date = String.valueOf(singleTimesheet.End_Date__c);
             timesheetField.pic = singleTimesheet.Employee__r.Employee_ID__c;
             timesheetField.project_name = singleTimesheet.Project__r.Name;
