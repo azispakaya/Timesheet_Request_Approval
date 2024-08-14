@@ -2,8 +2,10 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:44:17
- * @modify date 2024-04-18 17:02:38
+ * @modify date 2024-08-14 13:11:08
+ * @test [Schedule_TimesheetRequestTest]
  * @desc [Batch Method for Timesheet Request and Sync to sunfish ]
+ * @desc [Update Query for get Active Employee ]
  */
 
 global class Batch_TimesheetRequest implements Database.Batchable<sObject>,Database.AllowsCallouts{
@@ -18,7 +20,7 @@ global class Batch_TimesheetRequest implements Database.Batchable<sObject>,Datab
                 Time__c, Project__r.SPK__c, Project__r.Name, 
                 Employee__r.Name, Employee__r.Employee_ID__c, Remarks__c, Billable__c
             FROM Timesheet__c
-            WHERE Approval_Status__c = 'Fully Approved' AND response__c != '000'
+            WHERE Approval_Status__c = 'Fully Approved' AND response__c != '000' AND Employee__r.Active__c = true
         ]);
      }
   
