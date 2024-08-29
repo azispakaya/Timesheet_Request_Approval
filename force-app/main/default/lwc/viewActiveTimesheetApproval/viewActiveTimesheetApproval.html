@@ -28,14 +28,14 @@
           <lightning-badge label={totalCountRecord} class="slds-badge" icon-alternative-text={totalCountRecord} icon-name="custom:custom53" icon-position="start"></lightning-badge>
         </span>
         <span class="slds-m-horizontal_xx-small">
-          <lightning-button variant="brand" label="Approve" onclick={handleApprove} disabled={isDisabled}></lightning-button>
-        </span>
-        <span class="slds-m-horizontal_xx-small">
-          <lightning-button variant="destructive" label="Reject" onclick={handleReject} disabled={isDisabled}></lightning-button>
-        </span>
-        <span class="slds-m-horizontal_xx-small">
-          <lightning-button-icon icon-name="utility:refresh" alternative-text="Refresh" name="btn-refresh" size="medium" variant="outline-brand" onclick={handleRefresh}></lightning-button-icon>
-          <!-- <lightning-button variant="outline-brand" label="Refresh" onclick={handleRefresh}></lightning-button> -->
+          <lightning-button-group>
+            <lightning-button variant="neutral" label="Approve" onclick={handleApprove} disabled={isDisabled}></lightning-button>
+            <lightning-button variant="neutral" label="Reject" onclick={handleReject} disabled={isDisabled}></lightning-button>
+            <lightning-button-icon icon-name="utility:refresh" alternative-text="Refresh" name="btn-refresh" size="medium" variant="outline-brand" onclick={handleRefresh}></lightning-button-icon>
+            <lightning-button-menu alternative-text="Show Button" variant="border-filled" >
+              <lightning-menu-item alternative-text="View All" label={menuItemLabel} name="btn-viewall" size="medium" onclick={handleViewAll}></lightning-menu-item>
+            </lightning-button-menu>
+          </lightning-button-group>
         </span>
       </div>
     </div>
@@ -167,12 +167,28 @@
               </div>
             </th>
             <th aria-sort="none" class="slds-is-resizable slds-is-sortable slds-cell_action-mode" scope="col">
+              <a class="slds-th__action slds-text-link_reset" role="button" tabindex="0" onclick={sortByDate}>
+                <span class="slds-assistive-text">Sort by: </span>
+                <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                  <span class="slds-truncate" title="Date">Date</span>
+                </div>
+              </a>
+            </th>
+            <th aria-sort="none" class="slds-is-resizable slds-is-sortable slds-cell_action-mode" scope="col">
               <a class="slds-th__action slds-text-link_reset" role="button" tabindex="0" onclick={sortByNo}>
                 <span class="slds-assistive-text">Sort by: </span>
                 <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
                   <span class="slds-truncate" title="Timesheet No">Timesheet No</span>
                 </div>
               </a>
+            </th>
+            <th aria-sort="none" class="slds-is-resizable slds-is-sortable slds-cell_action-mode" scope="col">
+              <!-- <a class="slds-th__action slds-text-link_reset" role="button" tabindex="0" onclick={sortByDate}> -->
+                <!-- <span class="slds-assistive-text">Sort by: </span> -->
+                <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                  <span class="slds-truncate" title="Date">Account</span>
+                </div>
+              <!-- </a> -->
             </th>
             <th aria-sort="none" class="slds-is-resizable slds-is-sortable slds-cell_action-mode" scope="col">
               <a class="slds-th__action slds-text-link_reset" role="button" tabindex="0" onclick={sortByProject}>
@@ -195,19 +211,11 @@
                 Employee
               </div>
             </th> -->
-            <th aria-sort="none" class="slds-is-resizable slds-is-sortable slds-cell_action-mode" scope="col">
-              <a class="slds-th__action slds-text-link_reset" role="button" tabindex="0" onclick={sortByDate}>
-                <span class="slds-assistive-text">Sort by: </span>
-                <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
-                  <span class="slds-truncate" title="Date">Date</span>
-                </div>
-              </a>
-            </th>
-            <!-- <th class="" scope="col"><div class="slds-truncate" title="End Date">End Date</div></th> -->
+            
             <th class="" scope="col">
               <div class="slds-truncate" title="Time">Time</div>
             </th>
-            <th class="" scope="col">
+            <th class="" scope="col" style="width: 200px;">
               <div class="slds-truncate" title="Remarks">Remarks</div>
             </th>
             <th class="" scope="col">
@@ -229,11 +237,29 @@
                     </div>
                   </div>
                 </th>
-                <th data-label="SPK" scope="row">
-                  <div class="slds-truncate" title="SPK">
+                <td data-label="Date" class="slds-cell-wrap">
+                  <div class="slds-line-clamp" title="Date">
+                    <lightning-formatted-date-time
+                      value={field.Start_Date__c.value}
+                      day="2-digit"
+                      month="short"
+                      year="numeric"
+                      weekday="long"
+                    ></lightning-formatted-date-time>
+                  </div>
+                </td>
+                <th data-label="Timesheet No" scope="row" class="slds-cell-wrap">
+                  <div class="slds-line-clamp" title="SPK">
                     <a onclick={navToRecord} data-id={field.Id} data-object-name="Timesheet__c">{field.Name.value}</a>
                   </div>
                 </th>
+                <td data-label="Employee" class="slds-cell-wrap">
+                  <div class="slds-line-wrap" title="Employee">
+                    <a onclick={navToRecord} data-id={field.Account_Id__c.value} data-object-name="Account">
+                      {field.Account_Name__c.value}
+                    </a>
+                  </div>
+                </td>
                 <td data-label="Project Name" class="slds-cell-wrap">
                   <div class="slds-line-clamp" title="Project Name">
                    <a onclick={navToRecord} data-id={field.Project__r.Id} data-object-name="Project__c">
@@ -248,20 +274,17 @@
                     </a>
                   </div>
                 </td>
-                <td data-label="Date" class="slds-cell-wrap">
-                  <div class="slds-line-wrap" title="Date">{field.Start_Date__c.value} </div>
-                </td>
                 <td data-label="Time">
-                  <div class="slds-truncate" title="Time">{field.Time__c.value} </div>
+                  <div class="slds-truncate" title="Time">{field.Time__c.value}</div>
                 </td>
-                <td data-label="Remarks" class="slds-cell-wrap">
-                  <div class="slds-line-clamp_medium" title="Remarks">{field.Remarks__c.value} </div>
+                <td data-label="Remarks" class="slds-cell-wrap" style="width: 200px;">
+                  <div class="slds-line-clamp_medium" title="Remarks">{field.Remarks__c.value}</div>
                 </td>
-                <td data-label="ApprovalStatus">
-                  <div class={approvalStyle} title="Remarks">{field.Approval_Status__c.value} </div>
+                <td data-label="ApprovalStatus" class="slds-cell-wrap">
+                  <div class={approvalStyle} title="Remarks">{field.Approval_Status__c.value}</div>
                 </td>
                 <td data-label="Action">
-                  <lightning-button-icon icon-name="utility:edit_form" alternative-text="editline" class="" type="button" variant="outline-brand" onclick={handleEditLine} data-id={field.Id} data-label={field.Name.value} disabled={isDisabled}></lightning-button-icon>
+                  <lightning-button-icon icon-name="utility:edit_form" alternative-text="revise/reject" class="" type="button" variant="outline-brand" onclick={handleEditLine} data-id={field.Id} data-label={field.Name.value} disabled={isDisabled}></lightning-button-icon>
                 </td>
               </tr>
             </template>

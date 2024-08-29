@@ -112,6 +112,8 @@ global with sharing class lwc_ApprovalTimesheetController {
         public string remark;
         public string Approver_Optional;
         public string Email;
+        public string type;
+        public string ObjectRecordId;
     }
 
     @AuraEnabled
@@ -123,7 +125,7 @@ global with sharing class lwc_ApprovalTimesheetController {
 
             for(mapTimesheetRecord singleTimesheet : timesheetList){
 
-                createTimesheet.add(new Timesheet__c(
+                Timesheet__c timesheets = new Timesheet__c(
                     Project__c = singleTimesheet.ProjectId,
                     Timesheet_Approver__c = singleTimesheet.Approver,
                     Employee__c = singleTimesheet.EmployeeID,
@@ -134,12 +136,20 @@ global with sharing class lwc_ApprovalTimesheetController {
                     Approval_Status__c = ApprovalStatus,
                     Timesheet_Approver_Optional__c = singleTimesheet.Approver_Optional,
                     Email__c = singleTimesheet.Email
-                ));
+                );
+
+                if(singleTimesheet.type == 'opty')timesheets.Opportunity__c = singleTimesheet.ObjectRecordId;
+                else if(singleTimesheet.type == 'case')timesheets.Case__c = singleTimesheet.ObjectRecordId;
+                else if(singleTimesheet.type == 'poc')timesheets.POC__c = singleTimesheet.ObjectRecordId;
+
+                createTimesheet.add(timesheets);
+
             }
 
             Database.insert(createTimesheet);
 
             return '{"error_msg":"Successfully Create Timesheet", "error_code":"000" }';
+            // return ''+createTimesheet;
 
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());

@@ -69,6 +69,15 @@ private class Test_lwcRequestTimesheetController {
         );
         Insert project;
 
+        Project__c projectMarketing = new Project__c(
+            Name = 'Test Project',
+            SPK__c = 'MSI009',
+            Project_Manager__c = employee.Id,
+            Product_Category__c = 'Application',
+            Status__c = 'Planned'
+        );
+        Insert projectMarketing;
+
         Project__c projectPOC = new Project__c(
             Name = 'MSInfokom - Business Development',
             SPK__c = 'MSI001',
@@ -157,6 +166,12 @@ private class Test_lwcRequestTimesheetController {
             Opportunity__c = opty.Id
         );
         Insert optyDivide;
+
+        Campaign camp = new Campaign(
+            Name = 'Test Campaign',
+            Status = 'Planned'
+        );
+        Insert camp;
         
         //! Define Test Data
         Project__c projectObject = [
@@ -217,6 +232,9 @@ private class Test_lwcRequestTimesheetController {
 
         // * Checking Opportunity Based on Opportunity
         lwc_RequestTimesheetController.convertOpportuniyId(optyList.Id, presalesEmp.Id);
+        
+        // * Checking Project Based on Campaign
+        lwc_RequestTimesheetController.convertCampaign(camp.Id, presalesEmp.Id);
 
 
         Test.setMock(HttpCalloutMock.class, new Mock_Timesheetv2());
