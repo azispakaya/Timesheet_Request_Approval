@@ -1,3 +1,4 @@
+/* eslint-disable eqeqeq */
 /* eslint-disable no-case-declarations */
 /* eslint-disable no-shadow */
 /* eslint-disable dot-notation */
@@ -5,7 +6,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:40:38
- * @modify date 2024-08-28 19:24:45
+ * @modify date 2024-08-28 21:03:09
  * @desc [Controller for Add multiple Timehseet]
  */
 import { LightningElement, api, track, wire } from "lwc";
@@ -177,8 +178,11 @@ export default class AddMultipleTimesheet extends LightningElement {
 
   fieldChangeHandler(event) {
     //* define basic variable
+    const tempId = event.currentTarget.dataset.tempid;
+    // console.log(tempId);
+    // console.log("timesheets:", JSON.stringify(this.timesheets));
     let timesheetRow = this.timesheets.find(
-      (record) => record.tempId === event.target.dataset.tempid
+      (record) => record.tempId == tempId //event.currentTarget.dataset.tempid
     );
     let fieldValue = event.target.value;
     let fieldName = event.target.name;
@@ -213,6 +217,14 @@ export default class AddMultipleTimesheet extends LightningElement {
                 timesheetRow["Approver_Optional"] = res.split(";")[1];
               });
             } else if (splitCode[0] === "401") {
+              const inputFields = this.template.querySelectorAll(
+                `lightning-input-field[data-tempid="${tempId}"]`
+              );
+              if (inputFields) {
+                inputFields.forEach((field) => {
+                  field.reset();
+                });
+              }
               this.toast(
                 "You are not assigned to this Case. Please ensure proper assignment for continued request Timesheet.",
                 "error",
@@ -228,11 +240,19 @@ export default class AddMultipleTimesheet extends LightningElement {
         case "project_name":
           timesheetRow["ObjectRecordId"] = fieldValue;
           convertProjectName({
-            ProjectID: event.detail.value[0],
+            ProjectID: event.target.value,
             memberId: this.recordId
           }).then((result) => {
             if (result === "null") {
               this.isValid = false;
+              const inputFields = this.template.querySelectorAll(
+                `lightning-input-field[data-tempid="${tempId}"]`
+              );
+              if (inputFields) {
+                inputFields.forEach((field) => {
+                  field.reset();
+                });
+              }
               this.toast(
                 "You are not assigned to this project, or the project has been closed. Please contact the project manager for further assistance.",
                 "error",
@@ -284,6 +304,14 @@ export default class AddMultipleTimesheet extends LightningElement {
               });
               this.isValid = true;
             } else if (spliCode[0] === "401") {
+              const inputFields = this.template.querySelectorAll(
+                `lightning-input-field[data-tempid="${tempId}"]`
+              );
+              if (inputFields) {
+                inputFields.forEach((field) => {
+                  field.reset();
+                });
+              }
               this.toast(
                 "You are not assigned to this POC as a member or project manager. Please contact the POC administrator for further assistance.",
                 "error",
@@ -313,6 +341,14 @@ export default class AddMultipleTimesheet extends LightningElement {
               timesheetRow["ProjectId"] = splitRes[3];
               timesheetRow["type"] = "opty";
             } else if (splitCode[1] === "401") {
+              const inputFields = this.template.querySelectorAll(
+                `lightning-input-field[data-tempid="${tempId}"]`
+              );
+              if (inputFields) {
+                inputFields.forEach((field) => {
+                  field.reset();
+                });
+              }
               this.toast(
                 "You are not assigned to this Opportunity. Please contact the Opportunity administrator for further assistance.",
                 "error",
@@ -340,6 +376,14 @@ export default class AddMultipleTimesheet extends LightningElement {
               timesheetRow["ProjectId"] = splitRes[3];
               timesheetRow["type"] = "campaign";
             } else if (splitCode[1] === "401") {
+              const inputFields = this.template.querySelectorAll(
+                `lightning-input-field[data-tempid="${tempId}"]`
+              );
+              if (inputFields) {
+                inputFields.forEach((field) => {
+                  field.reset();
+                });
+              }
               this.toast(
                 "You are not assigned to this Opportunity. Please contact the Opportunity administrator for further assistance.",
                 "error",
@@ -381,6 +425,9 @@ export default class AddMultipleTimesheet extends LightningElement {
             this.toast(checkingField, "error", "Invalid");
           }
       }
+    } else {
+      console.log("timesheetRow:", timesheetRow);
+      console.log("timesheets:", JSON.stringify(this.timesheets));
     }
   }
 
@@ -451,6 +498,7 @@ export default class AddMultipleTimesheet extends LightningElement {
       this.listCampaigns
     );
     this.isVisible = false;
+
     if (this.timesheets.length > 0) {
       this.toast("Succesfully Add new Timesheet Entry", "success", "Info");
     }
@@ -466,36 +514,36 @@ export default class AddMultipleTimesheet extends LightningElement {
     //     this.toast('Cannot Remove Last Timesheet Entry. Please ensure there is at least one entry remaining.','error','Warning!!')
     //     return
     // }
-    let entity = event.target.dataset.entitytype;
-    let entityId = event.target.dataset.tempid;
-    if (entity === "project") {
+    let entity = event.currentTarget.dataset.entitytype;
+    let entityId = event.currentTarget.dataset.tempid;
+    if (entity == "project") {
       this.listProjects = this.listProjects.filter(
-        (record) => record.tempId !== entityId
+        (record) => record.tempId != entityId
       );
-    } else if (entity === "case") {
+    } else if (entity == "case") {
       this.listCases = this.listCases.filter(
-        (record) => record.tempId !== entityId
+        (record) => record.tempId != entityId
       );
-    } else if (entity === "opty") {
+    } else if (entity == "opty") {
       this.listOpportunities = this.listOpportunities.filter(
-        (record) => record.tempId !== entityId
+        (record) => record.tempId != entityId
       );
-    } else if (entity === "campaign") {
+    } else if (entity == "campaign") {
       this.listCampaigns = this.listCampaigns.filter(
-        (record) => record.tempId !== entityId
+        (record) => record.tempId != entityId
       );
     } else {
       this.listPOCs = this.listPOCs.filter(
-        (record) => record.tempId !== entityId
+        (record) => record.tempId != entityId
       );
     }
 
     this.timesheets = this.timesheets.filter(
-      (record) => record.tempId !== event.target.dataset.tempid
+      (record) => record.tempId != event.currentTarget.dataset.tempid
     );
     this.toast("Successfully Remove Timesheet Entry", "warning", "Info");
 
-    if (this.timesheets.length === 0) {
+    if (this.timesheets.length == 0) {
       this.isVisible = true;
     }
   }
@@ -509,6 +557,7 @@ export default class AddMultipleTimesheet extends LightningElement {
   }
 
   async handlingSaveRecord(setApprovalStatus) {
+    // console.log("Timesheet => " + JSON.stringify(this.timesheets));
     try {
       //* Validate fields
       this.controlValidityField();
