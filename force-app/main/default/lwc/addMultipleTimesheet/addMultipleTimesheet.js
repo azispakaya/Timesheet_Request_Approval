@@ -6,7 +6,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:40:38
- * @modify date 2024-11-13 15:06:40
+ * @modify date 2024-11-13 15:46:14
  * @desc [Controller for Add multiple Timehseet]
  */
 import { LightningElement, api, track, wire } from "lwc";
@@ -22,7 +22,9 @@ import createMultiTimesheet from "@salesforce/apex/lwc_ApprovalTimesheetControll
 import FORM_FACTOR from "@salesforce/client/formFactor";
 import convertCampaign from "@salesforce/apex/lwc_RequestTimesheetController.convertCampaign";
 import { getRecord } from "lightning/uiRecordApi";
-import { refreshApex } from "@salesforce/apex";
+// import { refreshApex } from "@salesforce/apex";
+// import { RefreshEvent } from "lightning/refresh";
+import { getRecordNotifyChange } from "lightning/uiRecordApi";
 
 export default class AddMultipleTimesheet extends LightningElement {
   @api recordId;
@@ -654,7 +656,7 @@ export default class AddMultipleTimesheet extends LightningElement {
         this.toast("Successfully Request Timesheet", "success", "Success");
         this.dispatchEvent(new CloseActionScreenEvent());
         this.isLoading = false;
-        await refreshApex(this.wiredEmployeeResult);
+        this.refreshRelatedList();
       } else {
         this.toast(
           `Failed to request timesheet with error: ${resMSG.split(":")[1]}`,
@@ -675,6 +677,13 @@ export default class AddMultipleTimesheet extends LightningElement {
     }
 
     // console.log('Timesheet => '+JSON.stringify(this.timesheets))
+  }
+
+  async refreshRelatedList() {
+    if (this.recordId) {
+      console.log("Refreshing");
+      await getRecordNotifyChange([{ recordId: this.recordId }]);
+    }
   }
 
   //* validation Fields
