@@ -6,7 +6,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:40:38
- * @modify date 2024-11-13 15:46:14
+ * @modify date 2024-11-13 16:46:51
  * @desc [Controller for Add multiple Timehseet]
  */
 import { LightningElement, api, track, wire } from "lwc";
@@ -24,7 +24,8 @@ import convertCampaign from "@salesforce/apex/lwc_RequestTimesheetController.con
 import { getRecord } from "lightning/uiRecordApi";
 // import { refreshApex } from "@salesforce/apex";
 // import { RefreshEvent } from "lightning/refresh";
-import { getRecordNotifyChange } from "lightning/uiRecordApi";
+// import { getRecordNotifyChange } from "lightning/uiRecordApi";
+import { NavigationMixin } from "lightning/navigation";
 
 export default class AddMultipleTimesheet extends LightningElement {
   @api recordId;
@@ -680,10 +681,13 @@ export default class AddMultipleTimesheet extends LightningElement {
   }
 
   async refreshRelatedList() {
-    if (this.recordId) {
-      console.log("Refreshing");
-      await getRecordNotifyChange([{ recordId: this.recordId }]);
-    }
+    await this[NavigationMixin.Navigate]({
+      type: "standard__recordPage",
+      attributes: {
+        recordId: this.recordId,
+        actionName: "view"
+      }
+    });
   }
 
   //* validation Fields
