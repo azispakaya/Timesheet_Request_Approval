@@ -6,7 +6,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:40:38
- * @modify date 2024-08-28 21:03:09
+ * @modify date 2024-11-13 15:02:11
  * @desc [Controller for Add multiple Timehseet]
  */
 import { LightningElement, api, track, wire } from "lwc";
@@ -21,6 +21,7 @@ import assignApprover from "@salesforce/apex/lwc_ApprovalTimesheetController.get
 import createMultiTimesheet from "@salesforce/apex/lwc_ApprovalTimesheetController.createMultiTimesheet";
 import FORM_FACTOR from "@salesforce/client/formFactor";
 import convertCampaign from "@salesforce/apex/lwc_RequestTimesheetController.convertCampaign";
+import { getRecord } from "lightning/uiRecordApi";
 
 export default class AddMultipleTimesheet extends LightningElement {
   @api recordId;
@@ -67,6 +68,13 @@ export default class AddMultipleTimesheet extends LightningElement {
       this.formFactorClass = "slds-grid slds-grid_vertical";
       this.mobileSupport = true;
     }
+  }
+  wiredEmployeeResult;
+
+  @wire(getRecord, { recordId: "$recordId" })
+  employeResult(res) {
+    this.wiredEmployeeResult = res;
+    console.log(this.wiredEmployeeResult);
   }
 
   @wire(convertPicName, { RecordID: "$recordId", render: "submit" })
@@ -645,6 +653,7 @@ export default class AddMultipleTimesheet extends LightningElement {
         this.toast("Successfully Request Timesheet", "success", "Success");
         this.dispatchEvent(new CloseActionScreenEvent());
         this.isLoading = false;
+        await this.wiredEmployeeResult();
       } else {
         this.toast(
           `Failed to request timesheet with error: ${resMSG.split(":")[1]}`,
