@@ -6,7 +6,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:40:38
- * @modify date 2024-11-13 17:03:25
+ * @modify date 2024-11-13 17:07:06
  * @desc [Controller for Add multiple Timehseet]
  */
 import { LightningElement, api, track, wire } from "lwc";
@@ -654,10 +654,10 @@ export default class AddMultipleTimesheet extends LightningElement {
       const [resMSG, resCode] = resSubmit.split(",");
 
       if (resCode.includes('"000"')) {
+        this.refreshRelatedList();
         this.toast("Successfully Request Timesheet", "success", "Success");
         this.dispatchEvent(new CloseActionScreenEvent());
         this.isLoading = false;
-        this.refreshRelatedList();
       } else {
         this.toast(
           `Failed to request timesheet with error: ${resMSG.split(":")[1]}`,
