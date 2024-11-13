@@ -6,7 +6,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:40:38
- * @modify date 2024-11-13 16:46:51
+ * @modify date 2024-11-13 17:03:25
  * @desc [Controller for Add multiple Timehseet]
  */
 import { LightningElement, api, track, wire } from "lwc";
@@ -22,10 +22,10 @@ import createMultiTimesheet from "@salesforce/apex/lwc_ApprovalTimesheetControll
 import FORM_FACTOR from "@salesforce/client/formFactor";
 import convertCampaign from "@salesforce/apex/lwc_RequestTimesheetController.convertCampaign";
 import { getRecord } from "lightning/uiRecordApi";
-// import { refreshApex } from "@salesforce/apex";
+import { refreshApex } from "@salesforce/apex";
 // import { RefreshEvent } from "lightning/refresh";
 // import { getRecordNotifyChange } from "lightning/uiRecordApi";
-import { NavigationMixin } from "lightning/navigation";
+// import { NavigationMixin } from "lightning/navigation";
 
 export default class AddMultipleTimesheet extends LightningElement {
   @api recordId;
@@ -681,13 +681,14 @@ export default class AddMultipleTimesheet extends LightningElement {
   }
 
   async refreshRelatedList() {
-    await this[NavigationMixin.Navigate]({
-      type: "standard__recordPage",
-      attributes: {
-        recordId: this.recordId,
-        actionName: "view"
-      }
-    });
+    await refreshApex(this.wiredEmployeeResult);
+    // await this[NavigationMixin.Navigate]({
+    //   type: "standard__recordPage",
+    //   attributes: {
+    //     recordId: this.recordId,
+    //     actionName: "view"
+    //   }
+    // });
   }
 
   //* validation Fields
