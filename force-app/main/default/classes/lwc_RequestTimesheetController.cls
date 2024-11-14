@@ -10,7 +10,7 @@
 public without sharing class lwc_RequestTimesheetController {
   @AuraEnabled
   public static string submitTimesheet(String listTimesheet) {
-    String RSAKey = 'MIIC6DCCAdACAQAwgaIxCzAJBgNVBAYTAklEMRQwEgYDVQQIDAtES2kgSmFrYXJ0YTEUMBIGA1UEBwwLREtJIEpha2FydGExHTAbBgNVBAoMFE1pdHJhIFNvbHVzaSBJbmZva29tMQ4wDAYDVQQLDAVzZmFwaTESMBAGA1UEAwwJbXNpbmZva29tMSQwIgYJKoZIhvcNAQkBFhVtZXJpLnlhbnRpQGRhdGFvbi5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQClytZtdVQ4LO8H5uzSRGMrDsuha0tM3rTUn/IaLNgxItiGb8U1tYHN9oOF2WqmmVhaQZQHdlDTt+YUYqI4lSFJfcwHSVhYpAvzyMeK+dYbSamsj7++E7FsmPltveLRoIWjPWQqb4/jZxXqblX6HKtbypyx/xgGtjvgOF+J7dm2FMSAp9TJdhXpiJUlSYtB3CDeW0XPAoMtZtr8NBrcy0p+LfNvMZc3tx2YL1qOyS1M4bdEQ7Ln6WfRXOiuo9icCVQwoJviZmOsqqYtnOYiAik1CfphvcWwPlY5LOANPsZCUXH7pbWCqy1mq4TlFHeph8AyHLBDc6x2MEVntNXXorbtAgMBAAGgADANBgkqhkiG9w0BAQsFAAOCAQEAAJYWKnYuadkOegUupUm1hf96pHlkMCb+83joBuxDR9IU2XsnK2YE5YX8k27CGAMmDZy93QrOaViaoWa0kSmiai43rwoHIDM6mZJV7dD1kowJFDzwDn2zX3/TKIfW34J/LK5wvAGVSwsMJ0pbwadQyYhAL/6oPQZOjow6eBjMWzvdjY8CN2U20nyPbMI1isq0sayPDq8AXQohUQqzUz/ed7P2k3+gCQFlAjrXVWNUM6mtwNc88Nt0HFNZgfl0kqe+qhSv2U6nAvLJZ9XEd+rUGeJY6K9m7TTTHIWoAXF4glp5NNU6KZ07V8cYDOld2kYWYiq1zAFAmgA1eq++suwvZA==';
+    String RSAKey = System.label.RSAKey_HRIS;
     String jsonBody = '{"timesheet" : ' + listTimesheet + '}';
     TimesheetModel parse = TimesheetModel.parse(
       jsonBody.replace('pic_name', 'pic')
