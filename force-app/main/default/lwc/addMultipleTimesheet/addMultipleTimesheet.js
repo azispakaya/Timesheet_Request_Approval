@@ -6,7 +6,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:40:38
- * @modify date 2024-11-14 11:25:18
+ * @modify date 2024-11-14 11:35:41
  * @desc [Controller for Add multiple Timehseet]
  */
 import { LightningElement, api, track, wire } from "lwc";
@@ -23,13 +23,16 @@ import FORM_FACTOR from "@salesforce/client/formFactor";
 import convertCampaign from "@salesforce/apex/lwc_RequestTimesheetController.convertCampaign";
 import { getRecord } from "lightning/uiRecordApi";
 import { refreshApex } from "@salesforce/apex";
+import { NavigationMixin } from "lightning/navigation";
 
 import EMPLOYEE_NAME from "@salesforce/schema/Employee__c.Name";
 import EMPLOYEE_ID from "@salesforce/schema/Employee__c.Employee_ID__c";
 import EMPLOYEE_ROLE from "@salesforce/schema/Employee__c.Role__c";
 
 const FIEDS = [EMPLOYEE_NAME, EMPLOYEE_ID, EMPLOYEE_ROLE];
-export default class AddMultipleTimesheet extends LightningElement {
+export default class AddMultipleTimesheet extends NavigationMixin(
+  LightningElement
+) {
   @api recordId;
 
   @track timesheets = [];
@@ -661,8 +664,8 @@ export default class AddMultipleTimesheet extends LightningElement {
       const [resMSG, resCode] = resSubmit.split(",");
 
       if (resCode.includes('"000"')) {
-        this.refreshRelatedList();
         this.toast("Successfully Request Timesheet", "success", "Success");
+        await refreshApex(this.wiredEmployeeResult);
         this.dispatchEvent(new CloseActionScreenEvent());
         this.isLoading = false;
       } else {
@@ -687,15 +690,15 @@ export default class AddMultipleTimesheet extends LightningElement {
     // console.log('Timesheet => '+JSON.stringify(this.timesheets))
   }
 
-  async refreshRelatedList() {
-    await refreshApex(this.wiredEmployeeResult);
-    // await this[NavigationMixin.Navigate]({
-    //   type: "standard__recordPage",
-    //   attributes: {
-    //     recordId: this.recordId,
-    //     actionName: "view"
-    //   }
-    // });
+  async refreshTab() {
+    await this[NavigationMixin.Navigate]({
+      type: "standard__recordPage",
+      attributes: {
+        recordId: this.recordId,
+        objectApiName: "Employee__c",
+        actionName: "view"
+      }
+    });
   }
 
   //* validation Fields
