@@ -6,155 +6,174 @@
  * @desc [Controller for List Approval and Action]
  */
 
-
 global with sharing class lwc_ApprovalTimesheetController {
-   
-    @AuraEnabled
-    public static string ApproverName(Id recordPageId){
-        try {
-            List<Timesheet_Approval__c>  timesheetApprovals = [
-                SELECT Id, Approver__r.Name 
-                FROM Timesheet_Approval__c 
-                WHERE Id = : recordPageId limit 1
-                ];
+  @AuraEnabled
+  public static string ApproverName(Id recordPageId) {
+    try {
+      List<Timesheet_Approval__c> timesheetApprovals = [
+        SELECT Id, Approver__r.Name
+        FROM Timesheet_Approval__c
+        WHERE Id = :recordPageId
+        LIMIT 1
+      ];
 
-            if(timesheetApprovals.size() > 0){
-                
-                return timesheetApprovals[0].Approver__r.Name+';'+timesheetApprovals[0].Approver__c;
+      if (timesheetApprovals.size() > 0) {
+        return timesheetApprovals[0].Approver__r.Name +
+          ';' +
+          timesheetApprovals[0].Approver__c;
+      } else {
+        List<Employee__c> listEmployees = [
+          SELECT Id, Name
+          FROM Employee__c
+          WHERE Id = :recordPageId
+          LIMIT 1
+        ];
 
-            }else{
-                
-                List<Employee__c> listEmployees = [
-                    SELECT Id, Name
-                    FROM Employee__c
-                    WHERE Id =: recordPageId 
-                    LIMIT 1
-                ];
-
-                return listEmployees[0].Name+';'+listEmployees[0].Id;
-            }    
-            
-        } catch (Exception e) {
-            throw new AuraHandledException(e.getMessage());
-        }
+        return listEmployees[0].Name + ';' + listEmployees[0].Id;
+      }
+    } catch (Exception e) {
+      throw new AuraHandledException(e.getMessage());
     }
+  }
 
-    public class timesheetWrapper{
-        public string recordid;
-        public string ApprovalStatus;
-        public string Comment;
-        public string ApproveBy;
+  public class timesheetWrapper {
+    public string recordid;
+    public string ApprovalStatus;
+    public string Comment;
+    public string ApproveBy;
+  }
+
+  @AuraEnabled
+  public static string updateApprovalStatus(String Timesheets) {
+    try {
+      List<Timesheet__c> obj_timesheets = new List<Timesheet__c>();
+      List<timesheetWrapper> listTimesheet = (List<timesheetWrapper>) JSON.deserialize(
+        Timesheets,
+        List<timesheetWrapper>.class
+      );
+
+      for (timesheetWrapper singleTimesheet : listTimesheet) {
+        obj_timesheets.add(
+          new Timesheet__c(
+            Id = singleTimesheet.recordid,
+            Approval_Status__c = singleTimesheet.ApprovalStatus,
+            Comment__c = singleTimesheet.Comment,
+            Action_By__c = singleTimesheet.ApproveBy,
+            Action_Date__c = Date.today()
+          )
+        );
+      }
+
+      Database.update(obj_timesheets);
+
+      return '200';
+    } catch (Exception e) {
+      throw new AuraHandledException(e.getMessage());
     }
+  }
 
-    @AuraEnabled
-    public static string updateApprovalStatus(String Timesheets){
-        try {
+  @AuraEnabled
+  public static string getProjectManager(Id ProjectId, Id EmployeeID) {
+    try {
+      List<Project__c> listProject = [
+        SELECT Id, Project_Manager__c, Project_Admin__c
+        FROM Project__c
+        WHERE Id = :ProjectId
+        LIMIT 1
+      ];
 
-            List<Timesheet__c> obj_timesheets = new List<Timesheet__c>();
-            List<timesheetWrapper> listTimesheet = (List<timesheetWrapper>)JSON.deserialize(Timesheets,List<timesheetWrapper>.class);
+      List<Employee__c> listEmployee = [
+        SELECT
+          Id,
+          Name,
+          Supervisorr__c,
+          Manager__c,
+          Timesheet_User__c,
+          Timesheet_Approver__c
+        FROM Employee__c
+        WHERE Id = :EmployeeID
+        LIMIT 1
+      ];
 
-            for (timesheetWrapper singleTimesheet : listTimesheet) {
-                obj_timesheets.add(new Timesheet__c(
-                    Id = singleTimesheet.recordid, 
-                    Approval_Status__c = singleTimesheet.ApprovalStatus,
-                    Comment__c = singleTimesheet.Comment,
-                    Action_By__c = singleTimesheet.ApproveBy,
-                    Action_Date__c = Date.today()
-
-                    ));
-            }
-
-            Database.update(obj_timesheets);
-
-            return '200';
-        } catch (Exception e) {
-            throw new AuraHandledException(e.getMessage());
-        }
+      if (
+        listProject[0].Project_Manager__c == null ||
+        listEmployee[0].Timesheet_Approver__c
+      ) {
+        return listEmployee[0].Manager__c +
+          ';' +
+          listEmployee[0].Supervisorr__c;
+      }
+      return listProject[0].Project_Manager__c +
+        ';' +
+        listProject[0].Project_Admin__c;
+    } catch (Exception e) {
+      throw new AuraHandledException(e.getMessage());
     }
+  }
 
-    @AuraEnabled
-    public static string getProjectManager(Id ProjectId, Id EmployeeID){
-        try {
-            
-            List<Project__c> listProject = [
-                SELECT Id, Project_Manager__c, Project_Admin__c
-                FROM Project__c
-                WHERE Id = : ProjectId limit 1
-                
-            ];
+  public class mapTimesheetRecord {
+    public string ProjectId;
+    public string Approver;
+    public string start_date;
+    public string end_date;
+    public string stime;
+    public string EmployeeID;
+    public string remark;
+    public string Approver_Optional;
+    public string Email;
+    public string type;
+    public string ObjectRecordId;
+  }
 
-            List<Employee__c> listEmployee = [
-                    SELECT Id, Name, Supervisorr__c, Manager__c, Timesheet_User__c, Timesheet_Approver__c
-                    FROM Employee__c
-                    WHERE Id =:EmployeeID
-                    LIMIT 1
-            ];
-                
-            if (listProject[0].Project_Manager__c == null || listEmployee[0].Timesheet_Approver__c) {
+  @AuraEnabled
+  public static string createMultiTimesheet(
+    String Timesheet,
+    String ApprovalStatus
+  ) {
+    try {
+      List<Timesheet__c> createTimesheet = new List<Timesheet__c>();
 
-                return listEmployee[0].Manager__c+';'+listEmployee[0].Supervisorr__c;
+      List<mapTimesheetRecord> timesheetList = (List<mapTimesheetRecord>) JSON.deserialize(
+        Timesheet,
+        List<mapTimesheetRecord>.class
+      );
+      Id employeeId;
 
-            }
-            return listProject[0].Project_Manager__c+';'+listProject[0].Project_Admin__c;
+      for (mapTimesheetRecord singleTimesheet : timesheetList) {
+        employeeId = singleTimesheet.EmployeeID;
+        Timesheet__c timesheets = new Timesheet__c(
+          Project__c = singleTimesheet.ProjectId,
+          Timesheet_Approver__c = singleTimesheet.Approver,
+          Employee__c = singleTimesheet.EmployeeID,
+          Start_Date__c = Date.valueOf(singleTimesheet.start_date),
+          End_Date__c = Date.valueOf(singleTimesheet.end_date),
+          Time__c = singleTimesheet.stime,
+          Remarks__c = singleTimesheet.remark,
+          Approval_Status__c = ApprovalStatus,
+          Timesheet_Approver_Optional__c = singleTimesheet.Approver_Optional,
+          Email__c = singleTimesheet.Email
+        );
 
-        } catch (Exception e) {
-            throw new AuraHandledException(e.getMessage());
-        }
+        if (singleTimesheet.type == 'opty')
+          timesheets.Opportunity__c = singleTimesheet.ObjectRecordId;
+        else if (singleTimesheet.type == 'case')
+          timesheets.Case__c = singleTimesheet.ObjectRecordId;
+        else if (singleTimesheet.type == 'poc')
+          timesheets.POC__c = singleTimesheet.ObjectRecordId;
+
+        createTimesheet.add(timesheets);
+      }
+      Employee__c employee = new Employee__c();
+      employee.Id = employeeId;
+
+      Database.update(employee);
+
+      Database.insert(createTimesheet);
+
+      return '{"error_msg":"Successfully Create Timesheet", "error_code":"000" }';
+      // return ''+createTimesheet;
+    } catch (Exception e) {
+      throw new AuraHandledException(e.getMessage());
     }
-
-    public class mapTimesheetRecord{
-        public string ProjectId;
-        public string Approver;
-        public string start_date;
-        public string end_date;
-        public string stime;
-        public string EmployeeID;
-        public string remark;
-        public string Approver_Optional;
-        public string Email;
-        public string type;
-        public string ObjectRecordId;
-    }
-
-    @AuraEnabled
-    public static string createMultiTimesheet(String Timesheet, String ApprovalStatus){
-        try {
-            List<Timesheet__c> createTimesheet = new List<Timesheet__c>();
-
-            List<mapTimesheetRecord> timesheetList = (List<mapTimesheetRecord>)JSON.deserialize(Timesheet,List<mapTimesheetRecord>.class);
-
-            for(mapTimesheetRecord singleTimesheet : timesheetList){
-
-                Timesheet__c timesheets = new Timesheet__c(
-                    Project__c = singleTimesheet.ProjectId,
-                    Timesheet_Approver__c = singleTimesheet.Approver,
-                    Employee__c = singleTimesheet.EmployeeID,
-                    Start_Date__c = Date.valueOf(singleTimesheet.start_date),
-                    End_Date__c = Date.valueOf(singleTimesheet.end_date),
-                    Time__c = singleTimesheet.stime,
-                    Remarks__c = singleTimesheet.remark,
-                    Approval_Status__c = ApprovalStatus,
-                    Timesheet_Approver_Optional__c = singleTimesheet.Approver_Optional,
-                    Email__c = singleTimesheet.Email
-                );
-
-                if(singleTimesheet.type == 'opty')timesheets.Opportunity__c = singleTimesheet.ObjectRecordId;
-                else if(singleTimesheet.type == 'case')timesheets.Case__c = singleTimesheet.ObjectRecordId;
-                else if(singleTimesheet.type == 'poc')timesheets.POC__c = singleTimesheet.ObjectRecordId;
-
-                createTimesheet.add(timesheets);
-
-            }
-
-            Database.insert(createTimesheet);
-
-            return '{"error_msg":"Successfully Create Timesheet", "error_code":"000" }';
-            // return ''+createTimesheet;
-
-        } catch (Exception e) {
-            throw new AuraHandledException(e.getMessage());
-        }
-    }
-    
-
+  }
 }
