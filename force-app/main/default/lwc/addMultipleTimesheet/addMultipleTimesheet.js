@@ -6,7 +6,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:40:38
- * @modify date 2024-11-14 11:47:07
+ * @modify date 2024-11-14 12:04:20
  * @desc [Controller for Add multiple Timehseet]
  */
 import { LightningElement, api, track, wire } from "lwc";
@@ -669,6 +669,9 @@ export default class AddMultipleTimesheet extends NavigationMixin(
         await refreshApex(this.wiredEmployeeResult);
         await this.refreshTab();
         this.dispatchEvent(new RefreshEvent());
+
+        const currentUrl = window.location.href;
+        window.history.pushState({ path: currentUrl }, "", currentUrl);
 
         this.dispatchEvent(new CloseActionScreenEvent());
         this.isLoading = false;
