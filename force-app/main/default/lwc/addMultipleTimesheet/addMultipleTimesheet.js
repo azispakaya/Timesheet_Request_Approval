@@ -6,7 +6,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:40:38
- * @modify date 2024-11-14 11:35:41
+ * @modify date 2024-11-14 11:47:07
  * @desc [Controller for Add multiple Timehseet]
  */
 import { LightningElement, api, track, wire } from "lwc";
@@ -24,6 +24,7 @@ import convertCampaign from "@salesforce/apex/lwc_RequestTimesheetController.con
 import { getRecord } from "lightning/uiRecordApi";
 import { refreshApex } from "@salesforce/apex";
 import { NavigationMixin } from "lightning/navigation";
+import { RefreshEvent } from "lightning/refresh";
 
 import EMPLOYEE_NAME from "@salesforce/schema/Employee__c.Name";
 import EMPLOYEE_ID from "@salesforce/schema/Employee__c.Employee_ID__c";
@@ -666,6 +667,9 @@ export default class AddMultipleTimesheet extends NavigationMixin(
       if (resCode.includes('"000"')) {
         this.toast("Successfully Request Timesheet", "success", "Success");
         await refreshApex(this.wiredEmployeeResult);
+        await this.refreshTab();
+        this.dispatchEvent(new RefreshEvent());
+
         this.dispatchEvent(new CloseActionScreenEvent());
         this.isLoading = false;
       } else {
