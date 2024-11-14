@@ -6,7 +6,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:40:38
- * @modify date 2024-11-13 17:07:06
+ * @modify date 2024-11-14 11:25:18
  * @desc [Controller for Add multiple Timehseet]
  */
 import { LightningElement, api, track, wire } from "lwc";
@@ -23,10 +23,12 @@ import FORM_FACTOR from "@salesforce/client/formFactor";
 import convertCampaign from "@salesforce/apex/lwc_RequestTimesheetController.convertCampaign";
 import { getRecord } from "lightning/uiRecordApi";
 import { refreshApex } from "@salesforce/apex";
-// import { RefreshEvent } from "lightning/refresh";
-// import { getRecordNotifyChange } from "lightning/uiRecordApi";
-// import { NavigationMixin } from "lightning/navigation";
 
+import EMPLOYEE_NAME from "@salesforce/schema/Employee__c.Name";
+import EMPLOYEE_ID from "@salesforce/schema/Employee__c.Employee_ID__c";
+import EMPLOYEE_ROLE from "@salesforce/schema/Employee__c.Role__c";
+
+const FIEDS = [EMPLOYEE_NAME, EMPLOYEE_ID, EMPLOYEE_ROLE];
 export default class AddMultipleTimesheet extends LightningElement {
   @api recordId;
 
@@ -75,10 +77,15 @@ export default class AddMultipleTimesheet extends LightningElement {
   }
   wiredEmployeeResult;
 
-  @wire(getRecord, { recordId: "$recordId" })
+  @wire(getRecord, { recordId: "$recordId", fields: FIEDS })
   employeResult(res) {
     this.wiredEmployeeResult = res;
-    console.log(this.wiredEmployeeResult);
+    const { error, data } = res;
+    if (data) {
+      console.log(data);
+    } else {
+      console.log(error);
+    }
   }
 
   @wire(convertPicName, { RecordID: "$recordId", render: "submit" })
