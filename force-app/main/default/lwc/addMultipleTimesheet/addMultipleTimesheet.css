@@ -1,39 +1,273 @@
-.scrollable-size{
-    max-height: 30rem;
-    min-height: min-content;
+/* Base layout */
+.ts-shell {
+  position: relative;
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-.custom-icon-btn{
-    --slds-c-icon-color-foreground-default:#e51212; 
-    cursor: pointer;
-    transition: 0.3s ease;
-}
-.custom-icon-btn:hover{
-    --slds-c-icon-color-foreground-default:#991B1B; 
+/* Header */
+.ts-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding: 12px 16px;
+  background: #ffffff;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  /* IMPORTANT: allow dropdown menu to overflow */
+  overflow: visible;
 }
 
-.header-font{
-    font-size: 12px;
-    font-family: Arial, Helvetica, sans-serif;
-    font-weight: 700;
-    font-style: oblique;
+.ts-headerRight {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  overflow: visible;
 }
-header{
-    margin: 0;
+
+.ts-titleWrap {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
 }
-.slds-spinner-text {
-    width: 320px;
-    text-align: center;
-    font-weight: bold;
-    font-size: 16px;
-  }
-.slds-spinner--small .slds-spinner-text {
-    transform: translate(-36%, -50%) rotate(-90deg);
+.ts-title {
+  font-size: 16px;
+  font-weight: 700;
 }
-.slds-spinner--medium .slds-spinner-text {
-    transform: translate(-32%, -50%) rotate(-90deg);
+.ts-subtitle {
+  font-size: 12px;
+  opacity: 0.75;
 }
-.slds-spinner--large .slds-spinner-text {
-    transform: translate(-26%, -50%) rotate(-90deg);
+
+/* Body */
+.ts-body {
+  background: #fafaf9;
 }
+
+.scrollable-size {
+  max-height: 30rem;
+  overflow: auto;
+  padding: 12px;
+}
+
+/* Loading */
+.ts-loading {
+  padding: 24px;
+  display: grid;
+  place-items: center;
+  gap: 10px;
+}
+.ts-loadingText {
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+/* Row cards */
+.ts-rowCard {
+  margin-bottom: 12px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.ts-rowTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: #ffffff;
+}
+
+/* Mini badge (type) */
+.ts-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+.ts-badge--project {
+  background: #eef4ff;
+  color: #1b4fd9;
+}
+.ts-badge--case {
+  background: #fff1f2;
+  color: #b42318;
+}
+.ts-badge--poc {
+  background: #ecfdf3;
+  color: #067647;
+}
+.ts-badge--opty {
+  background: #fff7ed;
+  color: #b45309;
+}
+.ts-badge--campaign {
+  background: #f5f3ff;
+  color: #6d28d9;
+}
+
+/* Remove button */
+.ts-iconBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: #fff;
+  cursor: pointer;
+  font-weight: 900;
+  line-height: 1;
+}
+.ts-iconBtn:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+/* Pill group (Type menu + Add) */
+.ts-pillGroup {
+  --pill-h: 48px;
+
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 10px;
+
+  align-items: center;
+  padding: 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: #fff;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.06);
+
+  overflow: visible;
+}
+
+/* Smaller + tighter for header */
+.ts-pillGroup--header {
+  --pill-h: 44px;
+  padding: 6px;
+}
+
+/* Button menu styling */
+.ts-typeMenu {
+  --slds-c-button-radius-border: 14px;
+  --slds-c-button-line-height: calc(var(--pill-h) - 12px);
+  --slds-c-button-spacing-inline-start: 14px;
+  --slds-c-button-spacing-inline-end: 14px;
+}
+
+/* Add button styling */
+.ts-addBtn {
+  --slds-c-button-radius-border: 999px;
+  --slds-c-button-line-height: calc(var(--pill-h) - 12px);
+  --slds-c-button-spacing-inline-start: 18px;
+  --slds-c-button-spacing-inline-end: 18px;
+}
+
+/* Footer (actions only) */
+.ts-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 15;
+
+  background: #ffffff;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 12px 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ts-actions {
+  display: inline-flex;
+  gap: 10px;
+}
+
+.ts-actionBtn {
+  border-radius: 12px;
+  padding: 10px 16px;
+}
+.ts-cancelBtn {
+  border-radius: 12px;
+  padding: 10px 16px;
+}
+
+/* Mobile */
+.ts-shell--mobile .ts-header {
+  padding: 12px;
+}
+
+.ts-pillGroup--mobileHeader {
+  gap: 8px;
+  padding: 6px;
+}
+
+.ts-footer--mobileActions {
+  padding: 12px;
+}
+
+.ts-actions--mobile {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+
+/* Make date/lookup easier to tap */
+:host {
+  --slds-c-input-radius-border: 12px;
+}
+/* =========================
+   FIX: dropdown kepotong
+   ========================= */
+
+/* 1) Header sticky tetep, tapi jangan jadi "clipper" */
+.ts-headerBar,
+.ts-header,
+.ts-headerRight,
+.ts-pillDock,
+.ts-pillGroup {
+  overflow: visible !important;
+}
+
+/* 2) Biar dropdown selalu di atas card/header */
+.ts-headerBar {
+  position: sticky;
+  top: 0;
+  z-index: 9000; /* tinggiin biar aman */
+}
+
+/* 3) Parent yang nahan pill group jangan hidden */
+.ts-pillDock {
+  position: relative;
+  z-index: 9500;
+  overflow: visible !important;
+}
+
+/* 4) Naikin stacking untuk menu trigger */
+.ts-typeMenu {
+  position: relative;
+  z-index: 9999;
+}
+
+/* 5) Ini token bawaan LWC buat dropdown z-index (paling ngaruh di beberapa org) */
+:host {
+  --lwc-zIndexDropdown: 10000;
+}
+
+/* 6) Kalau ada container shell yang kebetulan auto/hidden, buka juga */
+.ts-shell {
+  overflow: visible;
+}
+
+/* 7) PENTING: kalau list container kamu scrollable, jangan bungkus header di dalamnya.
+      (header harus di luar area scrollable) */
