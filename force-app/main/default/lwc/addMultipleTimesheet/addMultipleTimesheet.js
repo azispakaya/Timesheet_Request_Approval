@@ -1,838 +1,682 @@
-/* eslint-disable eqeqeq */
-/* eslint-disable no-case-declarations */
-/* eslint-disable no-shadow */
-/* eslint-disable dot-notation */
-/**
- * @author [AcekBecek]
- * @email [nurazispakaya16@mail.com]
- * @create date 2024-03-24 15:40:38
- * @modify date 2025-12-30 17:06:12
- * @desc [Controller for Add multiple Timehseet]
- */
+/* eslint-disable no-confusing-arrow */
 import { LightningElement, api, track, wire } from "lwc";
-import convertPicName from "@salesforce/apex/lwc_RequestTimesheetController.convertEmployeeID";
-import convertProjectName from "@salesforce/apex/lwc_RequestTimesheetController.convertProjectName";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
+import FORM_FACTOR from "@salesforce/client/formFactor";
+
+// Apex (wrapper-based)
+import convertEmployeeID from "@salesforce/apex/lwc_RequestTimesheetController.convertEmployeeID";
+import convertProjectName from "@salesforce/apex/lwc_RequestTimesheetController.convertProjectName";
 import convertCaseNumber from "@salesforce/apex/lwc_RequestTimesheetController.convertCaseNumber";
 import convertPOCNumber from "@salesforce/apex/lwc_RequestTimesheetController.convertPOCNumber";
-import convertOpportunityId from "@salesforce/apex/lwc_RequestTimesheetController.convertOpportuniyId";
-import { CloseActionScreenEvent } from "lightning/actions";
-import assignApprover from "@salesforce/apex/lwc_ApprovalTimesheetController.getProjectManager";
-import createMultiTimesheet from "@salesforce/apex/lwc_ApprovalTimesheetController.createMultiTimesheet";
-import FORM_FACTOR from "@salesforce/client/formFactor";
+import convertOpportuniyId from "@salesforce/apex/lwc_RequestTimesheetController.convertOpportuniyId";
 import convertCampaign from "@salesforce/apex/lwc_RequestTimesheetController.convertCampaign";
-import { getRecord } from "lightning/uiRecordApi";
-import { refreshApex } from "@salesforce/apex";
-import { RefreshEvent } from "lightning/refresh";
+import { CloseActionScreenEvent } from "lightning/actions";
 
-import EMPLOYEE_NAME from "@salesforce/schema/Employee__c.Name";
-import EMPLOYEE_ID from "@salesforce/schema/Employee__c.Employee_ID__c";
-import EMPLOYEE_ROLE from "@salesforce/schema/Employee__c.Role__c";
+import createMultiTimesheet from "@salesforce/apex/lwc_ApprovalTimesheetController.createMultiTimesheet";
 
-const FIEDS = [EMPLOYEE_NAME, EMPLOYEE_ID, EMPLOYEE_ROLE];
-export default class AddMultipleTimesheet extends LightningElement {
-  @api recordId;
+export default class RequestTimesheet extends LightningElement {
+  @api recordId; // Employee__c Id
 
-  @track timesheets = [];
+  // ========= UI flags =========
+  @track uiState = {
+    isLoadingEmployee: false,
+    isConvertingRow: false,
+    isSaving: false,
+    isSubmitting: false
+  };
+
+  // ========= Header / Role =========
+  employeName = "Timesheet";
+  employeeRole = true; // same behavior with your existing HTML
+  selectedPicklist = "Project";
+
+  // used by your HTML
+  PicklistObject = [];
+
+  // ========= Lists =========
   @track listProjects = [];
   @track listCases = [];
   @track listPOCs = [];
   @track listOpportunities = [];
   @track listCampaigns = [];
 
-  @track countHours = 0;
-  @track isLoading = false;
+  // ========= employee context (from wrapper) =========
+  @track employeeContext = {
+    employeeRecordId: null,
+    employeeName: "",
+    employeeNumber: "",
+    email: "",
+    role: ""
+  };
 
-  isValid = false;
-  isVisible = true;
-
-  @track validationErrors = [];
-  showproject = true;
-  showcase = false;
-  showpoc = false;
-  showOpty = false;
-  showCampaign = false;
-  classProject = "slds-col slds-size_2-of-8 slds-m-around_small";
-
-  selectedPicklist = "Project";
-  fieldApiName = "Project__c";
-
-  employeName = null;
-  employeeRole = true;
-
-  formFactorClass = "slds-grid slds-grid_align-space";
-  mobileSupport;
-  desktopSupport;
-  PicklistObject = [];
-
-  connectedCallback() {
-    this.isVisible = true;
-
-    if (FORM_FACTOR === "Large") {
-      this.formFactorClass = "slds-grid slds-grid_align-space";
-      this.desktopSupport = true;
-    } else {
-      this.formFactorClass = "slds-grid slds-grid_vertical";
-      this.mobileSupport = true;
-    }
-  }
-  wiredEmployeeResult;
-
-  @wire(getRecord, { recordId: "$recordId", fields: FIEDS })
-  employeResult(res) {
-    this.wiredEmployeeResult = res;
-    const { error, data } = res;
-    if (data) {
-      console.log(data);
-    } else {
-      console.log(error);
-    }
+  // ========= Computed =========
+  get desktopSupport() {
+    return FORM_FACTOR !== "Small";
   }
 
-  @wire(convertPicName, { RecordID: "$recordId", render: "submit" })
-  PicName({ error, data }) {
-    if (data) {
-      const empRole = data.split(";")[2];
-      if (data.split(";")[3] == null || data.split(";")[3] === "")
-        this.employeName = "Timesheet";
-      else this.employeName = data.split(";")[3];
-
-      if (empRole === "Presales") {
-        this.employeeRole = false;
-        this.selectedPicklist = "Opportunity";
-        this.PicklistObject = [
-          {
-            label: "Opportunity",
-            value: "Opportunity"
-          },
-          {
-            label: "Project",
-            value: "Project"
-          },
-          {
-            label: "POC",
-            value: "POC"
-          }
-        ];
-      } else if (empRole === "Marketing") {
-        this.selectedPicklist = "Campaign";
-        this.PicklistObject = [
-          {
-            label: "Campaign",
-            value: "Campaign"
-          },
-          {
-            label: "Project",
-            value: "Project"
-          }
-        ];
-      } else {
-        this.selectedPicklist = "Project";
-        this.PicklistObject = [
-          {
-            label: "Project",
-            value: "Project"
-          },
-          {
-            label: "Case",
-            value: "Case"
-          },
-          {
-            label: "POC",
-            value: "POC"
-          }
-        ];
-      }
-    } else if (error) {
-      console.error(error);
-    }
+  get mobileSupport() {
+    return FORM_FACTOR === "Small";
   }
 
-  //* Field Handling
-  handleObject(event) {
-    if (this.timesheets.length < 0) {
-      this.toast(
-        "Unable to modify timesheet type when displaying more than one row.",
-        "warning",
-        "Warning"
-      );
-    } else {
-      this.selectedPicklist = event.detail.value;
-
-      if (this.selectedPicklist === "Project") {
-        this.classProject = "slds-col slds-size_2-of-8 slds-m-around_small";
-        this.showproject = true;
-        this.showcase = false;
-        this.showpoc = false;
-        this.showOpty = false;
-        this.showCampaign = false;
-      } else if (this.selectedPicklist === "Case") {
-        this.classProject = "slds-col slds-size_1-of-8 slds-m-around_small";
-        this.showproject = false;
-        this.showcase = true;
-        this.showpoc = false;
-        this.showOpty = false;
-        this.showCampaign = false;
-      } else if (this.selectedPicklist === "Opportunity") {
-        this.classProject = "slds-col slds-size_1-of-8 slds-m-around_small";
-        this.showproject = false;
-        this.showcase = false;
-        this.showpoc = false;
-        this.showOpty = true;
-        this.showCampaign = false;
-      } else if (this.selectedPicklist === "Campaign") {
-        this.showproject = false;
-        this.showcase = false;
-        this.showpoc = false;
-        this.showOpty = false;
-        this.showCampaign = true;
-      } else {
-        this.showproject = false;
-        this.showcase = false;
-        this.showpoc = true;
-        this.showOpty = false;
-        this.showCampaign = false;
-      }
-    }
-  }
-
-  fieldChangeHandler(event) {
-    //* define basic variable
-    const tempId = event.currentTarget.dataset.tempid;
-    // console.log(tempId);
-    // console.log("timesheets:", JSON.stringify(this.timesheets));
-    let timesheetRow = this.timesheets.find(
-      (record) => record.tempId == tempId //event.currentTarget.dataset.tempid
+  // keep this for your HTML binding
+  get isLoading() {
+    return (
+      this.uiState.isLoadingEmployee ||
+      this.uiState.isSaving ||
+      this.uiState.isSubmitting
     );
-    let fieldValue = event.target.value;
-    let fieldName = event.target.name;
-
-    //* add validation for null field required
-    this.controlValidityField();
-
-    //* set the data to the object
-    if (timesheetRow) {
-      switch (fieldName) {
-        case "case":
-          timesheetRow["ObjectRecordId"] = fieldValue;
-          convertCaseNumber({
-            caseId: fieldValue,
-            memberId: this.recordId
-          }).then((res) => {
-            let splitCode = res.split(";");
-            if (splitCode[0] === "200") {
-              let splitRes = splitCode[1].split(",");
-              this.isValid = true;
-              timesheetRow[fieldName] = splitRes[0];
-              timesheetRow["project_name"] = splitRes[1];
-              timesheetRow["spk"] = splitRes[2];
-              timesheetRow["ProjectId"] = splitRes[3];
-              timesheetRow["type"] = "case";
-
-              assignApprover({
-                ProjectId: splitRes[3],
-                EmployeeID: this.recordId
-              }).then((res) => {
-                timesheetRow["Approver"] = res.split(";")[0];
-                timesheetRow["Approver_Optional"] = res.split(";")[1];
-              });
-            } else if (splitCode[0] === "401") {
-              const inputFields = this.template.querySelectorAll(
-                `lightning-input-field[data-tempid="${tempId}"]`
-              );
-              if (inputFields) {
-                inputFields.forEach((field) => {
-                  field.reset();
-                });
-              }
-              this.toast(
-                "You are not assigned to this Case. Please ensure proper assignment for continued request Timesheet.",
-                "error",
-                "Case Invalid!!"
-              );
-              this.isValid = false;
-            } else {
-              this.isValid = false;
-            }
-          });
-          break;
-
-        case "project_name":
-          timesheetRow["ObjectRecordId"] = fieldValue;
-          convertProjectName({
-            ProjectID: event.target.value,
-            memberId: this.recordId
-          }).then((result) => {
-            if (result === "null") {
-              this.isValid = false;
-              const inputFields = this.template.querySelectorAll(
-                `lightning-input-field[data-tempid="${tempId}"]`
-              );
-              if (inputFields) {
-                inputFields.forEach((field) => {
-                  field.reset();
-                });
-              }
-              this.toast(
-                "You are not assigned to this project, or the project has been closed. Please contact the project manager for further assistance.",
-                "error",
-                "Project Invalid!!"
-              );
-            } else if (result !== "No Data") {
-              const projectName = result.split(",");
-              this.isValid = true;
-              timesheetRow["project_name"] = projectName[0];
-              timesheetRow["spk"] = projectName[1];
-              timesheetRow["ProjectId"] = projectName[2];
-              timesheetRow["type"] = "project";
-
-              assignApprover({
-                ProjectId: projectName[2],
-                EmployeeID: this.recordId
-              }).then((res) => {
-                timesheetRow["Approver"] = res.split(";")[0];
-                timesheetRow["Approver_Optional"] = res.split(";")[1];
-              });
-            } else {
-              this.isValid = false;
-            }
-          });
-
-          break;
-
-        case "poc_name":
-          timesheetRow["ObjectRecordId"] = fieldValue;
-          convertPOCNumber({
-            pocId: fieldValue,
-            memberId: this.recordId
-          }).then((res) => {
-            let spliCode = res.split(";");
-            if (spliCode[0] === "200") {
-              let splitRes = spliCode[1].split(",");
-              timesheetRow[fieldName] = splitRes[0];
-              timesheetRow["project_name"] = splitRes[1];
-              timesheetRow["spk"] = splitRes[2];
-              timesheetRow["ProjectId"] = splitRes[3];
-              timesheetRow["type"] = "poc";
-
-              assignApprover({
-                ProjectId: splitRes[3],
-                EmployeeID: this.recordId
-              }).then((res) => {
-                timesheetRow["Approver"] = res.split(";")[0];
-                timesheetRow["Approver_Optional"] = res.split(";")[1];
-              });
-              this.isValid = true;
-            } else if (spliCode[0] === "401") {
-              const inputFields = this.template.querySelectorAll(
-                `lightning-input-field[data-tempid="${tempId}"]`
-              );
-              if (inputFields) {
-                inputFields.forEach((field) => {
-                  field.reset();
-                });
-              }
-              this.toast(
-                "You are not assigned to this POC as a member or project manager. Please contact the POC administrator for further assistance.",
-                "error",
-                "POC Invalid"
-              );
-              this.isValid = false;
-            } else {
-              this.isValid = false;
-            }
-          });
-
-          break;
-
-        case "opty_name":
-          timesheetRow["ObjectRecordId"] = fieldValue;
-          convertOpportunityId({
-            OptyID: fieldValue,
-            memberId: this.recordId
-          }).then((res) => {
-            let splitCode = res.split(";");
-            if (splitCode[0] === "200") {
-              this.isValid = true;
-              let splitRes = splitCode[1].split(",");
-              timesheetRow[fieldName] = splitRes[0];
-              timesheetRow["project_name"] = splitRes[1];
-              timesheetRow["spk"] = splitRes[2];
-              timesheetRow["ProjectId"] = splitRes[3];
-              timesheetRow["type"] = "opty";
-            } else if (splitCode[1] === "401") {
-              const inputFields = this.template.querySelectorAll(
-                `lightning-input-field[data-tempid="${tempId}"]`
-              );
-              if (inputFields) {
-                inputFields.forEach((field) => {
-                  field.reset();
-                });
-              }
-              this.toast(
-                "You are not assigned to this Opportunity. Please contact the Opportunity administrator for further assistance.",
-                "error",
-                "Opportunity Invalid"
-              );
-              this.isValid = false;
-            } else {
-              this.isValid = false;
-            }
-          });
-          break;
-        case "campaign":
-          timesheetRow["ObjectRecordId"] = fieldValue;
-          convertCampaign({
-            campaignId: fieldValue,
-            memberId: this.recordId
-          }).then((res) => {
-            let splitCode = res.split(";");
-            if (splitCode[0] === "200") {
-              this.isValid = true;
-              let splitRes = splitCode[1].split(",");
-              timesheetRow[fieldName] = splitRes[0];
-              timesheetRow["project_name"] = splitRes[1];
-              timesheetRow["spk"] = splitRes[2];
-              timesheetRow["ProjectId"] = splitRes[3];
-              timesheetRow["type"] = "campaign";
-            } else if (splitCode[1] === "401") {
-              const inputFields = this.template.querySelectorAll(
-                `lightning-input-field[data-tempid="${tempId}"]`
-              );
-              if (inputFields) {
-                inputFields.forEach((field) => {
-                  field.reset();
-                });
-              }
-              this.toast(
-                "You are not assigned to this Opportunity. Please contact the Opportunity administrator for further assistance.",
-                "error",
-                "Opportunity Invalid"
-              );
-              this.isValid = false;
-            } else {
-              this.isValid = false;
-            }
-          });
-          break;
-
-        case "stime":
-          let checkHours = this.validateField(fieldName, fieldValue);
-          if (checkHours === "valid") {
-            timesheetRow[fieldName] = fieldValue;
-            this.countHours = this.sumTotalHours(this.timesheets);
-            // console.log('totalHours:', this.countHours);
-            // console.log('Timesheets:', JSON.stringify(this.timesheets))
-          } else {
-            this.toast(checkHours, "error", "Hours Invalid!!");
-          }
-
-          break;
-
-        case "date":
-          let checkingDateField = this.validateField(fieldName, fieldValue);
-          if (checkingDateField === "valid") {
-            timesheetRow["start_date"] = fieldValue;
-            timesheetRow["end_date"] = fieldValue;
-          }
-          break;
-        default:
-          let checkingField = this.validateField(fieldName, fieldValue);
-          if (checkingField === "valid") {
-            timesheetRow[fieldName] = fieldValue;
-          } else {
-            timesheetRow[fieldName] = null;
-            this.toast(checkingField, "error", "Invalid");
-          }
-      }
-    } else {
-      console.log("timesheetRow:", timesheetRow);
-      console.log("timesheets:", JSON.stringify(this.timesheets));
-    }
   }
 
-  //* Button Function
-
-  setPOCHandler() {
-    this.selectedPicklist = "POC";
-    this.addNewHandler();
+  // empty state flag used by HTML (your "isVisible")
+  get isVisible() {
+    const totalRows =
+      this.listProjects.length +
+      this.listCases.length +
+      this.listPOCs.length +
+      this.listOpportunities.length +
+      this.listCampaigns.length;
+    return totalRows === 0;
   }
 
-  setProjectHandler() {
-    this.selectedPicklist = "Project";
-    this.addNewHandler();
+  // your HTML uses formFactorClass for desktop grid layout
+  get formFactorClass() {
+    // desktop uses your existing "row layout" class
+    return "slds-grid slds-gutters_small";
   }
 
-  setCaseHandler() {
-    this.selectedPicklist = "Case";
-    this.addNewHandler();
-  }
-
-  setOptyHandler() {
-    this.selectedPicklist = "Opportunity";
-    this.addNewHandler();
-  }
-  setCampaignHandler() {
-    this.selectedPicklist = "campaign";
-    this.addNewHandler();
-  }
-
-  addNewHandler() {
-    if (this.timesheets.length > 4) {
-      this.toast(
-        "You've reached the maximum limit of entries. You can't add more than 5 entries.",
-        "error",
-        "Invalid"
-      );
-      return;
-    }
-
-    let typeTimesheet = this.selectedPicklist;
-
-    if (typeTimesheet === "Project") {
-      this.listProjects.push({
-        tempId: Date.now()
-      });
-    } else if (typeTimesheet === "Case") {
-      this.listCases.push({
-        tempId: Date.now()
-      });
-    } else if (typeTimesheet === "POC") {
-      this.listPOCs.push({
-        tempId: Date.now()
-      });
-    } else if (typeTimesheet === "Opportunity") {
-      this.listOpportunities.push({
-        tempId: Date.now()
-      });
-    } else if (typeTimesheet === "Campaign") {
-      this.listCampaigns.push({
-        tempId: Date.now()
-      });
-    }
-
-    this.timesheets = this.listProjects.concat(
-      this.listCases,
-      this.listPOCs,
-      this.listOpportunities,
-      this.listCampaigns
-    );
-    this.isVisible = false;
-
-    if (this.timesheets.length > 0) {
-      this.toast("Succesfully Add new Timesheet Entry", "success", "Info");
-    }
-  }
-
-  cancelHandler() {
-    this.timesheets = [];
-    this.dispatchEvent(new CloseActionScreenEvent());
-  }
-
-  removeHandler(event) {
-    // if(this.timesheets.length==1){
-    //     this.toast('Cannot Remove Last Timesheet Entry. Please ensure there is at least one entry remaining.','error','Warning!!')
-    //     return
-    // }
-    let entity = event.currentTarget.dataset.entitytype;
-    let entityId = event.currentTarget.dataset.tempid;
-    if (entity == "project") {
-      this.listProjects = this.listProjects.filter(
-        (record) => record.tempId != entityId
-      );
-    } else if (entity == "case") {
-      this.listCases = this.listCases.filter(
-        (record) => record.tempId != entityId
-      );
-    } else if (entity == "opty") {
-      this.listOpportunities = this.listOpportunities.filter(
-        (record) => record.tempId != entityId
-      );
-    } else if (entity == "campaign") {
-      this.listCampaigns = this.listCampaigns.filter(
-        (record) => record.tempId != entityId
-      );
-    } else {
-      this.listPOCs = this.listPOCs.filter(
-        (record) => record.tempId != entityId
-      );
-    }
-
-    this.timesheets = this.timesheets.filter(
-      (record) => record.tempId != event.currentTarget.dataset.tempid
-    );
-    this.toast("Successfully Remove Timesheet Entry", "warning", "Info");
-
-    if (this.timesheets.length == 0) {
-      this.isVisible = true;
-    }
-  }
-
-  async submitTimesheet() {
-    this.handlingSaveRecord("Waiting for Approval");
-  }
-
-  async saveTimesheet() {
-    this.handlingSaveRecord("Draft");
-  }
-
-  async handlingSaveRecord(setApprovalStatus) {
-    // console.log("Timesheet => " + JSON.stringify(this.timesheets));
-    try {
-      //* Validate fields
-      this.controlValidityField();
-      if (this.validationErrors.length !== 0) {
-        this.toast(
-          "Mandatory Fields Required. Please ensure all required fields are filled in.",
-          "error",
-          "Attention!!"
-        );
-        return;
-      }
-
-      //* Validate StartDate EndDate
-      if (!this.validateDateErrors(this.timesheets)) {
-        this.toast("Start Date must be less than End Date", "error", "Error!!");
-        return;
-      }
-
-      //* validate Project Errors
-      if (!this.validateProjectErrors(this.timesheets)) {
-        this.toast(
-          "Kindly Ensure Valid Projects are Selected for Your Timesheet. Please check your Project on Case",
-          "error",
-          "Project Invalid!!"
-        );
-        return;
-      }
-
-      //* Prepare data to send
-      if (!this.validateNullFields(this.timesheets)) {
-        this.toast(
-          "Please ensure the Start Date, End Date, and Time fields are entered in the correct Value.",
-          "error",
-          "Invalid!!"
-        );
-        return;
-      }
-
-      //* Fetch PicName
-      const employe = await convertPicName({
-        RecordID: this.recordId,
-        render: "submit"
-      });
-
-      //* Assign PicName and set billable flag
-      this.timesheets.forEach((record) => {
-        record.pic_name = employe.split(";")[0];
-        record.Email = employe.split(";")[1];
-        record.EmployeeID = this.recordId;
-        record.billable = "1";
-      });
-
-      //* Combine fields on array
-      this.timesheets = this.combineRemarkItem(this.timesheets);
-
-      //* Sort timesheets based on Start_date
-      this.timesheets = this.sortListCollection(this.timesheets);
-
-      // console.log('Timesheet:', JSON.stringify(this.timesheets));
-
-      if (!this.isValid) {
-        this.toast("Please Check Your Inputs!", "error", "Error");
-        return;
-      }
-
-      //* Submit timesheet
-      if (this.timesheets.length === 0) {
-        this.toast(
-          "Please input at least one timesheet entry before submitting the request.",
-          "warning",
-          "Reminder!!"
-        );
-        return;
-      }
-
-      this.isLoading = true;
-      const resSubmit = await createMultiTimesheet({
-        Timesheet: JSON.stringify(this.timesheets),
-        ApprovalStatus: setApprovalStatus
-      });
-
-      const [resMSG, resCode] = resSubmit.split(",");
-
-      if (resCode.includes('"000"')) {
-        this.toast("Successfully Request Timesheet", "success", "Success");
-        await refreshApex(this.wiredEmployeeResult);
-
-        this.dispatchEvent(new RefreshEvent());
-
-        this.dispatchEvent(new CloseActionScreenEvent());
-        this.isLoading = false;
-      } else {
-        this.toast(
-          `Failed to request timesheet with error: ${resMSG.split(":")[1]}`,
-          "error",
-          "Error"
-        );
-        this.isLoading = false;
-      }
-      // console.log('Response Apex => '+JSON.stringify(resSubmit));
-      // console.log(setApprovalStatus)
-    } catch (error) {
-      console.error("Error:", error);
-      this.toast(
-        "An error occurred while processing the request.",
-        "error",
-        "Error!!"
-      );
-    }
-
-    // console.log('Timesheet => '+JSON.stringify(this.timesheets))
-  }
-
-  //* validation Fields
-  controlValidityField() {
-    this.validationErrors = [];
-
-    const requiredFields = this.template.querySelectorAll(".validated");
-    requiredFields.forEach((field) => {
-      if (!field.value) {
-        this.validationErrors.push(field.label + "is Required");
-      }
-    });
-  }
-
-  validateField(fieldName, value) {
-    if (fieldName === "stime" && value > 24) {
-      return "Invalid Time Entry. The time should not exceed 24 hours. Please adjust your input.";
-    }
-
-    if (
-      (fieldName === "start_date" || fieldName === "end_date") &&
-      (new Date(value) > new Date() ||
-        new Date(value) <= new Date().setDate(new Date().getDate() - 9))
-    ) {
-      return "Please enter a date that is not later than today and not more than 7 days ago.";
-    }
-
-    if (
-      fieldName === "date" &&
-      (new Date(value) > new Date() ||
-        new Date(value) <= new Date().setDate(new Date().getDate() - 9))
-    ) {
-      return "Please enter a date that is not later than today and not more than 7 days ago.";
-    }
-
-    return "valid";
-  }
-
-  //* utility Function
-  toast(message, variant, title) {
-    const callToast = new ShowToastEvent({
-      title: title,
-      message: message,
-      variant: variant
-    });
-    this.dispatchEvent(callToast);
-  }
-
-  compareDate(startDate, endDate) {
-    const validStartDate = new Date(startDate);
-    const validEndDate = new Date(endDate);
-
-    if (validEndDate < validStartDate) {
-      return false;
-    }
-    return true;
-  }
-
-  sumTotalHours(listArray) {
+  // Count hours for header
+  get countHours() {
+    const allRows = this.getAllRows();
     let total = 0;
 
-    for (let i = 0; i < listArray.length; i++) {
-      total += parseInt(listArray[i].stime, 10);
-    }
+    allRows.forEach((rowItem) => {
+      const value = Number(rowItem.stime);
+      if (!Number.isNaN(value)) total += value;
+    });
 
     return total;
   }
 
-  validateDateErrors(listArray) {
-    let dateErrors = [];
-    listArray.forEach((fields) => {
-      if (!this.compareDate(fields.start_date, fields.end_date)) {
-        dateErrors.push(
-          `Start Date ${fields.start_date}: End Date ${fields.end_date}`
+  // ========= Wire employee context =========
+  @wire(convertEmployeeID, { RecordID: "$recordId", render: "loaddata" })
+  wiredEmployeeContext(wireResult) {
+    const { data, error } = wireResult;
+
+    this.uiState.isLoadingEmployee = true;
+
+    if (error) {
+      const normalizedError = this.normalizeApexError(error);
+      this.toast("Employee", normalizedError.message, "error");
+      this.uiState.isLoadingEmployee = false;
+      return;
+    }
+
+    if (data) {
+      const responseWrapper = this.normalizeResponse(data);
+
+      if (!responseWrapper.success) {
+        this.toast(
+          "Employee",
+          responseWrapper.message || "Failed to load employee context.",
+          "error"
         );
-      } else {
-        dateErrors = [];
+        this.uiState.isLoadingEmployee = false;
+        return;
       }
-    });
 
-    if (dateErrors.length > 0) {
-      return false;
+      const payload = responseWrapper.payload || {};
+      this.employeeContext = {
+        employeeRecordId: payload.employeeRecordId || this.recordId,
+        employeeName: payload.employeeName || "",
+        employeeNumber: payload.employeeNumber || "",
+        email: payload.email || "",
+        role: payload.role || ""
+      };
+
+      this.employeName = this.employeeContext.employeeName || "Timesheet";
+      this.applyRoleRules(this.employeeContext.role);
+
+      this.uiState.isLoadingEmployee = false;
     }
-    return true;
   }
 
-  validateNullFields(listArray) {
-    let nullFields = [];
-    listArray.forEach((item) => {
-      if (item.stime == null) {
-        nullFields.push("Time is Null");
-      } else {
-        nullFields = [];
-      }
-      if (item.start_date == null || item.end_date == null) {
-        nullFields.push("All dates must be filled");
-      } else {
-        nullFields = [];
-      }
-    });
+  applyRoleRules(roleValue) {
+    const role = roleValue || "";
 
-    if (nullFields.length > 0) {
-      return false;
+    if (role === "Presales") {
+      this.employeeRole = false;
+      this.selectedPicklist = "Opportunity";
+      this.PicklistObject = [
+        { label: "Opportunity", value: "Opportunity" },
+        { label: "Project", value: "Project" },
+        { label: "POC", value: "POC" }
+      ];
+      return;
     }
-    return true;
-  }
 
-  validateProjectErrors(listArray) {
-    let ProjectError = [];
-    listArray.forEach((fields) => {
-      if (fields.spk == null) {
-        ProjectError.push("Project is required");
-      } else {
-        ProjectError = [];
-      }
-    });
-    if (ProjectError.length > 0) {
-      return false;
+    if (role === "Marketing") {
+      this.employeeRole = true;
+      this.selectedPicklist = "Campaign";
+      this.PicklistObject = [
+        { label: "Campaign", value: "Campaign" },
+        { label: "Project", value: "Project" }
+      ];
+      return;
     }
-    return true;
+
+    // default
+    this.employeeRole = true;
+    this.selectedPicklist = "Project";
+    this.PicklistObject = [
+      { label: "Project", value: "Project" },
+      { label: "Case", value: "Case" },
+      { label: "POC", value: "POC" }
+    ];
   }
 
-  combineRemarkItem(listArray) {
-    listArray.forEach((item) => {
-      if (item.type === "case") {
-        item.remark = `Case ${item.case} - ${item.temp_remark}`;
-      } else if (item.type === "project") {
-        item.remark = `Project ${item.spk} - ${item.temp_remark}`;
-      } else if (item.type === "opty") {
-        item.remark = `Opportunity ${item.spk} - ${item.temp_remark}`;
-      } else if (item.type === "campaign") {
-        item.remark = `Campaign - ${item.temp_remark}`;
-      } else {
-        item.remark = `${item.poc_name} - ${item.temp_remark}`;
+  // ========= Header handlers (menu) =========
+  setProjectHandler() {
+    this.selectedPicklist = "Project";
+  }
+  setCaseHandler() {
+    this.selectedPicklist = "Case";
+  }
+  setPOCHandler() {
+    this.selectedPicklist = "POC";
+  }
+  setOptyHandler() {
+    this.selectedPicklist = "Opportunity";
+  }
+  setCampaignHandler() {
+    this.selectedPicklist = "Campaign";
+  }
+
+  // ========= Add row =========
+  addNewHandler() {
+    const typeLabel = this.selectedPicklist;
+    this.addRowByTypeLabel(typeLabel);
+  }
+
+  addRowByTypeLabel(typeLabel) {
+    const tempId = this.generateTempId();
+
+    const newRow = {
+      tempId,
+
+      // lookup record selected by user
+      objectRecordId: null,
+
+      // resolved from Apex convert payload
+      objectLabel: "",
+      projectId: null,
+      projectName: "",
+      projectSpk: "",
+
+      // approver info (optional, if you return them)
+      approverId: null,
+      approverOptionalId: null,
+
+      // user fields
+      date: null,
+      stime: null,
+      temp_remark: ""
+    };
+
+    if (typeLabel === "Project")
+      this.listProjects = [...this.listProjects, newRow];
+    if (typeLabel === "Case") this.listCases = [...this.listCases, newRow];
+    if (typeLabel === "POC") this.listPOCs = [...this.listPOCs, newRow];
+    if (typeLabel === "Opportunity")
+      this.listOpportunities = [...this.listOpportunities, newRow];
+    if (typeLabel === "Campaign")
+      this.listCampaigns = [...this.listCampaigns, newRow];
+  }
+
+  // ========= Child events =========
+  handleRowRemove(event) {
+    try {
+      const { tempId, entityType } = event.detail || {};
+      if (!tempId || !entityType) return;
+
+      // IMPORTANT: blur active element to prevent base-component focusing/validation crash
+      const activeElement = this.template.activeElement;
+      if (activeElement && typeof activeElement.blur === "function") {
+        activeElement.blur();
       }
-    });
-    return listArray;
+
+      if (entityType === "opty") {
+        this.listOpportunities = (this.listOpportunities || []).filter(
+          (row) => row.tempId !== tempId
+        );
+      } else if (entityType === "project") {
+        this.listProjects = (this.listProjects || []).filter(
+          (row) => row.tempId !== tempId
+        );
+      } else if (entityType === "case") {
+        this.listCases = (this.listCases || []).filter(
+          (row) => row.tempId !== tempId
+        );
+      } else if (entityType === "poc") {
+        this.listPOCs = (this.listPOCs || []).filter(
+          (row) => row.tempId !== tempId
+        );
+      } else if (entityType === "campaign") {
+        this.listCampaigns = (this.listCampaigns || []).filter(
+          (row) => row.tempId !== tempId
+        );
+      }
+
+      // optional:
+      // this.recalculateHours();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error("handleRowRemove crashed:", error);
+    }
   }
 
-  sortListCollection(listArray) {
-    listArray = listArray.sort(
-      (recordCurrent, recordPrev) =>
-        new Date(recordCurrent.start_date) - new Date(recordPrev.start_date)
+  async handleRowFieldChange(event) {
+    const { tempId, entityType, fieldName, value } = event.detail || {};
+    if (!tempId || !entityType || !fieldName) return;
+
+    console.log("handleRowFieldChange", JSON.stringify(event.detail, null, 2));
+
+    // 1) always update local state first
+    const patch = { [fieldName]: value };
+    if (entityType === "project") {
+      this.listProjects = this.updateRow(this.listProjects, tempId, patch);
+    } else if (entityType === "case") {
+      this.listCases = this.updateRow(this.listCases, tempId, patch);
+    } else if (entityType === "poc") {
+      this.listPOCs = this.updateRow(this.listPOCs, tempId, patch);
+    } else if (entityType === "opty") {
+      this.listOpportunities = this.updateRow(
+        this.listOpportunities,
+        tempId,
+        patch
+      );
+    } else if (entityType === "campaign") {
+      this.listCampaigns = this.updateRow(this.listCampaigns, tempId, patch);
+    }
+
+    // 2) if lookup changed -> trigger convert
+    const isLookupField = fieldName === "objectRecordId";
+    if (!isLookupField) return;
+
+    const employeeMemberId =
+      this.employeeContext.employeeRecordId || this.recordId;
+
+    const resolvedPayload = await this.resolveLookup(
+      entityType,
+      value, // objectRecordId
+      employeeMemberId
     );
-    return listArray;
+
+    if (resolvedPayload) {
+      // normalize if Apex doesn't return objectRecordId
+      const payloadToApply = {
+        ...resolvedPayload,
+        objectRecordId: resolvedPayload.objectRecordId || value
+      };
+
+      this.applyResolvedPayloadToRow(entityType, tempId, payloadToApply);
+    }
+  }
+
+  updateRow(list = [], tempId, patch = {}) {
+    const rowIndex = list.findIndex((row) => row.tempId === tempId);
+    if (rowIndex === -1) return list;
+
+    const updatedRow = { ...list[rowIndex], ...patch };
+    const clonedList = [...list];
+    clonedList[rowIndex] = updatedRow;
+    return clonedList;
+  }
+
+  recalculateHours() {
+    const allRows = [
+      ...(this.listOpportunities || []),
+      ...(this.listProjects || []),
+      ...(this.listCases || []),
+      ...(this.listPOCs || []),
+      ...(this.listCampaigns || [])
+    ];
+
+    const totalHours = allRows.reduce((sum, rowItem) => {
+      const hoursValue = Number(rowItem.stime || 0);
+      return sum + (Number.isFinite(hoursValue) ? hoursValue : 0);
+    }, 0);
+
+    this.countHours = totalHours;
+  }
+
+  // ========= Row update helpers =========
+  updateRowValue(entityType, tempId, fieldName, value) {
+    const updater = (rows) =>
+      rows.map((rowItem) =>
+        rowItem.tempId === tempId ? { ...rowItem, [fieldName]: value } : rowItem
+      );
+
+    if (entityType === "project")
+      this.listProjects = updater(this.listProjects);
+    if (entityType === "case") this.listCases = updater(this.listCases);
+    if (entityType === "poc") this.listPOCs = updater(this.listPOCs);
+    if (entityType === "opty")
+      this.listOpportunities = updater(this.listOpportunities);
+    if (entityType === "campaign")
+      this.listCampaigns = updater(this.listCampaigns);
+  }
+
+  applyResolvedPayloadToRow(entityType, tempId, payload) {
+    // payload shape recommended from Apex:
+    // {
+    //   objectRecordId,
+    //   objectLabel,
+    //   projectId,
+    //   projectName,
+    //   projectSpk,
+    //   approverId,
+    //   approverOptionalId
+    // }
+
+    const safePayload = payload || {};
+
+    const patch = {
+      objectLabel: safePayload.objectLabel || "",
+      projectId: safePayload.projectId || null,
+      projectName: safePayload.projectName || "",
+      projectSpk: safePayload.projectSpk || "",
+      approverId: safePayload.approverId || null,
+      approverOptionalId: safePayload.approverOptionalId || null,
+
+      // always keep selected objectRecordId if payload returns it
+      objectRecordId: safePayload.objectRecordId || null
+    };
+
+    Object.keys(patch).forEach((fieldName) => {
+      this.updateRowValue(entityType, tempId, fieldName, patch[fieldName]);
+    });
+  }
+
+  // ========= Convert lookup via Apex =========
+  async resolveLookup(entityType, objectRecordId, memberId) {
+    if (!objectRecordId) return null;
+
+    this.uiState.isConvertingRow = true;
+
+    try {
+      let rawResponse;
+
+      if (entityType === "project") {
+        rawResponse = await convertProjectName({
+          ProjectID: objectRecordId,
+          memberId
+        });
+      } else if (entityType === "case") {
+        rawResponse = await convertCaseNumber({
+          caseId: objectRecordId,
+          memberId
+        });
+      } else if (entityType === "poc") {
+        rawResponse = await convertPOCNumber({
+          pocId: objectRecordId,
+          memberId
+        });
+      } else if (entityType === "opty") {
+        rawResponse = await convertOpportuniyId({
+          OptyID: objectRecordId,
+          memberId
+        });
+      } else if (entityType === "campaign") {
+        rawResponse = await convertCampaign({
+          campaignId: objectRecordId,
+          memberId
+        });
+      } else {
+        this.toast("Convert", `Unsupported type: ${entityType}`, "error");
+        this.uiState.isConvertingRow = false;
+        return null;
+      }
+
+      const responseWrapper = this.normalizeResponse(rawResponse);
+
+      if (!responseWrapper.success) {
+        this.toast(
+          "Convert",
+          responseWrapper.message || "Convert failed.",
+          "error"
+        );
+        this.uiState.isConvertingRow = false;
+        return null;
+      }
+
+      console.log(
+        "convertLookup response",
+        JSON.stringify(responseWrapper, null, 2)
+      );
+
+      this.uiState.isConvertingRow = false;
+      return responseWrapper.payload || null;
+    } catch (caughtError) {
+      const normalizedError = this.normalizeApexError(caughtError);
+      this.toast("Convert", normalizedError.message, "error");
+      this.uiState.isConvertingRow = false;
+      return null;
+    }
+  }
+
+  // ========= Save / Submit =========
+  async saveTimesheet() {
+    await this.persistTimesheet("Draft");
+  }
+
+  async submitTimesheet() {
+    await this.persistTimesheet("Waiting for Approval");
+  }
+
+  async persistTimesheet(statusValue) {
+    // const isValid = this.validateAllInputs();
+    // if (!isValid) {
+    //   this.toast("Validation", "Please complete all required fields.", "error");
+    //   return;
+    // }
+
+    const payloadList = this.buildCreateTimesheetPayload();
+    // console.log("payloadList>>", JSON.stringify(payloadList, null, 2));
+
+    if (payloadList.length === 0) {
+      this.toast("Timesheet", "No entry to submit.", "warning");
+      return;
+    }
+
+    const isSubmit = statusValue === "Submitted";
+    this.uiState.isSubmitting = isSubmit;
+    this.uiState.isSaving = !isSubmit;
+
+    try {
+      const rawResponse = await createMultiTimesheet({
+        Timesheet: JSON.stringify(payloadList),
+        ApprovalStatus: statusValue
+      });
+
+      const responseWrapper = this.normalizeResponse(rawResponse);
+
+      if (!responseWrapper.success) {
+        this.toast(
+          "Timesheet",
+          responseWrapper.message || "Failed to save.",
+          "error"
+        );
+        this.uiState.isSubmitting = false;
+        this.uiState.isSaving = false;
+        return;
+      }
+
+      this.toast(
+        "Success",
+        responseWrapper.message || "Timesheet saved.",
+        "success"
+      );
+
+      // Optional: clear rows after submit only
+      if (isSubmit) {
+        this.resetAllRows();
+      }
+
+      this.uiState.isSubmitting = false;
+      this.uiState.isSaving = false;
+      this.cancelHandler();
+    } catch (caughtError) {
+      const normalizedError = this.normalizeApexError(caughtError);
+      this.toast("Timesheet", normalizedError.message, "error");
+      this.uiState.isSubmitting = false;
+      this.uiState.isSaving = false;
+    }
+  }
+
+  cancelHandler() {
+    // up to you: close quick action / modal / navigate back
+    this.dispatchEvent(
+      new CloseActionScreenEvent({ bubbles: true, composed: true })
+    );
+  }
+
+  // ========= Validation =========
+  validateAllInputs() {
+    let isValid = true;
+
+    // 1) Validate child rows (desktop)
+    const rowComponents = this.template.querySelectorAll("c-timesheet-row");
+    rowComponents.forEach((rowComponent) => {
+      const childValid = rowComponent.reportValidity();
+      if (!childValid) isValid = false;
+    });
+
+    // 2) Validate inline mobile inputs (mobile section uses direct inputs)
+    // This will only find elements in parent template (mobile markup)
+    const mobileInputs = this.template.querySelectorAll(
+      "lightning-input.validated, lightning-textarea.validated, lightning-input-field.validated"
+    );
+
+    mobileInputs.forEach((inputElement) => {
+      if (typeof inputElement.reportValidity === "function") {
+        const ok = inputElement.reportValidity();
+        if (!ok) isValid = false;
+      }
+    });
+
+    return isValid;
+  }
+
+  // ========= Payload builder =========
+  buildCreateTimesheetPayload() {
+    const employeeId = this.employeeContext.employeeRecordId || this.recordId;
+
+    const mapRowToRecord = (rowItem, entityType) => ({
+      ProjectId: rowItem.projectId,
+      Approver: rowItem.approverId,
+      Approver_Optional: rowItem.approverOptionalId,
+      start_date: rowItem.date,
+      end_date: rowItem.date,
+      stime: rowItem.stime,
+      EmployeeID: employeeId,
+      remark: rowItem.temp_remark,
+      Email: this.employeeContext.email,
+      type: entityType,
+      ObjectRecordId: rowItem.objectRecordId
+    });
+
+    const records = []
+      .concat(
+        this.listProjects.map((rowItem) => mapRowToRecord(rowItem, "project"))
+      )
+      .concat(this.listCases.map((rowItem) => mapRowToRecord(rowItem, "case")))
+      .concat(this.listPOCs.map((rowItem) => mapRowToRecord(rowItem, "poc")))
+      .concat(
+        this.listOpportunities.map((rowItem) => mapRowToRecord(rowItem, "opty"))
+      )
+      .concat(
+        this.listCampaigns.map((rowItem) => mapRowToRecord(rowItem, "campaign"))
+      );
+
+    return records;
+  }
+
+  // ========= Utility =========
+  getAllRows() {
+    return []
+      .concat(this.listProjects)
+      .concat(this.listCases)
+      .concat(this.listPOCs)
+      .concat(this.listOpportunities)
+      .concat(this.listCampaigns);
+  }
+
+  resetAllRows() {
+    this.listProjects = [];
+    this.listCases = [];
+    this.listPOCs = [];
+    this.listOpportunities = [];
+    this.listCampaigns = [];
+  }
+
+  generateTempId() {
+    return `${Date.now()}_${Math.random().toString(16).slice(2)}`;
+  }
+
+  toast(title, message, variant) {
+    this.dispatchEvent(new ShowToastEvent({ title, message, variant }));
+  }
+
+  normalizeResponse(apexData) {
+    let responseObject = apexData;
+
+    try {
+      if (typeof apexData === "string") {
+        responseObject = JSON.parse(apexData);
+      }
+    } catch (parseError) {
+      return {
+        success: false,
+        code: "INVALID_RESPONSE",
+        message: "Response is not valid JSON.",
+        payload: null
+      };
+    }
+
+    return {
+      success: responseObject?.success === true,
+      code: responseObject?.code,
+      message: responseObject?.message,
+      payload: responseObject?.payload
+    };
+  }
+
+  normalizeApexError(apexError) {
+    let message = "Unknown error.";
+    let code = "APEX_ERROR";
+
+    if (apexError?.body) {
+      if (Array.isArray(apexError.body)) {
+        message = apexError.body.map((item) => item.message).join(", ");
+      } else if (typeof apexError.body.message === "string") {
+        message = apexError.body.message;
+      }
+      code = apexError.body.errorCode || code;
+    } else if (apexError?.message) {
+      message = apexError.message;
+    }
+
+    return { code, message };
+  }
+
+  getListNameByEntityType(entityType) {
+    const mapEntityToList = {
+      opty: "listOpportunities",
+      project: "listProjects",
+      case: "listCases",
+      poc: "listPOCs",
+      campaign: "listCampaigns"
+    };
+    return mapEntityToList[entityType];
   }
 }

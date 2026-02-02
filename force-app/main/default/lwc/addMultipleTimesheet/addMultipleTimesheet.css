@@ -5,6 +5,7 @@
   border-radius: 16px;
   overflow: hidden;
   border: 1px solid rgba(0, 0, 0, 0.06);
+  /* height: 20rem; */
 }
 
 /* Header */
@@ -47,6 +48,7 @@
 
 /* Body */
 .ts-body {
+  max-height: 20rem;
   background: #fafaf9;
 }
 
@@ -195,11 +197,11 @@
 
 .ts-actionBtn {
   border-radius: 12px;
-  padding: 10px 16px;
+  /* padding: 10px 16px; */
 }
 .ts-cancelBtn {
   border-radius: 12px;
-  padding: 10px 16px;
+  /* padding: 10px 16px; */
 }
 
 /* Mobile */
@@ -271,3 +273,125 @@
 
 /* 7) PENTING: kalau list container kamu scrollable, jangan bungkus header di dalamnya.
       (header harus di luar area scrollable) */
+/* ===============================
+   LOADING OVERLAY (S2-ish)
+================================ */
+
+.ts-loadingOverlay {
+  position: absolute; /* IMPORTANT: parent shell harus position:relative */
+  inset: 0;
+  z-index: 9999;
+
+  display: grid;
+  place-items: center;
+
+  /* glass */
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  /* lock interactions */
+  pointer-events: all;
+  min-height: 25rem;
+}
+
+.ts-loadingCard {
+  width: min(520px, calc(100% - 32px));
+  border-radius: 16px;
+
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+  padding: 16px 16px 14px 16px;
+}
+
+.ts-loadingTop {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+/* spinner modern (pure CSS) */
+.ts-loadingSpinner {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-top-color: #1b96ff; /* brand-ish */
+  animation: tsSpin 0.9s linear infinite;
+}
+
+@keyframes tsSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ts-loadingMeta {
+  min-width: 0;
+}
+
+.ts-loadingTitle {
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 18px;
+  color: #1f1f1f;
+}
+
+.ts-loadingDesc {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 16px;
+  color: rgba(31, 31, 31, 0.72);
+}
+
+/* shimmer progress bar */
+.ts-loadingBar {
+  margin-top: 12px;
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.ts-loadingBarFill {
+  width: 40%;
+  height: 100%;
+  border-radius: 999px;
+
+  background: linear-gradient(
+    90deg,
+    rgba(27, 150, 255, 0.15),
+    rgba(27, 150, 255, 0.65),
+    rgba(27, 150, 255, 0.15)
+  );
+  animation: tsShimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes tsShimmer {
+  0% {
+    transform: translateX(-60%);
+  }
+  100% {
+    transform: translateX(220%);
+  }
+}
+
+/* mobile: lebih compact */
+@media (max-width: 480px) {
+  .ts-loadingTop {
+    grid-template-columns: 40px 1fr;
+  }
+  .ts-loadingSpinner {
+    width: 40px;
+    height: 40px;
+  }
+  .ts-loadingCard {
+    border-radius: 14px;
+    padding: 14px;
+  }
+}

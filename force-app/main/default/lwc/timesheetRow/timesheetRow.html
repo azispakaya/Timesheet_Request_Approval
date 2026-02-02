@@ -1,0 +1,73 @@
+<template>
+  <div class="ts-rowCard">
+    <div class="ts-rowTop">
+      <span class={badgeClass}>{badgeLabel}</span>
+
+      <lightning-icon
+        class="custom-icon-btn"
+        icon-name="utility:delete"
+        alternative-text="Remove"
+        size="small"
+        onclick={handleRemoveClick}
+      ></lightning-icon>
+    </div>
+
+    <div class="slds-p-around_medium">
+      <div class={formFactorClass}>
+        <!-- LOOKUP -->
+        <div class="slds-p-right_small slds-col slds-size_2-of-8">
+          <lightning-record-edit-form
+            density="comfy"
+            object-api-name="Timesheet__c"
+          >
+            <lightning-input-field
+              class="validated"
+              field-name={lookupFieldApiName}
+              variant="standard"
+              onchange={handleLookupChange}
+              required
+            ></lightning-input-field>
+          </lightning-record-edit-form>
+        </div>
+
+        <!-- DATE -->
+        <div class="slds-p-right_small slds-col slds-size_2-of-8">
+          <lightning-input
+            class="validated"
+            type="date"
+            name="date"
+            onchange={handleInputChange}
+            label="Date"
+            required
+          ></lightning-input>
+        </div>
+
+        <!-- TIME -->
+        <div class="slds-p-right_small slds-col slds-size_1-of-8">
+          <lightning-input
+            class="validated"
+            type="number"
+            name="stime"
+            onchange={handleInputChange}
+            label="Time"
+            required
+          ></lightning-input>
+        </div>
+
+        <!-- REMARKS -->
+        <div class="slds-col slds-size_3-of-8">
+          <lightning-textarea
+            class="validated"
+            max-length="255"
+            name="temp_remark"
+            placeholder="type here..."
+            variant="standard"
+            onblur={handleInputChange}
+            label="Remarks"
+            required
+          ></lightning-textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

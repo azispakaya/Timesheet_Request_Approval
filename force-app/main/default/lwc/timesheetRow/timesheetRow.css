@@ -1,0 +1,70 @@
+:host {
+  display: block;
+}
+
+.ts-rowCard {
+  background: var(--lwc-colorBackgroundAlt, #ffffff);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.ts-rowTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.custom-icon-btn {
+  cursor: pointer;
+  opacity: 0.85;
+}
+
+.custom-icon-btn:hover {
+  opacity: 1;
+  transform: translateY(-1px);
+}
+/* Badge base */
+.ts-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  line-height: 1;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* Type variants (feel free tweak) */
+.ts-badge--project {
+  background: rgba(26, 115, 232, 0.1);
+  border-color: rgba(26, 115, 232, 0.25);
+}
+
+.ts-badge--case {
+  background: rgba(219, 68, 55, 0.1);
+  border-color: rgba(219, 68, 55, 0.25);
+}
+
+.ts-badge--poc {
+  background: rgba(244, 180, 0, 0.14);
+  border-color: rgba(244, 180, 0, 0.3);
+}
+
+.ts-badge--opty {
+  background: rgba(15, 157, 88, 0.12);
+  border-color: rgba(15, 157, 88, 0.28);
+}
+
+.ts-badge--campaign {
+  background: rgba(142, 36, 170, 0.1);
+  border-color: rgba(142, 36, 170, 0.25);
+}
