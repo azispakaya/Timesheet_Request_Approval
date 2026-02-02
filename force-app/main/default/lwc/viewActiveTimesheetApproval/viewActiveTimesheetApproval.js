@@ -7,7 +7,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:45:40
- * @modify date 2024-08-29 14:06:21
+ * @modify date 2025-12-30 17:04:25
  * @desc [Controller for List Timesheet Approval  Page]
  */
 
@@ -83,9 +83,9 @@ export default class ViewActiveTimesheetApproval extends NavigationMixin(
                   { Approval_Status__c: { eq: $ApprovalStatus } }
                   { Start_Date__c: { gte: { value: $startDate } } }
                   { End_Date__c: { lte: { value: $endDate } } }
+                  { not: { Employee__c: { eq: "" } } }
+                  { not: { Project__c: { eq: "" } } }
                 ]
-                not: { Employee__c: { eq: "" } }
-                not: { Project__c: { eq: "" } }
               }
               orderBy: { Start_Date__c: { order: DESC } }
             ) {

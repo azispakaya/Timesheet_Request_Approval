@@ -10,7 +10,7 @@
 public without sharing class lwc_RequestTimesheetController {
   @AuraEnabled
   public static string submitTimesheet(String listTimesheet) {
-    String RSAKey = System.label.RSAKey_HRIS;
+    String RSAKey = ''; //System.label.RSAKey_HRIS;
     String jsonBody = '{"timesheet" : ' + listTimesheet + '}';
     TimesheetModel parse = TimesheetModel.parse(
       jsonBody.replace('pic_name', 'pic')
@@ -134,15 +134,25 @@ public without sharing class lwc_RequestTimesheetController {
       return 'No Employee';
 
     if (!caseId.equals('')) {
+      List<Case_Escalation_History__c> listCaseEsc = [
+        SELECT Id, Case__c
+        FROM Case_Escalation_History__c
+        WHERE
+          Case__c = :caseId
+          AND From_Engineer__r.Employee_ID__c = :employeeid
+        LIMIT 1
+      ];
+
       String queries = 'SELECT Id, CaseNumber, Project__c, Project__r.Name, Project__r.SPK__c FROM Case WHERE Id =:caseId ';
 
-      if (employeeid != '952300') {
+      if (listCaseEsc.size() == 0) {
         queries += 'AND Assigned_To__r.Employee_ID__c =:employeeid ';
       }
 
       queries += 'LIMIT 1';
 
       List<Case> listCase = Database.query(queries);
+
       // Assigned_To__r.Employee_ID__c = '952300'
 
       if (listCase.size() > 0) {
