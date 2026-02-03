@@ -30,25 +30,25 @@
                   label={selectedPicklist}
                   menu-alignment="auto"
                 >
-                  <template if:true={employeeRole}>
-                    <lightning-menu-item
-                      value="Project"
-                      label="Project"
-                      onclick={setProjectHandler}
-                    ></lightning-menu-item>
-                    <lightning-menu-item
-                      value="Case"
-                      label="Case"
-                      onclick={setCaseHandler}
-                    ></lightning-menu-item>
-                    <lightning-menu-item
-                      value="POC"
-                      label="POC"
-                      onclick={setPOCHandler}
-                    ></lightning-menu-item>
-                  </template>
-
+                  <!-- <template if:true={employeeRole}> -->
                   <lightning-menu-item
+                    value="Project"
+                    label="Project"
+                    onclick={setProjectHandler}
+                  ></lightning-menu-item>
+                  <lightning-menu-item
+                    value="Case"
+                    label="Case"
+                    onclick={setCaseHandler}
+                  ></lightning-menu-item>
+                  <lightning-menu-item
+                    value="POC"
+                    label="POC"
+                    onclick={setPOCHandler}
+                  ></lightning-menu-item>
+                  <!-- </template> -->
+
+                  <!-- <lightning-menu-item
                     value="Opportunity"
                     label="Opportunity"
                     onclick={setOptyHandler}
@@ -57,7 +57,7 @@
                     value="Campaign"
                     label="Campaign"
                     onclick={setCampaignHandler}
-                  ></lightning-menu-item>
+                  ></lightning-menu-item> -->
                 </lightning-button-menu>
 
                 <lightning-button
