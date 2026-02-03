@@ -17,7 +17,9 @@
     <div class="slds-p-around_medium">
       <div class={formFactorClass}>
         <!-- LOOKUP -->
-        <div class="slds-p-right_small slds-col slds-size_2-of-8">
+        <div
+          class="slds-p-right_small ts-col--lookup slds-col slds-size_2-of-8"
+        >
           <div class={lookupWrapClass}>
             <lightning-record-edit-form
               density="comfy"
@@ -40,7 +42,7 @@
         </div>
 
         <!-- DATE -->
-        <div class="slds-p-right_small slds-col slds-size_2-of-8">
+        <div class="slds-p-right_small ts-col--date slds-col slds-size_2-of-8">
           <lightning-input
             class="validated"
             type="date"
@@ -53,7 +55,9 @@
         </div>
 
         <!-- TIME -->
-        <div class="slds-p-right_small slds-col slds-size_1-of-8">
+        <div
+          class="slds-p-right_small ts-col--remark ts-col--time slds-col slds-size_1-of-8"
+        >
           <lightning-input
             class="validated"
             type="number"

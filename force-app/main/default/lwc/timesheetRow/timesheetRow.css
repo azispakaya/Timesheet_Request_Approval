@@ -90,3 +90,104 @@
   box-shadow: 0 0 0 2px rgba(27, 150, 255, 0.35);
   background: rgba(27, 150, 255, 0.08);
 }
+/* =========================
+   MOBILE VERSION (TimesheetRow)
+   - use formFactorClass = "ts-grid--mobile"
+   ========================= */
+
+.ts-grid--mobile {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Date & Time side-by-side */
+  gap: 12px;
+  align-items: start;
+}
+
+/* helper wrappers (optional, but recommended for consistency) */
+.ts-m-col {
+  min-width: 0;
+}
+
+.ts-m-col--full {
+  grid-column: 1 / -1;
+}
+
+.ts-m-col--half {
+  grid-column: auto;
+}
+
+/* Jika layar kecil banget, Date & Time stack */
+@media (max-width: 380px) {
+  .ts-grid--mobile {
+    grid-template-columns: 1fr;
+  }
+
+  .ts-m-col--half {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Lookup error spacing biar rapih */
+.slds-form-element__help {
+  margin-top: 6px;
+  font-size: 11px;
+  line-height: 14px;
+}
+
+/* Optional: bikin input lebih "touch friendly" di mobile */
+@media (max-width: 768px) {
+  :host {
+    --slds-c-input-radius-border: 12px;
+    --slds-c-textarea-radius-border: 12px;
+  }
+
+  /* kasih jarak sedikit supaya ga dempet */
+  .ts-rowCard .slds-p-around_medium {
+    padding: 14px;
+  }
+}
+/* =========================
+   Mobile Layout Overrides
+   Keep SLDS classes, but make it responsive
+   ========================= */
+@media (max-width: 480px) {
+  /* grid wrapper jadi wrap (tetep SLDS) */
+  .ts-rowCard .slds-grid {
+    flex-wrap: wrap;
+    row-gap: 10px; /* spacing vertical */
+  }
+
+  /* default: semua kolom full width dulu */
+  .ts-rowCard .slds-col {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  /* hapus padding-right SLDS di mobile biar ga sempit */
+  .ts-rowCard .slds-p-right_small {
+    padding-right: 0 !important;
+  }
+
+  /* LOOKUP full width */
+  .ts-rowCard .ts-col--lookup {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  /* DATE + TIME setengah-setengah */
+  .ts-rowCard .ts-col--date,
+  .ts-rowCard .ts-col--time {
+    flex: 0 0 calc(50% - 6px);
+    max-width: calc(50% - 6px);
+  }
+
+  /* bikin gap horizontal antara date & time */
+  .ts-rowCard .ts-col--date {
+    margin-right: 12px;
+  }
+
+  /* REMARKS full width */
+  .ts-rowCard .ts-col--remarks {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}

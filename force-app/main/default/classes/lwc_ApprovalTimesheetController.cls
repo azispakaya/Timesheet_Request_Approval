@@ -293,10 +293,10 @@ global with sharing class lwc_ApprovalTimesheetController {
       }
 
       // Keep original behavior (update employee record without changes – likely to trigger automation)
-      if (resolvedEmployeeId != null) {
-        Employee__c employeeToTouch = new Employee__c(Id = resolvedEmployeeId);
-        Database.update(employeeToTouch);
-      }
+      //   if (resolvedEmployeeId != null) {
+      //     Employee__c employeeToTouch = new Employee__c(Id = resolvedEmployeeId);
+      //     Database.update(employeeToTouch);
+      //   }
 
       Database.insert(timesheetsToInsert);
 

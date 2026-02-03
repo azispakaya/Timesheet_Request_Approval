@@ -102,9 +102,7 @@ export default class RequestTimesheet extends LightningElement {
     return totalRows === 0;
   }
 
-  // your HTML uses formFactorClass for desktop grid layout
   get formFactorClass() {
-    // desktop uses your existing "row layout" class
     return "slds-grid slds-gutters_small";
   }
 
