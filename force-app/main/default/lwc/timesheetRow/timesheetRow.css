@@ -68,3 +68,25 @@
   background: rgba(142, 36, 170, 0.1);
   border-color: rgba(142, 36, 170, 0.25);
 }
+/* subtle delete icon button */
+.ts-removeBtn {
+  --slds-c-icon-color-foreground-default: rgba(0, 0, 0, 0.55);
+  --slds-c-icon-color-foreground: rgba(0, 0, 0, 0.55);
+
+  border-radius: 10px;
+}
+
+/* hover/focus ring yang soft */
+.ts-removeBtn:hover {
+  --slds-c-icon-color-foreground-default: rgba(0, 0, 0, 0.75);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.ts-removeBtn:focus {
+  outline: none;
+}
+
+.ts-removeBtn:focus-visible {
+  box-shadow: 0 0 0 2px rgba(27, 150, 255, 0.35);
+  background: rgba(27, 150, 255, 0.08);
+}

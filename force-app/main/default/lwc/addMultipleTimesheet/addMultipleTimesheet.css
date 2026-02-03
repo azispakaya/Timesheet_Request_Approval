@@ -34,9 +34,25 @@
 
 .ts-titleWrap {
   display: flex;
+  flex-direction: column; /* biar version turun ke line 2 */
+  gap: 2px;
+}
+
+/* line 1 tetap sejajar */
+.ts-titleRow {
+  display: flex;
   align-items: baseline;
   gap: 10px;
 }
+
+/* version: kecil, italic, muted */
+.ts-versionText {
+  font-size: 11px;
+  font-style: italic;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.45);
+}
+
 .ts-title {
   font-size: 16px;
   font-weight: 700;

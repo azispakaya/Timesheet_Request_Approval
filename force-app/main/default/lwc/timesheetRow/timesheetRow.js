@@ -119,7 +119,7 @@ export default class TimesheetRow extends LightningElement {
     this._lastValidLookup = nextValue;
     this.clearLookupError();
 
-    console.log("resolveLookupInChild", JSON.stringify(result, null, 2));
+    // console.log("resolveLookupInChild", JSON.stringify(result, null, 2));
 
     this.dispatchRowFieldChange({
       fieldName: "objectRecordId",
@@ -195,6 +195,8 @@ export default class TimesheetRow extends LightningElement {
           payload: null
         };
       }
+
+      //   console.log("resolveLookupInChild", JSON.stringify(wrapper, null, 2));
 
       return { success: true, message: "", payload: wrapper.payload || null };
     } catch (e) {

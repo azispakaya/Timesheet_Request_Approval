@@ -134,7 +134,8 @@ global with sharing class lwc_ApprovalTimesheetController {
     try {
       TimesheetResponseModels.ApproverPair pair = resolveApproverIds(
         ProjectId,
-        EmployeeID
+        EmployeeID,
+        'project'
       );
       return TimesheetResponseModels.ResponseWrapper.ok(
         pair,
@@ -153,7 +154,8 @@ global with sharing class lwc_ApprovalTimesheetController {
   // =========================
   public static TimesheetResponseModels.ApproverPair resolveApproverIds(
     Id projectId,
-    Id employeeId
+    Id employeeId,
+    String source
   ) {
     if (projectId == null || employeeId == null) {
       TimesheetResponseModels.ApproverPair emptyPair = new TimesheetResponseModels.ApproverPair();
@@ -189,6 +191,17 @@ global with sharing class lwc_ApprovalTimesheetController {
 
     // Original logic preserved:
     // If project manager null OR employee is special timesheet approver => use employee manager/supervisor
+
+    if (source == 'project') {
+      approverPair.approverId = projectRecord.Project_Manager__c == null
+        ? employeeRecord.Manager__c
+        : projectRecord.Project_Manager__c;
+      approverPair.approverOptionalId = projectRecord.Project_Admin__c == null
+        ? employeeRecord.Supervisorr__c
+        : projectRecord.Project_Admin__c;
+      return approverPair;
+    }
+
     if (
       projectRecord.Project_Manager__c == null ||
       employeeRecord.Timesheet_Approver__c

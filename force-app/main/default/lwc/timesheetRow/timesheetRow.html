@@ -3,13 +3,15 @@
     <div class="ts-rowTop">
       <span class={badgeClass}>{badgeLabel}</span>
 
-      <lightning-icon
-        class="custom-icon-btn"
-        icon-name="utility:delete"
+      <lightning-button-icon
+        class="ts-removeBtn"
+        icon-name="utility:close"
         alternative-text="Remove"
-        size="small"
+        title="Remove"
+        variant="bare"
+        size="medium"
         onclick={handleRemoveClick}
-      ></lightning-icon>
+      ></lightning-button-icon>
     </div>
 
     <div class="slds-p-around_medium">

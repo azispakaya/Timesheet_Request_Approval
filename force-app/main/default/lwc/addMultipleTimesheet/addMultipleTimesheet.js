@@ -480,10 +480,10 @@ export default class RequestTimesheet extends LightningElement {
 
   async persistTimesheet(statusValue) {
     const payloadList = this.buildCreateTimesheetPayload();
-    console.log("payloadList>>", JSON.stringify(payloadList, null, 2));
-    console.log("isValid", this.uiMessage.visible);
-    console.log("uiMessage", JSON.stringify(this.uiMessage, null, 2));
-    return;
+    // console.log("payloadList>>", JSON.stringify(payloadList, null, 2));
+    // console.log("isValid", this.uiMessage.visible);
+    // console.log("uiMessage", JSON.stringify(this.uiMessage, null, 2));
+    // return;
     // const isValid = this.validateAllInputs();
     // if (!isValid) {
     //   this.toast("Validation", "Please complete all required fields.", "error");
@@ -613,10 +613,10 @@ export default class RequestTimesheet extends LightningElement {
   buildCombinedRemark(rowItem, entityType) {
     const r = rowItem || {};
 
-    console.log(
-      "buildCombinedRemark rowItem",
-      JSON.stringify(rowItem, null, 2)
-    );
+    // console.log(
+    //   "buildCombinedRemark rowItem",
+    //   JSON.stringify(rowItem, null, 2)
+    // );
 
     // prefix rule:
     // - project => SPK (fallback projectName)

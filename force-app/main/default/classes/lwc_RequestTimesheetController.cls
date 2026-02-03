@@ -1,53 +1,5 @@
 public without sharing class lwc_RequestTimesheetController {
   // =========================
-  // Submit callout (ke endpoint HRIS lu)
-  // =========================
-  @AuraEnabled
-  public static TimesheetResponseModels.ResponseWrapper submitTimesheet(
-    String listTimesheet
-  ) {
-    try {
-      String rsaKey = ''; // System.label.RSAKey_HRIS;
-      String jsonBody = '{"timesheet" : ' + listTimesheet + '}';
-
-      // NOTE: TimesheetModel must exist in your org (same as your old code)
-      TimesheetModel parseModel = TimesheetModel.parse(
-        jsonBody.replace('pic_name', 'pic')
-      );
-
-      Http httpClient = new Http();
-      HttpRequest httpRequest = new HttpRequest();
-
-      httpRequest.setBody(
-        JSON.serializePretty(parseModel).replace('stime', 'time')
-      );
-      httpRequest.setMethod('POST');
-      httpRequest.setEndpoint('' + System.label.sunfishURL_Timesheet);
-      httpRequest.setHeader('content-type', 'application/json');
-      httpRequest.setHeader('X-SFAPI-AppName', 'msinfokom');
-      httpRequest.setHeader('X-SFAPI-Account', 'sfapi');
-      httpRequest.setHeader('X-SFAPI-RSAKey', rsaKey);
-
-      HttpResponse httpResponse = httpClient.send(httpRequest);
-
-      // Return raw response as payload (you can parse later if needed)
-      Map<String, Object> payload = new Map<String, Object>{
-        'requestBody' => httpRequest.getBody(),
-        'responseStatus' => httpResponse.getStatus(),
-        'responseStatusCode' => httpResponse.getStatusCode(),
-        'responseBody' => httpResponse.getBody()
-      };
-
-      return TimesheetResponseModels.ok(payload, 'Timesheet submitted.');
-    } catch (Exception caughtException) {
-      return TimesheetResponseModels.fail(
-        'SERVER_ERROR',
-        caughtException.getMessage()
-      );
-    }
-  }
-
-  // =========================
   // Employee Context (replacement for split convertEmployeeID)
   // Keep name convertEmployeeID to avoid breaking LWC imports
   // =========================
@@ -173,7 +125,8 @@ public without sharing class lwc_RequestTimesheetController {
 
       TimesheetResponseModels.ApproverPair approverPair = lwc_ApprovalTimesheetController.resolveApproverIds(
         responseProjectId,
-        (Id) memberId
+        (Id) memberId,
+        'project'
       );
 
       lookupResult.approverId = approverPair.approverId;
@@ -290,7 +243,8 @@ public without sharing class lwc_RequestTimesheetController {
 
       TimesheetResponseModels.ApproverPair approverPair = lwc_ApprovalTimesheetController.resolveApproverIds(
         resolvedProjectId,
-        (Id) memberId
+        (Id) memberId,
+        'case'
       );
 
       lookupResult.approverId = approverPair.approverId;
@@ -382,7 +336,8 @@ public without sharing class lwc_RequestTimesheetController {
 
       TimesheetResponseModels.ApproverPair approverPair = lwc_ApprovalTimesheetController.resolveApproverIds(
         pocProject.Id,
-        (Id) memberId
+        (Id) memberId,
+        'poc'
       );
 
       lookupResult.approverId = approverPair.approverId;
@@ -453,7 +408,8 @@ public without sharing class lwc_RequestTimesheetController {
 
       TimesheetResponseModels.ApproverPair approverPair = lwc_ApprovalTimesheetController.resolveApproverIds(
         businessDevelopmentProject.Id,
-        (Id) memberId
+        (Id) memberId,
+        'opty'
       );
 
       lookupResult.approverId = approverPair.approverId;
@@ -508,7 +464,8 @@ public without sharing class lwc_RequestTimesheetController {
 
       TimesheetResponseModels.ApproverPair approverPair = lwc_ApprovalTimesheetController.resolveApproverIds(
         projectRecord.Id,
-        (Id) memberId
+        (Id) memberId,
+        'campaign'
       );
 
       lookupResult.approverId = approverPair.approverId;
