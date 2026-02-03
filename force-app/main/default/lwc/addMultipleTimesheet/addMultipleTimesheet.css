@@ -395,3 +395,132 @@
     padding: 14px;
   }
 }
+/* ===============================
+   LAYOUT FIX (NO OVERLAP)
+   - shell: flex column
+   - body: flex area (no scroll)
+   - list: the only scroll container
+================================ */
+
+/* 1) Shell jadi container tinggi konsisten */
+.ts-shell {
+  display: flex;
+  flex-direction: column;
+
+  /* konsisten tapi responsif (nggak bikin design berubah drastis) */
+  height: clamp(22rem, 72vh, 48rem);
+
+  /* tetap untuk overlay */
+  position: relative;
+
+  /* keep dropdown fix behavior you already set */
+  overflow: visible;
+}
+
+/* Mobile sedikit lebih tinggi */
+.ts-shell--mobile {
+  height: clamp(22rem, 78vh, 56rem);
+}
+
+/* 2) Header & footer jangan ikut “ngecil” */
+.ts-headerBar,
+.ts-footer {
+  flex: 0 0 auto;
+}
+
+/* 3) Body ambil sisa space, tapi jangan jadi scroll */
+.ts-body {
+  flex: 1 1 auto;
+  min-height: 0; /* penting biar child bisa scroll */
+  overflow: hidden; /* biar nggak ada scroll ganda */
+  background: #fafaf9;
+
+  /* REMOVE max-height lama biar nggak conflict */
+  max-height: none;
+}
+
+/* 4) List jadi satu-satunya area scroll */
+.ts-list {
+  height: 100%;
+  min-height: 0;
+}
+
+/* 5) scrollable-size jangan punya max-height lagi */
+.scrollable-size {
+  height: 100%;
+  max-height: none;
+  overflow: auto;
+  padding: 12px;
+
+  /* optional: scroll lebih smooth */
+  overscroll-behavior: contain;
+}
+
+/* 6) Footer jangan sticky lagi biar nggak nimpuk list
+      (footer tetap selalu kebawah karena shell flex) */
+.ts-footer {
+  position: relative;
+  bottom: auto;
+  z-index: 15;
+}
+
+/* (optional) Mobile footer juga aman */
+.ts-footer--mobileActions {
+  position: relative;
+}
+/* ===============================
+   INLINE MESSAGE BAR
+================================ */
+.ts-msg {
+  margin: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fff;
+}
+
+.ts-msgInner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+}
+
+.ts-msgTitle {
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.ts-msgText {
+  font-size: 12px;
+  line-height: 16px;
+  opacity: 0.85;
+  margin-top: 2px;
+}
+
+.ts-msgClose {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: #fff;
+  cursor: pointer;
+}
+.ts-msgClose:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+/* Variants */
+.ts-msg--error {
+  border-color: rgba(180, 35, 24, 0.25);
+  background: #fff1f2;
+}
+.ts-msg--warning {
+  border-color: rgba(180, 83, 9, 0.25);
+  background: #fff7ed;
+}
+.ts-msg--info {
+  border-color: rgba(27, 79, 217, 0.2);
+  background: #eef4ff;
+}

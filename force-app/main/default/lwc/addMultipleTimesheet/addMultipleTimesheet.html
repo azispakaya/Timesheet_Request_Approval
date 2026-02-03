@@ -92,6 +92,27 @@
       <!-- Content -->
       <template if:false={isLoading}>
         <div class="ts-body">
+          <!-- Inline message (error/warning/info) -->
+          <template if:true={uiMessage.visible}>
+            <div class={uiMessageClass} role="alert" aria-live="assertive">
+              <div class="ts-msgInner">
+                <div class="ts-msgTextWrap">
+                  <div class="ts-msgTitle">{uiMessage.title}</div>
+                  <div class="ts-msgText">{uiMessage.message}</div>
+                </div>
+
+                <button
+                  class="ts-msgClose"
+                  type="button"
+                  onclick={clearMessage}
+                  title="Dismiss"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          </template>
+
           <!-- Empty state -->
           <template lwc:if={isVisible}>
             <!-- <div class="slds-p-around_large slds-card ts-emptyCard"> -->
@@ -510,79 +531,6 @@
             >
               <!-- ===================== Opportunities ===================== -->
               <template for:each={listOpportunities} for:item="timesheet">
-                <!-- <div key={timesheet.tempId} class="ts-rowCard">
-                  <div class="ts-rowTop">
-                    <span class="ts-badge ts-badge--opty">Opportunity</span>
-                    <lightning-icon
-                      class="custom-icon-btn"
-                      icon-name="utility:delete"
-                      alternative-text="Remove"
-                      size="small"
-                      onclick={removeHandler}
-                      data-tempid={timesheet.tempId}
-                      data-entitytype="opty"
-                    ></lightning-icon>
-                  </div>
-
-                  <div class="slds-p-around_medium">
-                    <div class={formFactorClass}>
-                      <div class="slds-p-right_small slds-col slds-size_2-of-8">
-                        <lightning-record-edit-form
-                          density="comfy"
-                          object-api-name="Timesheet__c"
-                        >
-                          <lightning-input-field
-                            class="validated"
-                            field-name="Opportunity__c"
-                            variant="standard"
-                            onchange={fieldChangeHandler}
-                            name="opty_name"
-                            data-tempid={timesheet.tempId}
-                            required
-                          ></lightning-input-field>
-                        </lightning-record-edit-form>
-                      </div>
-
-                      <div class="slds-p-right_small slds-col slds-size_2-of-8">
-                        <lightning-input
-                          class="validated"
-                          type="date"
-                          name="date"
-                          onchange={fieldChangeHandler}
-                          data-tempid={timesheet.tempId}
-                          label="Date"
-                          required
-                        ></lightning-input>
-                      </div>
-
-                      <div class="slds-p-right_small slds-col slds-size_1-of-8">
-                        <lightning-input
-                          class="validated"
-                          type="number"
-                          name="stime"
-                          onchange={fieldChangeHandler}
-                          data-tempid={timesheet.tempId}
-                          label="Time"
-                          required
-                        ></lightning-input>
-                      </div>
-
-                      <div class="slds-col slds-size_3-of-8">
-                        <lightning-textarea
-                          class="validated"
-                          max-length="255"
-                          name="temp_remark"
-                          placeholder="type here..."
-                          variant="standard"
-                          onblur={fieldChangeHandler}
-                          data-tempid={timesheet.tempId}
-                          label="Remarks"
-                          required
-                        ></lightning-textarea>
-                      </div>
-                    </div>
-                  </div>
-                </div> -->
                 <c-timesheet-row
                   key={timesheet.tempId}
                   tempid={timesheet.tempId}
@@ -592,87 +540,19 @@
                   form-factor-class={formFactorClass}
                   lookup-field-api-name="Opportunity__c"
                   lookup-name="opty"
+                  object-record-id={timesheet.objectRecordId}
+                  date={timesheet.date}
+                  stime={timesheet.stime}
+                  temp-remark={timesheet.temp_remark}
                   onrowremove={handleRowRemove}
                   onrowfieldchange={handleRowFieldChange}
+                  member-id={employeeContext.employeeRecordId}
+                  onrowlookupresolved={handleRowLookupResolved}
                 ></c-timesheet-row>
               </template>
 
               <!-- ===================== Projects ===================== -->
               <template for:each={listProjects} for:item="timesheet">
-                <!-- <div key={timesheet.tempId} class="ts-rowCard">
-                  <div class="ts-rowTop">
-                    <span class="ts-badge ts-badge--project">Project</span>
-                    <lightning-icon
-                      class="custom-icon-btn"
-                      icon-name="utility:delete"
-                      alternative-text="Remove"
-                      size="small"
-                      onclick={removeHandler}
-                      data-tempid={timesheet.tempId}
-                      data-entitytype="project"
-                    ></lightning-icon>
-                  </div>
-
-                  <div class="slds-p-around_medium">
-                    <div class={formFactorClass}>
-                      <div class="slds-p-right_small slds-col slds-size_2-of-8">
-                        <lightning-record-edit-form
-                          density="comfy"
-                          object-api-name="Timesheet__c"
-                        >
-                          <lightning-input-field
-                            class="validated"
-                            data-label="projectField"
-                            field-name="Project__c"
-                            variant="standard"
-                            onchange={fieldChangeHandler}
-                            name="project_name"
-                            data-tempid={timesheet.tempId}
-                            required
-                          ></lightning-input-field>
-                        </lightning-record-edit-form>
-                      </div>
-
-                      <div class="slds-p-right_small slds-col slds-size_2-of-8">
-                        <lightning-input
-                          class="validated"
-                          type="date"
-                          name="date"
-                          onchange={fieldChangeHandler}
-                          data-tempid={timesheet.tempId}
-                          label="Date"
-                          required
-                        ></lightning-input>
-                      </div>
-
-                      <div class="slds-p-right_small slds-col slds-size_1-of-8">
-                        <lightning-input
-                          class="validated"
-                          type="number"
-                          name="stime"
-                          onchange={fieldChangeHandler}
-                          data-tempid={timesheet.tempId}
-                          label="Time"
-                          required
-                        ></lightning-input>
-                      </div>
-
-                      <div class="slds-col slds-size_3-of-8">
-                        <lightning-textarea
-                          class="validated"
-                          max-length="255"
-                          name="temp_remark"
-                          placeholder="type here..."
-                          variant="standard"
-                          onblur={fieldChangeHandler}
-                          data-tempid={timesheet.tempId}
-                          label="Remarks"
-                          required
-                        ></lightning-textarea>
-                      </div>
-                    </div>
-                  </div>
-                </div> -->
                 <c-timesheet-row
                   key={timesheet.tempId}
                   tempid={timesheet.tempId}
@@ -682,87 +562,19 @@
                   form-factor-class={formFactorClass}
                   lookup-field-api-name="Project__c"
                   lookup-name="project_name"
+                  object-record-id={timesheet.objectRecordId}
+                  date={timesheet.date}
+                  stime={timesheet.stime}
+                  temp-remark={timesheet.temp_remark}
                   onrowremove={handleRowRemove}
                   onrowfieldchange={handleRowFieldChange}
+                  member-id={employeeContext.employeeRecordId}
+                  onrowlookupresolved={handleRowLookupResolved}
                 ></c-timesheet-row>
               </template>
 
               <!-- ===================== Cases ===================== -->
               <template for:each={listCases} for:item="timesheet">
-                <!-- <div key={timesheet.tempId} class="ts-rowCard">
-                  <div class="ts-rowTop">
-                    <span class="ts-badge ts-badge--case">Case</span>
-                    <lightning-icon
-                      class="custom-icon-btn"
-                      icon-name="utility:delete"
-                      alternative-text="Remove"
-                      size="small"
-                      onclick={removeHandler}
-                      data-tempid={timesheet.tempId}
-                      data-entitytype="case"
-                    ></lightning-icon>
-                  </div>
-
-                  <div class="slds-p-around_medium">
-                    <div class={formFactorClass}>
-                      <div class="slds-p-right_small slds-col slds-size_2-of-8">
-                        <lightning-record-edit-form
-                          density="comfy"
-                          object-api-name="Timesheet__c"
-                        >
-                          <lightning-input-field
-                            class="validated"
-                            field-name="Case__c"
-                            variant="standard"
-                            onchange={fieldChangeHandler}
-                            name="case"
-                            data-label="caseField"
-                            data-tempid={timesheet.tempId}
-                            required
-                          ></lightning-input-field>
-                        </lightning-record-edit-form>
-                      </div>
-
-                      <div class="slds-p-right_small slds-col slds-size_2-of-8">
-                        <lightning-input
-                          class="validated"
-                          type="date"
-                          name="date"
-                          onchange={fieldChangeHandler}
-                          data-tempid={timesheet.tempId}
-                          label="Date"
-                          required
-                        ></lightning-input>
-                      </div>
-
-                      <div class="slds-p-right_small slds-col slds-size_1-of-8">
-                        <lightning-input
-                          class="validated"
-                          type="number"
-                          name="stime"
-                          onchange={fieldChangeHandler}
-                          data-tempid={timesheet.tempId}
-                          label="Time"
-                          required
-                        ></lightning-input>
-                      </div>
-
-                      <div class="slds-col slds-size_3-of-8">
-                        <lightning-textarea
-                          class="validated"
-                          max-length="255"
-                          name="temp_remark"
-                          placeholder="type here..."
-                          variant="standard"
-                          onblur={fieldChangeHandler}
-                          data-tempid={timesheet.tempId}
-                          label="Remarks"
-                          required
-                        ></lightning-textarea>
-                      </div>
-                    </div>
-                  </div>
-                </div> -->
                 <c-timesheet-row
                   key={timesheet.tempId}
                   tempid={timesheet.tempId}
@@ -772,86 +584,19 @@
                   form-factor-class={formFactorClass}
                   lookup-field-api-name="Case__c"
                   lookup-name="case"
+                  object-record-id={timesheet.objectRecordId}
+                  date={timesheet.date}
+                  stime={timesheet.stime}
+                  temp-remark={timesheet.temp_remark}
                   onrowremove={handleRowRemove}
                   onrowfieldchange={handleRowFieldChange}
+                  member-id={employeeContext.employeeRecordId}
+                  onrowlookupresolved={handleRowLookupResolved}
                 ></c-timesheet-row>
               </template>
 
               <!-- ===================== POCs ===================== -->
               <template for:each={listPOCs} for:item="timesheet">
-                <!-- <div key={timesheet.tempId} class="ts-rowCard">
-                  <div class="ts-rowTop">
-                    <span class="ts-badge ts-badge--poc">POC</span>
-                    <lightning-icon
-                      class="custom-icon-btn"
-                      icon-name="utility:delete"
-                      alternative-text="Remove"
-                      size="small"
-                      onclick={removeHandler}
-                      data-tempid={timesheet.tempId}
-                      data-entitytype="poc"
-                    ></lightning-icon>
-                  </div>
-
-                  <div class="slds-p-around_medium">
-                    <div class={formFactorClass}>
-                      <div class="slds-p-right_small slds-col slds-size_2-of-8">
-                        <lightning-record-edit-form
-                          density="comfy"
-                          object-api-name="Timesheet__c"
-                        >
-                          <lightning-input-field
-                            class="validated"
-                            field-name="POC__c"
-                            variant="standard"
-                            onchange={fieldChangeHandler}
-                            name="poc_name"
-                            data-tempid={timesheet.tempId}
-                            required
-                          ></lightning-input-field>
-                        </lightning-record-edit-form>
-                      </div>
-
-                      <div class="slds-p-right_small slds-col slds-size_2-of-8">
-                        <lightning-input
-                          class="validated"
-                          type="date"
-                          name="date"
-                          onchange={fieldChangeHandler}
-                          data-tempid={timesheet.tempId}
-                          label="Date"
-                          required
-                        ></lightning-input>
-                      </div>
-
-                      <div class="slds-p-right_small slds-col slds-size_1-of-8">
-                        <lightning-input
-                          class="validated"
-                          type="number"
-                          name="stime"
-                          onchange={fieldChangeHandler}
-                          data-tempid={timesheet.tempId}
-                          label="Time"
-                          required
-                        ></lightning-input>
-                      </div>
-
-                      <div class="slds-col slds-size_3-of-8">
-                        <lightning-textarea
-                          class="validated"
-                          max-length="255"
-                          name="temp_remark"
-                          placeholder="type here..."
-                          variant="standard"
-                          onblur={fieldChangeHandler}
-                          data-tempid={timesheet.tempId}
-                          label="Remarks"
-                          required
-                        ></lightning-textarea>
-                      </div>
-                    </div>
-                  </div>
-                </div> -->
                 <c-timesheet-row
                   key={timesheet.tempId}
                   tempid={timesheet.tempId}
@@ -861,86 +606,19 @@
                   form-factor-class={formFactorClass}
                   lookup-field-api-name="POC__c"
                   lookup-name="poc_name"
+                  object-record-id={timesheet.objectRecordId}
+                  date={timesheet.date}
+                  stime={timesheet.stime}
+                  temp-remark={timesheet.temp_remark}
                   onrowremove={handleRowRemove}
                   onrowfieldchange={handleRowFieldChange}
+                  member-id={employeeContext.employeeRecordId}
+                  onrowlookupresolved={handleRowLookupResolved}
                 ></c-timesheet-row>
               </template>
 
               <!-- ===================== Campaigns ===================== -->
               <template for:each={listCampaigns} for:item="timesheet">
-                <!-- <div key={timesheet.tempId} class="ts-rowCard">
-                  <div class="ts-rowTop">
-                    <span class="ts-badge ts-badge--campaign">Campaign</span>
-                    <lightning-icon
-                      class="custom-icon-btn"
-                      icon-name="utility:delete"
-                      alternative-text="Remove"
-                      size="small"
-                      onclick={removeHandler}
-                      data-tempid={timesheet.tempId}
-                      data-entitytype="campaign"
-                    ></lightning-icon>
-                  </div>
-
-                  <div class="slds-p-around_medium">
-                    <div class={formFactorClass}>
-                      <div class="slds-p-right_small slds-col slds-size_2-of-8">
-                        <lightning-record-edit-form
-                          density="comfy"
-                          object-api-name="Timesheet__c"
-                        >
-                          <lightning-input-field
-                            class="validated"
-                            field-name="Campaign__c"
-                            variant="standard"
-                            onchange={fieldChangeHandler}
-                            name="campaign"
-                            data-tempid={timesheet.tempId}
-                            required
-                          ></lightning-input-field>
-                        </lightning-record-edit-form>
-                      </div>
-
-                      <div class="slds-p-right_small slds-col slds-size_2-of-8">
-                        <lightning-input
-                          class="validated"
-                          type="date"
-                          name="date"
-                          onchange={fieldChangeHandler}
-                          data-tempid={timesheet.tempId}
-                          label="Date"
-                          required
-                        ></lightning-input>
-                      </div>
-
-                      <div class="slds-p-right_small slds-col slds-size_1-of-8">
-                        <lightning-input
-                          class="validated"
-                          type="number"
-                          name="stime"
-                          onchange={fieldChangeHandler}
-                          data-tempid={timesheet.tempId}
-                          label="Time"
-                          required
-                        ></lightning-input>
-                      </div>
-
-                      <div class="slds-col slds-size_3-of-8">
-                        <lightning-textarea
-                          class="validated"
-                          max-length="255"
-                          name="temp_remark"
-                          placeholder="type here..."
-                          variant="standard"
-                          onblur={fieldChangeHandler}
-                          data-tempid={timesheet.tempId}
-                          label="Remarks"
-                          required
-                        ></lightning-textarea>
-                      </div>
-                    </div>
-                  </div>
-                </div> -->
                 <c-timesheet-row
                   key={timesheet.tempId}
                   tempid={timesheet.tempId}
@@ -950,8 +628,14 @@
                   form-factor-class={formFactorClass}
                   lookup-field-api-name="Campaign__c"
                   lookup-name="campaign"
+                  object-record-id={timesheet.objectRecordId}
+                  date={timesheet.date}
+                  stime={timesheet.stime}
+                  temp-remark={timesheet.temp_remark}
                   onrowremove={handleRowRemove}
                   onrowfieldchange={handleRowFieldChange}
+                  member-id={employeeContext.employeeRecordId}
+                  onrowlookupresolved={handleRowLookupResolved}
                 ></c-timesheet-row>
               </template>
             </div>

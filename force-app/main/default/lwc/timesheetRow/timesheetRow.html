@@ -16,18 +16,25 @@
       <div class={formFactorClass}>
         <!-- LOOKUP -->
         <div class="slds-p-right_small slds-col slds-size_2-of-8">
-          <lightning-record-edit-form
-            density="comfy"
-            object-api-name="Timesheet__c"
-          >
-            <lightning-input-field
-              class="validated"
-              field-name={lookupFieldApiName}
-              variant="standard"
-              onchange={handleLookupChange}
-              required
-            ></lightning-input-field>
-          </lightning-record-edit-form>
+          <div class={lookupWrapClass}>
+            <lightning-record-edit-form
+              density="comfy"
+              object-api-name="Timesheet__c"
+            >
+              <lightning-input-field
+                class="validated"
+                data-field="objectRecordId"
+                field-name={lookupFieldApiName}
+                variant="standard"
+                onchange={handleLookupChange}
+                required
+              ></lightning-input-field>
+            </lightning-record-edit-form>
+
+            <template if:true={lookupError}>
+              <div class="slds-form-element__help">{lookupError}</div>
+            </template>
+          </div>
         </div>
 
         <!-- DATE -->
@@ -36,6 +43,7 @@
             class="validated"
             type="date"
             name="date"
+            value={date}
             onchange={handleInputChange}
             label="Date"
             required
@@ -48,6 +56,7 @@
             class="validated"
             type="number"
             name="stime"
+            value={stime}
             onchange={handleInputChange}
             label="Time"
             required
@@ -60,6 +69,7 @@
             class="validated"
             max-length="255"
             name="temp_remark"
+            value={tempRemark}
             placeholder="type here..."
             variant="standard"
             onblur={handleInputChange}

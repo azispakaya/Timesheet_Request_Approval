@@ -5,11 +5,6 @@ import FORM_FACTOR from "@salesforce/client/formFactor";
 
 // Apex (wrapper-based)
 import convertEmployeeID from "@salesforce/apex/lwc_RequestTimesheetController.convertEmployeeID";
-import convertProjectName from "@salesforce/apex/lwc_RequestTimesheetController.convertProjectName";
-import convertCaseNumber from "@salesforce/apex/lwc_RequestTimesheetController.convertCaseNumber";
-import convertPOCNumber from "@salesforce/apex/lwc_RequestTimesheetController.convertPOCNumber";
-import convertOpportuniyId from "@salesforce/apex/lwc_RequestTimesheetController.convertOpportuniyId";
-import convertCampaign from "@salesforce/apex/lwc_RequestTimesheetController.convertCampaign";
 import { CloseActionScreenEvent } from "lightning/actions";
 
 import createMultiTimesheet from "@salesforce/apex/lwc_ApprovalTimesheetController.createMultiTimesheet";
@@ -48,6 +43,35 @@ export default class RequestTimesheet extends LightningElement {
     email: "",
     role: ""
   };
+
+  @track uiMessage = {
+    visible: false,
+    variant: "info", // error | warning | info
+    title: "",
+    message: ""
+  };
+
+  get uiMessageClass() {
+    return `ts-msg ts-msg--${this.uiMessage.variant || "info"}`;
+  }
+
+  showMessage(variant, title, message) {
+    this.uiMessage = {
+      visible: true,
+      variant: variant || "info",
+      title: title || "Notice",
+      message: message || ""
+    };
+  }
+
+  clearMessage() {
+    this.uiMessage = {
+      visible: false,
+      variant: "info",
+      title: "",
+      message: ""
+    };
+  }
 
   // ========= Computed =========
   get desktopSupport() {
@@ -106,7 +130,7 @@ export default class RequestTimesheet extends LightningElement {
 
     if (error) {
       const normalizedError = this.normalizeApexError(error);
-      this.toast("Employee", normalizedError.message, "error");
+      this.showMessage("error", "Employee", normalizedError.message);
       this.uiState.isLoadingEmployee = false;
       return;
     }
@@ -115,10 +139,10 @@ export default class RequestTimesheet extends LightningElement {
       const responseWrapper = this.normalizeResponse(data);
 
       if (!responseWrapper.success) {
-        this.toast(
+        this.showMessage(
+          "error",
           "Employee",
-          responseWrapper.message || "Failed to load employee context.",
-          "error"
+          responseWrapper.message || "Failed to load employee context."
         );
         this.uiState.isLoadingEmployee = false;
         return;
@@ -278,9 +302,62 @@ export default class RequestTimesheet extends LightningElement {
     const { tempId, entityType, fieldName, value } = event.detail || {};
     if (!tempId || !entityType || !fieldName) return;
 
-    console.log("handleRowFieldChange", JSON.stringify(event.detail, null, 2));
+    // ---- get previous value (before we patch) ----
+    const prevRow = this.getRowByTempId(entityType, tempId);
+    const prevValue = prevRow ? prevRow[fieldName] : null;
 
-    // 1) always update local state first
+    // ---- VALIDATION: stime (hours) ----
+    if (fieldName === "stime") {
+      const num = Number(value);
+
+      // allow empty/null (user clearing input)
+      if (
+        value !== null &&
+        value !== undefined &&
+        value !== "" &&
+        Number.isFinite(num)
+      ) {
+        if (num > 24) {
+          const msg = "Hours cannot be more than 24 hours (1 day).";
+          this.showMessage("error", "Validation", msg);
+          this.notifyChildFieldError(tempId, "stime", msg, prevValue);
+          this.revertRowField(entityType, tempId, fieldName, prevValue);
+          return;
+        }
+        if (num < 0) {
+          const msg = "Hours cannot be less than 0.";
+          this.showMessage("error", "Validation", msg);
+          this.notifyChildFieldError(tempId, "stime", msg, prevValue);
+          this.revertRowField(entityType, tempId, fieldName, prevValue);
+          return;
+        }
+        this.clearMessage();
+      }
+    }
+
+    // ---- VALIDATION: date ----
+    if (fieldName === "date") {
+      // value biasanya "YYYY-MM-DD"
+      if (value) {
+        const selected = this.toLocalDate(value); // midnight local
+        const today = this.getTodayLocal(); // midnight local
+        const earliest = this.addDays(today, -7); // today - 7 days
+
+        if (selected > today || selected < earliest) {
+          const msg = "Date must be within the last 7 days (including today).";
+          this.showMessage("error", "Validation", msg);
+          this.notifyChildFieldError(tempId, "date", msg, prevValue);
+          this.revertRowField(entityType, tempId, fieldName, prevValue);
+          return;
+        }
+        this.clearMessage();
+      }
+    }
+    const rowCmp = this.getChildRowComponent(tempId);
+    if (rowCmp && typeof rowCmp.clearFieldError === "function") {
+      rowCmp.clearFieldError(fieldName);
+    }
+    // 1) always update local state first (ONLY if valid)
     const patch = { [fieldName]: value };
     if (entityType === "project") {
       this.listProjects = this.updateRow(this.listProjects, tempId, patch);
@@ -297,29 +374,24 @@ export default class RequestTimesheet extends LightningElement {
     } else if (entityType === "campaign") {
       this.listCampaigns = this.updateRow(this.listCampaigns, tempId, patch);
     }
+  }
 
-    // 2) if lookup changed -> trigger convert
-    const isLookupField = fieldName === "objectRecordId";
-    if (!isLookupField) return;
+  handleRowLookupResolved(event) {
+    const { tempId, entityType, payload } = event.detail || {};
+    if (!tempId || !entityType) return;
 
-    const employeeMemberId =
-      this.employeeContext.employeeRecordId || this.recordId;
+    const safePayload = payload || {};
 
-    const resolvedPayload = await this.resolveLookup(
-      entityType,
-      value, // objectRecordId
-      employeeMemberId
-    );
+    // enforce objectRecordId exists
+    const patch = {
+      ...safePayload,
+      objectRecordId:
+        safePayload.objectRecordId ||
+        this.getRowByTempId(entityType, tempId)?.objectRecordId ||
+        null
+    };
 
-    if (resolvedPayload) {
-      // normalize if Apex doesn't return objectRecordId
-      const payloadToApply = {
-        ...resolvedPayload,
-        objectRecordId: resolvedPayload.objectRecordId || value
-      };
-
-      this.applyResolvedPayloadToRow(entityType, tempId, payloadToApply);
-    }
+    this.applyResolvedPayloadToRow(entityType, tempId, patch);
   }
 
   updateRow(list = [], tempId, patch = {}) {
@@ -384,7 +456,7 @@ export default class RequestTimesheet extends LightningElement {
       objectLabel: safePayload.objectLabel || "",
       projectId: safePayload.projectId || null,
       projectName: safePayload.projectName || "",
-      projectSpk: safePayload.projectSpk || "",
+      projectSpk: safePayload.spk || "",
       approverId: safePayload.approverId || null,
       approverOptionalId: safePayload.approverOptionalId || null,
 
@@ -397,73 +469,6 @@ export default class RequestTimesheet extends LightningElement {
     });
   }
 
-  // ========= Convert lookup via Apex =========
-  async resolveLookup(entityType, objectRecordId, memberId) {
-    if (!objectRecordId) return null;
-
-    this.uiState.isConvertingRow = true;
-
-    try {
-      let rawResponse;
-
-      if (entityType === "project") {
-        rawResponse = await convertProjectName({
-          ProjectID: objectRecordId,
-          memberId
-        });
-      } else if (entityType === "case") {
-        rawResponse = await convertCaseNumber({
-          caseId: objectRecordId,
-          memberId
-        });
-      } else if (entityType === "poc") {
-        rawResponse = await convertPOCNumber({
-          pocId: objectRecordId,
-          memberId
-        });
-      } else if (entityType === "opty") {
-        rawResponse = await convertOpportuniyId({
-          OptyID: objectRecordId,
-          memberId
-        });
-      } else if (entityType === "campaign") {
-        rawResponse = await convertCampaign({
-          campaignId: objectRecordId,
-          memberId
-        });
-      } else {
-        this.toast("Convert", `Unsupported type: ${entityType}`, "error");
-        this.uiState.isConvertingRow = false;
-        return null;
-      }
-
-      const responseWrapper = this.normalizeResponse(rawResponse);
-
-      if (!responseWrapper.success) {
-        this.toast(
-          "Convert",
-          responseWrapper.message || "Convert failed.",
-          "error"
-        );
-        this.uiState.isConvertingRow = false;
-        return null;
-      }
-
-      console.log(
-        "convertLookup response",
-        JSON.stringify(responseWrapper, null, 2)
-      );
-
-      this.uiState.isConvertingRow = false;
-      return responseWrapper.payload || null;
-    } catch (caughtError) {
-      const normalizedError = this.normalizeApexError(caughtError);
-      this.toast("Convert", normalizedError.message, "error");
-      this.uiState.isConvertingRow = false;
-      return null;
-    }
-  }
-
   // ========= Save / Submit =========
   async saveTimesheet() {
     await this.persistTimesheet("Draft");
@@ -474,17 +479,19 @@ export default class RequestTimesheet extends LightningElement {
   }
 
   async persistTimesheet(statusValue) {
+    const payloadList = this.buildCreateTimesheetPayload();
+    console.log("payloadList>>", JSON.stringify(payloadList, null, 2));
+    console.log("isValid", this.uiMessage.visible);
+    console.log("uiMessage", JSON.stringify(this.uiMessage, null, 2));
+    return;
     // const isValid = this.validateAllInputs();
     // if (!isValid) {
     //   this.toast("Validation", "Please complete all required fields.", "error");
     //   return;
     // }
 
-    const payloadList = this.buildCreateTimesheetPayload();
-    // console.log("payloadList>>", JSON.stringify(payloadList, null, 2));
-
     if (payloadList.length === 0) {
-      this.toast("Timesheet", "No entry to submit.", "warning");
+      this.showMessage("warning", "Timesheet", "No entry to submit.");
       return;
     }
 
@@ -501,15 +508,16 @@ export default class RequestTimesheet extends LightningElement {
       const responseWrapper = this.normalizeResponse(rawResponse);
 
       if (!responseWrapper.success) {
-        this.toast(
+        this.showMessage(
+          "error",
           "Timesheet",
-          responseWrapper.message || "Failed to save.",
-          "error"
+          responseWrapper.message || "Failed to save."
         );
         this.uiState.isSubmitting = false;
         this.uiState.isSaving = false;
         return;
       }
+      this.clearMessage();
 
       this.toast(
         "Success",
@@ -579,7 +587,8 @@ export default class RequestTimesheet extends LightningElement {
       end_date: rowItem.date,
       stime: rowItem.stime,
       EmployeeID: employeeId,
-      remark: rowItem.temp_remark,
+      //   remark: rowItem.temp_remark,
+      remark: this.buildCombinedRemark(rowItem, entityType),
       Email: this.employeeContext.email,
       type: entityType,
       ObjectRecordId: rowItem.objectRecordId
@@ -599,6 +608,38 @@ export default class RequestTimesheet extends LightningElement {
       );
 
     return records;
+  }
+
+  buildCombinedRemark(rowItem, entityType) {
+    const r = rowItem || {};
+
+    console.log(
+      "buildCombinedRemark rowItem",
+      JSON.stringify(rowItem, null, 2)
+    );
+
+    // prefix rule:
+    // - project => SPK (fallback projectName)
+    // - others  => objectLabel (fallback objectRecordId)
+    let prefix = "";
+
+    if (entityType === "project") {
+      prefix = (r.projectSpk || r.projectName || "").trim();
+    } else {
+      prefix = (r.objectLabel || r.objectRecordId || "").trim();
+    }
+
+    const note = (r.temp_remark || "").trim();
+
+    // if both empty, return empty string
+    if (!prefix && !note) return "";
+
+    // if only one exists
+    if (!prefix) return note;
+    if (!note) return prefix;
+
+    // both exist
+    return `${prefix} - ${note}`;
   }
 
   // ========= Utility =========
@@ -624,6 +665,11 @@ export default class RequestTimesheet extends LightningElement {
   }
 
   toast(title, message, variant) {
+    // Only allow SUCCESS toast per requirement
+    if (variant !== "success") {
+      this.showMessage(variant || "info", title, message);
+      return;
+    }
     this.dispatchEvent(new ShowToastEvent({ title, message, variant }));
   }
 
@@ -678,5 +724,83 @@ export default class RequestTimesheet extends LightningElement {
       campaign: "listCampaigns"
     };
     return mapEntityToList[entityType];
+  }
+
+  getRowByTempId(entityType, tempId) {
+    const list = this.getListByEntityType(entityType);
+    return (list || []).find((r) => r.tempId === tempId) || null;
+  }
+
+  getListByEntityType(entityType) {
+    if (entityType === "project") return this.listProjects;
+    if (entityType === "case") return this.listCases;
+    if (entityType === "poc") return this.listPOCs;
+    if (entityType === "opty") return this.listOpportunities;
+    if (entityType === "campaign") return this.listCampaigns;
+    return [];
+  }
+
+  revertRowField(entityType, tempId, fieldName, prevValue) {
+    // revert state ke value sebelumnya (atau null kalau gak ada)
+    const patch = { [fieldName]: prevValue ?? null };
+
+    if (entityType === "project") {
+      this.listProjects = this.updateRow(this.listProjects, tempId, patch);
+    } else if (entityType === "case") {
+      this.listCases = this.updateRow(this.listCases, tempId, patch);
+    } else if (entityType === "poc") {
+      this.listPOCs = this.updateRow(this.listPOCs, tempId, patch);
+    } else if (entityType === "opty") {
+      this.listOpportunities = this.updateRow(
+        this.listOpportunities,
+        tempId,
+        patch
+      );
+    } else if (entityType === "campaign") {
+      this.listCampaigns = this.updateRow(this.listCampaigns, tempId, patch);
+    }
+  }
+
+  /** Convert "YYYY-MM-DD" to a local Date at 00:00:00 */
+  toLocalDate(yyyyMmDd) {
+    // safer parsing: split not relying on Date(string) quirks
+    const [y, m, d] = (yyyyMmDd || "").split("-").map((x) => Number(x));
+    if (!y || !m || !d) return null;
+    return new Date(y, m - 1, d, 0, 0, 0, 0);
+  }
+
+  getTodayLocal() {
+    const now = new Date();
+    return new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      0,
+      0,
+      0,
+      0
+    );
+  }
+
+  addDays(dateObj, deltaDays) {
+    const d = new Date(dateObj);
+    d.setDate(d.getDate() + deltaDays);
+    return d;
+  }
+  getChildRowComponent(tempId) {
+    const nodes = this.template.querySelectorAll("c-timesheet-row");
+
+    // console.log("nodes", JSON.stringify(nodes));
+    return (
+      Array.from(nodes).find((n) => String(n.tempid) === String(tempId)) || null
+    );
+  }
+
+  notifyChildFieldError(tempId, fieldName, message, prevValue) {
+    const rowCmp = this.getChildRowComponent(tempId);
+    if (!rowCmp) return;
+
+    rowCmp.setFieldError(fieldName, message);
+    rowCmp.revertFieldValue(fieldName, prevValue);
   }
 }
