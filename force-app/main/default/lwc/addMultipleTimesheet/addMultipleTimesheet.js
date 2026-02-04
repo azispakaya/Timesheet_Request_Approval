@@ -481,17 +481,28 @@ export default class RequestTimesheet extends LightningElement {
     // console.log("payloadList>>", JSON.stringify(payloadList, null, 2));
     // console.log("isValid", this.uiMessage.visible);
     // console.log("uiMessage", JSON.stringify(this.uiMessage, null, 2));
-    // return;
-    // const isValid = this.validateAllInputs();
-    // if (!isValid) {
-    //   this.toast("Validation", "Please complete all required fields.", "error");
-    //   return;
-    // }
 
-    if (payloadList.length === 0) {
-      this.showMessage("warning", "Timesheet", "No entry to submit.");
+    const result = this.validatePayloadList(payloadList);
+    if (!result.isValid) {
+      const first = result.errors[0];
+
+      this.uiMessage = {
+        visible: true,
+        variant: "error",
+        title: "Incomplete entry",
+        message:
+          first.rowIndex === null
+            ? first.message
+            : `Row ${first.rowIndex + 1}: ${first.message}`
+      };
+
+      console.table(result.errors);
+
       return;
     }
+
+    this.clearMessage();
+    // return;
 
     const isSubmit = statusValue === "Submitted";
     this.uiState.isSubmitting = isSubmit;
@@ -523,14 +534,10 @@ export default class RequestTimesheet extends LightningElement {
         "success"
       );
 
-      // Optional: clear rows after submit only
-      if (isSubmit) {
-        this.resetAllRows();
-      }
-
       this.uiState.isSubmitting = false;
       this.uiState.isSaving = false;
       this.cancelHandler();
+      this.resetAllRows();
     } catch (caughtError) {
       const normalizedError = this.normalizeApexError(caughtError);
       this.toast("Timesheet", normalizedError.message, "error");
@@ -541,6 +548,7 @@ export default class RequestTimesheet extends LightningElement {
 
   cancelHandler() {
     // up to you: close quick action / modal / navigate back
+
     this.dispatchEvent(
       new CloseActionScreenEvent({ bubbles: true, composed: true })
     );
@@ -800,5 +808,210 @@ export default class RequestTimesheet extends LightningElement {
 
     rowCmp.setFieldError(fieldName, message);
     rowCmp.revertFieldValue(fieldName, prevValue);
+  }
+
+  validatePayloadList(payloadList = []) {
+    const errors = [];
+
+    // 1) empty payload
+    if (!Array.isArray(payloadList) || payloadList.length === 0) {
+      return {
+        isValid: false,
+        errors: [
+          {
+            rowIndex: null,
+            field: "payloadList",
+            message: "No timesheet entries to save or submit."
+          }
+        ]
+      };
+    }
+
+    // helpers
+    const parseYMD = (ymd) => {
+      // ymd: "YYYY-MM-DD"
+      if (!ymd || typeof ymd !== "string") return null;
+      const d = new Date(`${ymd}T00:00:00`);
+      return Number.isNaN(d.getTime()) ? null : d;
+    };
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const minDate = new Date(today);
+    minDate.setDate(minDate.getDate() - 7);
+
+    payloadList.forEach((row, idx) => {
+      // 2) required fields
+      this.validateRequiredFields(row, idx, errors);
+      // 3) stime validation
+      const hours = Number(row?.stime);
+      if (
+        row?.stime !== undefined &&
+        row?.stime !== null &&
+        row?.stime !== ""
+      ) {
+        if (Number.isNaN(hours)) {
+          errors.push({
+            rowIndex: idx,
+            field: "stime",
+            message: "Time must be a valid number."
+          });
+        } else if (hours <= 0) {
+          errors.push({
+            rowIndex: idx,
+            field: "stime",
+            message: "Time must be greater than 0."
+          });
+        } else if (hours > 24) {
+          errors.push({
+            rowIndex: idx,
+            field: "stime",
+            message: "Hours cannot be more than 24 hours (1 day)."
+          });
+        }
+      }
+
+      // 4) date range validation (start & end)
+      const start = parseYMD(row?.start_date);
+      const end = parseYMD(row?.end_date);
+
+      if (!start) {
+        errors.push({
+          rowIndex: idx,
+          field: "start_date",
+          message: "Start date must be a valid date."
+        });
+      } else if (start > today || start < minDate) {
+        errors.push({
+          rowIndex: idx,
+          field: "start_date",
+          message:
+            "Date must be within the last 7 days and cannot be in the future."
+        });
+      }
+
+      if (!end) {
+        errors.push({
+          rowIndex: idx,
+          field: "end_date",
+          message: "End date must be a valid date."
+        });
+      } else if (end > today || end < minDate) {
+        errors.push({
+          rowIndex: idx,
+          field: "end_date",
+          message:
+            "Date must be within the last 7 days and cannot be in the future."
+        });
+      }
+
+      // 5) OPTIONAL: kalau lu anggep entry harus 1 hari aja
+      // (kalau lu memang daily timesheet, ini recommended)
+      if (start && end && start.getTime() !== end.getTime()) {
+        errors.push({
+          rowIndex: idx,
+          field: "end_date",
+          message: "Start date and end date must be the same day."
+        });
+      }
+
+      if (!this.isEmptyValue(row?.remark)) {
+        const remark = String(row.remark).trim();
+        if (remark.length < 15) {
+          errors.push({
+            rowIndex: idx,
+            field: "remark",
+            message:
+              "Please add more details. Remarks must be at least 15 characters long."
+          });
+        }
+      }
+    });
+
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  }
+
+  // helper: friendly label per field + per type
+  getFieldLabel(field, rowType) {
+    const type = (rowType || "").toLowerCase();
+
+    // Lookup label depends on type
+    const lookupLabelByType = {
+      project: "Project SPK",
+      case: "Case Number",
+      poc: "POC Number",
+      opty: "Opportunity",
+      opportunity: "Opportunity",
+      campaign: "Campaign"
+    };
+
+    const base = {
+      EmployeeID: "Employee",
+      stime: "Hours",
+      start_date: "Date",
+      end_date: "Date",
+      remark: "Remarks",
+      type: "Type"
+    };
+
+    if (field === "ObjectRecordId") {
+      return lookupLabelByType[type] || "Record";
+    }
+
+    return base[field] || field;
+  }
+
+  isEmptyValue(val) {
+    return (
+      val === null ||
+      val === undefined ||
+      (typeof val === "string" && val.trim() === "")
+    );
+  }
+
+  // ✅ this one validates required fields with better messages
+  validateRequiredFields(row, idx, errors) {
+    const requiredFields = [
+      "type",
+      "EmployeeID",
+      "ObjectRecordId",
+      "stime",
+      "start_date",
+      "end_date",
+      "remark"
+    ];
+
+    const rowType = row?.type;
+
+    for (const f of requiredFields) {
+      const val = row?.[f];
+
+      if (this.isEmptyValue(val)) {
+        // Special: start_date & end_date -> "Date is required." (only once)
+        if (f === "start_date" || f === "end_date") {
+          const alreadyHasDateError = errors.some(
+            (e) => e.rowIndex === idx && e.field === "Date_required"
+          );
+          if (!alreadyHasDateError) {
+            errors.push({
+              rowIndex: idx,
+              field: "Date_required",
+              message: "Date is required."
+            });
+          }
+          continue;
+        }
+
+        errors.push({
+          rowIndex: idx,
+          field: f,
+          message: `${this.getFieldLabel(f, rowType)} is required.`
+        });
+      }
+    }
   }
 }
