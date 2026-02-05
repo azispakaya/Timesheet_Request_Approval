@@ -7,6 +7,8 @@
 		<members>TimesheetResponseModels</members>
 		<members>lwc_ApprovalTimesheetController</members>
 		<members>lwc_RequestTimesheetController</members>
+		<members>TimesheetAIControllerTest</members>
+		<members>TimesheetAIController</members>
 		<name>ApexClass</name>
 	</types>
 	<types>
