@@ -1,39 +1,542 @@
-.scrollable-size{
-    max-height: 30rem;
-    min-height: min-content;
+/* Base layout */
+.ts-shell {
+  position: relative;
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  /* height: 20rem; */
 }
 
-.custom-icon-btn{
-    --slds-c-icon-color-foreground-default:#e51212; 
-    cursor: pointer;
-    transition: 0.3s ease;
-}
-.custom-icon-btn:hover{
-    --slds-c-icon-color-foreground-default:#991B1B; 
+/* Header */
+.ts-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding: 12px 16px;
+  background: #ffffff;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  /* IMPORTANT: allow dropdown menu to overflow */
+  overflow: visible;
 }
 
-.header-font{
-    font-size: 12px;
-    font-family: Arial, Helvetica, sans-serif;
-    font-weight: 700;
-    font-style: oblique;
+.ts-headerRight {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  overflow: visible;
 }
-header{
-    margin: 0;
+
+.ts-titleWrap {
+  display: flex;
+  flex-direction: column; /* biar version turun ke line 2 */
+  gap: 2px;
 }
-.slds-spinner-text {
-    width: 320px;
-    text-align: center;
-    font-weight: bold;
-    font-size: 16px;
+
+/* line 1 tetap sejajar */
+.ts-titleRow {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+/* version: kecil, italic, muted */
+.ts-versionText {
+  font-size: 11px;
+  font-style: italic;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.ts-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+.ts-subtitle {
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+/* Body */
+.ts-body {
+  max-height: 20rem;
+  background: #fafaf9;
+}
+
+.scrollable-size {
+  max-height: 30rem;
+  overflow: auto;
+  padding: 12px;
+}
+
+/* Loading */
+.ts-loading {
+  padding: 24px;
+  display: grid;
+  place-items: center;
+  gap: 10px;
+}
+.ts-loadingText {
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+/* Row cards */
+.ts-rowCard {
+  margin-bottom: 12px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.ts-rowTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: #ffffff;
+}
+
+/* Mini badge (type) */
+.ts-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+.ts-badge--project {
+  background: #eef4ff;
+  color: #1b4fd9;
+}
+.ts-badge--case {
+  background: #fff1f2;
+  color: #b42318;
+}
+.ts-badge--poc {
+  background: #ecfdf3;
+  color: #067647;
+}
+.ts-badge--opty {
+  background: #fff7ed;
+  color: #b45309;
+}
+.ts-badge--campaign {
+  background: #f5f3ff;
+  color: #6d28d9;
+}
+
+/* Remove button */
+.ts-iconBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: #fff;
+  cursor: pointer;
+  font-weight: 900;
+  line-height: 1;
+}
+.ts-iconBtn:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+/* Pill group (Type menu + Add) */
+.ts-pillGroup {
+  --pill-h: 48px;
+
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 10px;
+
+  align-items: center;
+  padding: 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: #fff;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.06);
+
+  overflow: visible;
+}
+
+/* Smaller + tighter for header */
+.ts-pillGroup--header {
+  --pill-h: 44px;
+  padding: 6px;
+}
+
+/* Button menu styling */
+.ts-typeMenu {
+  --slds-c-button-radius-border: 14px;
+  --slds-c-button-line-height: calc(var(--pill-h) - 12px);
+  --slds-c-button-spacing-inline-start: 14px;
+  --slds-c-button-spacing-inline-end: 14px;
+}
+
+/* Add button styling */
+.ts-addBtn {
+  --slds-c-button-radius-border: 999px;
+  --slds-c-button-line-height: calc(var(--pill-h) - 12px);
+  --slds-c-button-spacing-inline-start: 18px;
+  --slds-c-button-spacing-inline-end: 18px;
+}
+
+/* Footer (actions only) */
+.ts-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 15;
+
+  background: #ffffff;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 12px 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ts-actions {
+  display: inline-flex;
+  gap: 10px;
+}
+
+.ts-actionBtn {
+  border-radius: 12px;
+  /* padding: 10px 16px; */
+}
+.ts-cancelBtn {
+  border-radius: 12px;
+  /* padding: 10px 16px; */
+}
+
+/* Mobile */
+.ts-shell--mobile .ts-header {
+  padding: 12px;
+}
+
+.ts-pillGroup--mobileHeader {
+  gap: 8px;
+  padding: 6px;
+}
+
+.ts-footer--mobileActions {
+  padding: 12px;
+}
+
+.ts-actions--mobile {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+
+/* Make date/lookup easier to tap */
+:host {
+  --slds-c-input-radius-border: 12px;
+}
+/* =========================
+   FIX: dropdown kepotong
+   ========================= */
+
+/* 1) Header sticky tetep, tapi jangan jadi "clipper" */
+.ts-headerBar,
+.ts-header,
+.ts-headerRight,
+.ts-pillDock,
+.ts-pillGroup {
+  overflow: visible !important;
+}
+
+/* 2) Biar dropdown selalu di atas card/header */
+.ts-headerBar {
+  position: sticky;
+  top: 0;
+  z-index: 9000; /* tinggiin biar aman */
+}
+
+/* 3) Parent yang nahan pill group jangan hidden */
+.ts-pillDock {
+  position: relative;
+  z-index: 9500;
+  overflow: visible !important;
+}
+
+/* 4) Naikin stacking untuk menu trigger */
+.ts-typeMenu {
+  position: relative;
+  z-index: 9999;
+}
+
+/* 5) Ini token bawaan LWC buat dropdown z-index (paling ngaruh di beberapa org) */
+:host {
+  --lwc-zIndexDropdown: 10000;
+}
+
+/* 6) Kalau ada container shell yang kebetulan auto/hidden, buka juga */
+.ts-shell {
+  overflow: visible;
+}
+
+/* 7) PENTING: kalau list container kamu scrollable, jangan bungkus header di dalamnya.
+      (header harus di luar area scrollable) */
+/* ===============================
+   LOADING OVERLAY (S2-ish)
+================================ */
+
+.ts-loadingOverlay {
+  position: absolute; /* IMPORTANT: parent shell harus position:relative */
+  inset: 0;
+  z-index: 9999;
+
+  display: grid;
+  place-items: center;
+
+  /* glass */
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  /* lock interactions */
+  pointer-events: all;
+  min-height: 25rem;
+}
+
+.ts-loadingCard {
+  width: min(520px, calc(100% - 32px));
+  border-radius: 16px;
+
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+  padding: 16px 16px 14px 16px;
+}
+
+.ts-loadingTop {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+/* spinner modern (pure CSS) */
+.ts-loadingSpinner {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-top-color: #1b96ff; /* brand-ish */
+  animation: tsSpin 0.9s linear infinite;
+}
+
+@keyframes tsSpin {
+  to {
+    transform: rotate(360deg);
   }
-.slds-spinner--small .slds-spinner-text {
-    transform: translate(-36%, -50%) rotate(-90deg);
 }
-.slds-spinner--medium .slds-spinner-text {
-    transform: translate(-32%, -50%) rotate(-90deg);
+
+.ts-loadingMeta {
+  min-width: 0;
 }
-.slds-spinner--large .slds-spinner-text {
-    transform: translate(-26%, -50%) rotate(-90deg);
+
+.ts-loadingTitle {
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 18px;
+  color: #1f1f1f;
+}
+
+.ts-loadingDesc {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 16px;
+  color: rgba(31, 31, 31, 0.72);
+}
+
+/* shimmer progress bar */
+.ts-loadingBar {
+  margin-top: 12px;
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.ts-loadingBarFill {
+  width: 40%;
+  height: 100%;
+  border-radius: 999px;
+
+  background: linear-gradient(
+    90deg,
+    rgba(27, 150, 255, 0.15),
+    rgba(27, 150, 255, 0.65),
+    rgba(27, 150, 255, 0.15)
+  );
+  animation: tsShimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes tsShimmer {
+  0% {
+    transform: translateX(-60%);
+  }
+  100% {
+    transform: translateX(220%);
+  }
+}
+
+/* mobile: lebih compact */
+@media (max-width: 480px) {
+  .ts-loadingTop {
+    grid-template-columns: 40px 1fr;
+  }
+  .ts-loadingSpinner {
+    width: 40px;
+    height: 40px;
+  }
+  .ts-loadingCard {
+    border-radius: 14px;
+    padding: 14px;
+  }
+}
+/* ===============================
+   LAYOUT FIX (NO OVERLAP)
+   - shell: flex column
+   - body: flex area (no scroll)
+   - list: the only scroll container
+================================ */
+
+/* 1) Shell jadi container tinggi konsisten */
+.ts-shell {
+  display: flex;
+  flex-direction: column;
+
+  /* konsisten tapi responsif (nggak bikin design berubah drastis) */
+  height: clamp(22rem, 72vh, 48rem);
+
+  /* tetap untuk overlay */
+  position: relative;
+
+  /* keep dropdown fix behavior you already set */
+  overflow: visible;
+}
+
+/* Mobile sedikit lebih tinggi */
+.ts-shell--mobile {
+  height: clamp(22rem, 78vh, 56rem);
+}
+
+/* 2) Header & footer jangan ikut “ngecil” */
+.ts-headerBar,
+.ts-footer {
+  flex: 0 0 auto;
+}
+
+/* 3) Body ambil sisa space, tapi jangan jadi scroll */
+.ts-body {
+  flex: 1 1 auto;
+  min-height: 0; /* penting biar child bisa scroll */
+  overflow: hidden; /* biar nggak ada scroll ganda */
+  background: #fafaf9;
+
+  /* REMOVE max-height lama biar nggak conflict */
+  max-height: none;
+}
+
+/* 4) List jadi satu-satunya area scroll */
+.ts-list {
+  height: 100%;
+  min-height: 0;
+}
+
+/* 5) scrollable-size jangan punya max-height lagi */
+.scrollable-size {
+  height: 100%;
+  max-height: none;
+  overflow: auto;
+  padding: 12px;
+
+  /* optional: scroll lebih smooth */
+  overscroll-behavior: contain;
+}
+
+/* 6) Footer jangan sticky lagi biar nggak nimpuk list
+      (footer tetap selalu kebawah karena shell flex) */
+.ts-footer {
+  position: relative;
+  bottom: auto;
+  z-index: 15;
+}
+
+/* (optional) Mobile footer juga aman */
+.ts-footer--mobileActions {
+  position: relative;
+}
+/* ===============================
+   INLINE MESSAGE BAR
+================================ */
+.ts-msg {
+  margin: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fff;
+}
+
+.ts-msgInner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+}
+
+.ts-msgTitle {
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.ts-msgText {
+  font-size: 12px;
+  line-height: 16px;
+  opacity: 0.85;
+  margin-top: 2px;
+}
+
+.ts-msgClose {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: #fff;
+  cursor: pointer;
+}
+.ts-msgClose:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+/* Variants */
+.ts-msg--error {
+  border-color: rgba(180, 35, 24, 0.25);
+  background: #fff1f2;
+}
+.ts-msg--warning {
+  border-color: rgba(180, 83, 9, 0.25);
+  background: #fff7ed;
+}
+.ts-msg--info {
+  border-color: rgba(27, 79, 217, 0.2);
+  background: #eef4ff;
 }
