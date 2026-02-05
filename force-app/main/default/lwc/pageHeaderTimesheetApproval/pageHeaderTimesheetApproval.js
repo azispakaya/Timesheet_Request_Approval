@@ -2,7 +2,7 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:46:12
- * @modify date 2024-05-14 15:03:55
+ * @modify date 2024-06-26 14:52:12
  * @desc [Controller for Header Information]
  */
 
@@ -20,6 +20,10 @@ export default class PageHeaderTimesheetApproval extends LightningElement {
     employeId
     desktopSupport
     mobileSupport
+    
+    get AvatarProfile(){
+        return 'standard:people_score'
+    }
 
     @wire(graphql, {
         query : gql`

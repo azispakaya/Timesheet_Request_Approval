@@ -1,206 +1,479 @@
-/**
- * @author [AcekBecek]
- * @email [nurazispakaya16@mail.com]
- * @create date 2024-03-24 15:41:27
- * @modify date 2024-03-24 15:41:27
- * @desc [Controller for Request Timesheet using multiple Method]
- */
 public without sharing class lwc_RequestTimesheetController {
-    @AuraEnabled
-    public static string submitTimesheet(String listTimesheet) {
+  // =========================
+  // Employee Context (replacement for split convertEmployeeID)
+  // Keep name convertEmployeeID to avoid breaking LWC imports
+  // =========================
+  @AuraEnabled(cacheable=true)
+  public static TimesheetResponseModels.ResponseWrapper convertEmployeeID(
+    String RecordID,
+    String render
+  ) {
+    try {
+      if (String.isBlank(RecordID)) {
+        return TimesheetResponseModels.fail(
+          'INVALID_INPUT',
+          'Employee RecordID is required.'
+        );
+      }
 
-        String RSAKey = 'MIIC6DCCAdACAQAwgaIxCzAJBgNVBAYTAklEMRQwEgYDVQQIDAtES2kgSmFrYXJ0YTEUMBIGA1UEBwwLREtJIEpha2FydGExHTAbBgNVBAoMFE1pdHJhIFNvbHVzaSBJbmZva29tMQ4wDAYDVQQLDAVzZmFwaTESMBAGA1UEAwwJbXNpbmZva29tMSQwIgYJKoZIhvcNAQkBFhVtZXJpLnlhbnRpQGRhdGFvbi5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQClytZtdVQ4LO8H5uzSRGMrDsuha0tM3rTUn/IaLNgxItiGb8U1tYHN9oOF2WqmmVhaQZQHdlDTt+YUYqI4lSFJfcwHSVhYpAvzyMeK+dYbSamsj7++E7FsmPltveLRoIWjPWQqb4/jZxXqblX6HKtbypyx/xgGtjvgOF+J7dm2FMSAp9TJdhXpiJUlSYtB3CDeW0XPAoMtZtr8NBrcy0p+LfNvMZc3tx2YL1qOyS1M4bdEQ7Ln6WfRXOiuo9icCVQwoJviZmOsqqYtnOYiAik1CfphvcWwPlY5LOANPsZCUXH7pbWCqy1mq4TlFHeph8AyHLBDc6x2MEVntNXXorbtAgMBAAGgADANBgkqhkiG9w0BAQsFAAOCAQEAAJYWKnYuadkOegUupUm1hf96pHlkMCb+83joBuxDR9IU2XsnK2YE5YX8k27CGAMmDZy93QrOaViaoWa0kSmiai43rwoHIDM6mZJV7dD1kowJFDzwDn2zX3/TKIfW34J/LK5wvAGVSwsMJ0pbwadQyYhAL/6oPQZOjow6eBjMWzvdjY8CN2U20nyPbMI1isq0sayPDq8AXQohUQqzUz/ed7P2k3+gCQFlAjrXVWNUM6mtwNc88Nt0HFNZgfl0kqe+qhSv2U6nAvLJZ9XEd+rUGeJY6K9m7TTTHIWoAXF4glp5NNU6KZ07V8cYDOld2kYWYiq1zAFAmgA1eq++suwvZA==';
-        String jsonBody = '{"timesheet" : ' + listTimesheet + '}';
-        TimesheetModel parse = TimesheetModel.parse(jsonBody.replace('pic_name', 'pic'));
+      List<Employee__c> employees = [
+        SELECT Id, Name, Employee_ID__c, Email__c, Role__c
+        FROM Employee__c
+        WHERE Id = :RecordID
+        LIMIT 1
+      ];
 
-        Http http = new Http();
-        HttpRequest request = new HttpRequest();
+      if (employees.isEmpty()) {
+        return TimesheetResponseModels.fail('NOT_FOUND', 'Employee not found.');
+      }
 
-        request.setBody(JSON.serializePretty(parse).replace('stime', 'time'));
-        request.setMethod('POST');
-        request.setEndpoint('' + System.label.sunfishURL_Timesheet);
-        request.setHeader('content-type', 'application/json');
-        request.setHeader('X-SFAPI-AppName', 'msinfokom');
-        request.setHeader('X-SFAPI-Account', 'sfapi');
-        request.setHeader('X-SFAPI-RSAKey', RSAKey);
+      Employee__c employeeRecord = employees[0];
 
-        System.debug('JSON Stringfy' + jsonBody);
-        System.debug('JSON Parse');
-        System.debug(request.getBody());
+      TimesheetResponseModels.EmployeeContext employeeContext = new TimesheetResponseModels.EmployeeContext();
+      employeeContext.employeeRecordId = employeeRecord.Id;
+      employeeContext.employeeName = employeeRecord.Name;
+      employeeContext.employeeNumber = employeeRecord.Employee_ID__c;
+      employeeContext.email = employeeRecord.Email__c;
+      employeeContext.role = employeeRecord.Role__c;
 
-        HttpResponse response = http.send(request);
-        System.debug('Response => ' + response.getBody());
-        // return '{"error_msg":"Successfully Create Timesheet", "error_code":"001" }';
-        // return ''+request.getBody();
-        return String.valueOf(response.getBody());
-
+      // "render" parameter retained for compatibility, but we no longer split strings.
+      // LWC can use payload.role/payload.employeeName etc.
+      return TimesheetResponseModels.ok(
+        employeeContext,
+        'Employee context loaded.'
+      );
+    } catch (Exception caughtException) {
+      return TimesheetResponseModels.fail(
+        'SERVER_ERROR',
+        caughtException.getMessage()
+      );
     }
+  }
 
-    @AuraEnabled
-    public static string convertEmployeeID(String RecordID, String render) {
+  // =========================
+  // Convert Project
+  // =========================
+  @AuraEnabled
+  public static TimesheetResponseModels.ResponseWrapper convertProjectName(
+    String ProjectID,
+    String memberId
+  ) {
+    try {
+      if (String.isBlank(ProjectID)) {
+        return TimesheetResponseModels.fail(
+          'INVALID_INPUT',
+          'ProjectID is required.'
+        );
+      }
+      if (String.isBlank(memberId)) {
+        return TimesheetResponseModels.fail(
+          'INVALID_INPUT',
+          'memberId is required.'
+        );
+      }
 
-        System.debug('Employee SFID ' + RecordID);
+      String responseProjectName;
+      String responseSpk;
+      Id responseProjectId;
 
-        try {
-            list<Employee__c> employee = [
-                SELECT Id, Name, Employee_ID__c, Email__c FROM Employee__c WHERE Id =: RecordID LIMIT 1
-            ];
-            if (employee.size() > 0) {
-                
-                if (render == 'loadData') {
-                    return String.valueOf(employee[0].Name) + ' - ' + String.valueOf(employee[0].Employee_ID__c);
-                }else if(render == 'apex'){
-                    return employee[0].Employee_ID__c;
-                }else{
-                    return employee[0].Employee_ID__c+';'+employee[0].Email__c;
-                }
+      List<Project_Member__c> projectMembers = [
+        SELECT Id, Project__r.Name, Project__r.SPK__c, Project__c
+        FROM Project_Member__c
+        WHERE
+          Project__c = :ProjectID
+          AND Project_Member__c = :memberId
+          AND Project__r.Status__c != 'Completed'
+        LIMIT 1
+      ];
 
-            }
-        } catch (Exception e) {
-            System.debug(e);
-            
+      if (!projectMembers.isEmpty()) {
+        responseProjectName = String.valueOf(projectMembers[0].Project__r.Name)
+          .replace(',', '');
+        responseSpk = String.valueOf(projectMembers[0].Project__r.SPK__c);
+        responseProjectId = projectMembers[0].Project__c;
+      } else {
+        List<Project__c> projects = [
+          SELECT Id, Name, SPK__c
+          FROM Project__c
+          WHERE
+            Id = :ProjectID
+            AND Status__c != 'Completed'
+            AND (Project_Manager__c = :memberId
+            OR Project_Admin__c = :memberId)
+          LIMIT 1
+        ];
+
+        if (projects.isEmpty()) {
+          return TimesheetResponseModels.fail(
+            'NOT_ASSIGNED',
+            'You are not assigned to this project, or the project has been closed.'
+          );
         }
 
-        return 'null';
+        responseProjectName = String.valueOf(projects[0].Name).replace(',', '');
+        responseSpk = String.valueOf(projects[0].SPK__c);
+        responseProjectId = projects[0].Id;
+      }
 
+      TimesheetResponseModels.TimesheetLookupResult lookupResult = new TimesheetResponseModels.TimesheetLookupResult();
+      lookupResult.entryType = 'project';
+      lookupResult.objectRecordId = (Id) ProjectID;
+      lookupResult.objectLabel = responseProjectName;
+      lookupResult.projectId = responseProjectId;
+      lookupResult.projectName = responseProjectName;
+      lookupResult.spk = responseSpk;
+
+      TimesheetResponseModels.ApproverPair approverPair = lwc_ApprovalTimesheetController.resolveApproverIds(
+        responseProjectId,
+        (Id) memberId,
+        'project'
+      );
+
+      lookupResult.approverId = approverPair.approverId;
+      lookupResult.approverOptionalId = approverPair.approverOptionalId;
+
+      return TimesheetResponseModels.ok(lookupResult, 'Project resolved.');
+    } catch (Exception caughtException) {
+      return TimesheetResponseModels.fail(
+        'SERVER_ERROR',
+        caughtException.getMessage()
+      );
     }
+  }
 
-    @AuraEnabled
-    public static string convertProjectName(String ProjectID, String memberId) {
+  // =========================
+  // Convert Case
+  // =========================
+  @AuraEnabled
+  public static TimesheetResponseModels.ResponseWrapper convertCaseNumber(
+    String caseId,
+    String memberId
+  ) {
+    try {
+      if (String.isBlank(caseId)) {
+        return TimesheetResponseModels.fail(
+          'INVALID_INPUT',
+          'caseId is required.'
+        );
+      }
+      if (String.isBlank(memberId)) {
+        return TimesheetResponseModels.fail(
+          'INVALID_INPUT',
+          'memberId is required.'
+        );
+      }
 
-        String responData = 'null';
+      Employee__c employeeRecord = [
+        SELECT Id, Employee_ID__c
+        FROM Employee__c
+        WHERE Id = :memberId
+        LIMIT 1
+      ];
 
-        if (ProjectID.equals('')) {
-            responData = 'No Data';
-        } else {
-            List < Project_Member__c > projectMember = [
-                SELECT Id, Name, Project__r.Name, Project__r.SPK__c, Project__c
-                FROM Project_Member__c
-                WHERE
-                Project__c =: ProjectID
-                AND Project_Member__c =: memberId
-                AND Project__r.Status__c != 'Completed'
-                LIMIT 1
-            ];
+      if (
+        employeeRecord == null || String.isBlank(employeeRecord.Employee_ID__c)
+      ) {
+        return TimesheetResponseModels.fail('NOT_FOUND', 'Employee not found.');
+      }
 
-            if (projectMember.size() > 0) {
+      String employeeNumber = employeeRecord.Employee_ID__c;
 
-                String ProjectName = String.valueOf(projectMember[0].Project__r.Name).replace(',','');
-                responData =  ProjectName+ ',' + String.valueOf(projectMember[0].Project__r.SPK__c)+','+projectMember[0].Project__c;
+      List<Case_Escalation_History__c> caseEscalations = [
+        SELECT Id, Case__c
+        FROM Case_Escalation_History__c
+        WHERE
+          Case__c = :caseId
+          AND From_Engineer__r.Employee_ID__c = :employeeNumber
+        LIMIT 1
+      ];
 
-            }else{
-                List<Project__c> project = [
-                    SELECT Id, Name, SPK__c
-                    FROM Project__c
-                    WHERE 
-                    Id =: ProjectID
-                    AND Status__c != 'Completed'
-                    AND  (Project_Manager__c =: memberId OR Project_Admin__c =: memberId) 
-                    LIMIT 1
-                ];
-                if(project.size() > 0){
+      String dynamicQuery =
+        'SELECT Id, CaseNumber, Project__c, Project__r.Name, Project__r.SPK__c ' +
+        'FROM Case WHERE Id = :caseId ';
 
-                    String ProjectName = String.valueOf(project[0].Name).replace(',','');
-                    responData = ProjectName + ',' + String.valueOf(project[0].SPK__c)+','+project[0].Id;
+      if (caseEscalations.isEmpty()) {
+        dynamicQuery += 'AND Assigned_To__r.Employee_ID__c = :employeeNumber ';
+      }
 
-                }
-            }
+      dynamicQuery += 'LIMIT 1';
 
+      List<Case> cases = Database.query(dynamicQuery);
+      if (cases.isEmpty()) {
+        return TimesheetResponseModels.fail(
+          'NOT_ASSIGNED',
+          'You are not assigned to this Case.'
+        );
+      }
+
+      Case caseRecord = cases[0];
+
+      Id resolvedProjectId;
+      String resolvedProjectName;
+      String resolvedSpk;
+
+      if (caseRecord.Project__c == null) {
+        List<Project__c> overheadProjects = [
+          SELECT Id, SPK__c, Name
+          FROM Project__c
+          WHERE Name = 'MSInfokom - Overhead'
+          LIMIT 1
+        ];
+        if (overheadProjects.isEmpty()) {
+          return TimesheetResponseModels.fail(
+            'NOT_FOUND',
+            'Overhead project not found.'
+          );
         }
-        return responData;
+        resolvedProjectId = overheadProjects[0].Id;
+        resolvedProjectName = overheadProjects[0].Name;
+        resolvedSpk = overheadProjects[0].SPK__c;
+      } else {
+        resolvedProjectId = caseRecord.Project__c;
+        resolvedProjectName = caseRecord.Project__r.Name;
+        resolvedSpk = caseRecord.Project__r.SPK__c;
+      }
 
+      TimesheetResponseModels.TimesheetLookupResult lookupResult = new TimesheetResponseModels.TimesheetLookupResult();
+      lookupResult.entryType = 'case';
+      lookupResult.objectRecordId = (Id) caseId;
+      lookupResult.objectLabel = caseRecord.CaseNumber;
+      lookupResult.projectId = resolvedProjectId;
+      lookupResult.projectName = resolvedProjectName;
+      lookupResult.spk = resolvedSpk;
+
+      TimesheetResponseModels.ApproverPair approverPair = lwc_ApprovalTimesheetController.resolveApproverIds(
+        resolvedProjectId,
+        (Id) memberId,
+        'case'
+      );
+
+      lookupResult.approverId = approverPair.approverId;
+      lookupResult.approverOptionalId = approverPair.approverOptionalId;
+
+      return TimesheetResponseModels.ok(lookupResult, 'Case resolved.');
+    } catch (Exception caughtException) {
+      return TimesheetResponseModels.fail(
+        'SERVER_ERROR',
+        caughtException.getMessage()
+      );
     }
+  }
 
-    @AuraEnabled
-    public static string convertCaseNumber(String caseId, String memberId) {
+  // =========================
+  // Convert POC
+  // =========================
+  @AuraEnabled
+  public static TimesheetResponseModels.ResponseWrapper convertPOCNumber(
+    String pocId,
+    String memberId
+  ) {
+    try {
+      if (String.isBlank(pocId)) {
+        return TimesheetResponseModels.fail(
+          'INVALID_INPUT',
+          'pocId is required.'
+        );
+      }
+      if (String.isBlank(memberId)) {
+        return TimesheetResponseModels.fail(
+          'INVALID_INPUT',
+          'memberId is required.'
+        );
+      }
 
-        String responseData = '400;null';
+      List<Project__c> pocProjects = [
+        SELECT Id, Name, SPK__c
+        FROM Project__c
+        WHERE SPK__c = 'MSI001'
+        LIMIT 1
+      ];
+      if (pocProjects.isEmpty()) {
+        return TimesheetResponseModels.fail(
+          'NOT_FOUND',
+          'POC default project (MSI001) not found.'
+        );
+      }
 
-        String employeeid = convertEmployeeID(memberId, 'Apex');
-        
-        if(employeeid == 'null')return 'No Employee';
+      Project__c pocProject = pocProjects[0];
 
-        if (!caseId.equals('')) {
+      List<POC_Member__c> pocMembers = [
+        SELECT Id, POC__r.Name
+        FROM POC_Member__c
+        WHERE POC__c = :pocId AND Employee__c = :memberId
+        LIMIT 1
+      ];
 
-            String queries = 'SELECT Id, CaseNumber, Project__c, Project__r.Name, Project__r.SPK__c FROM Case WHERE Id =:caseId ';
+      String pocName;
 
-            if (employeeid != '952300') {
-                queries += 'AND Assigned_To__r.Employee_ID__c =:employeeid ';
-            }
-
-            queries += 'LIMIT 1';
-
-            List < Case > listCase = Database.query(queries);
-            // Assigned_To__r.Employee_ID__c = '952300'
-
-            if (listCase.size() > 0) {
-
-                if (listCase[0].Project__c == null) {
-
-                    List < Project__c > listProject = [
-                        SELECT Id, SPK__c, Name
-                        FROM Project__c
-                        WHERE Name = 'MSInfokom - Overhead'
-                        LIMIT 1
-                    ];
-
-                    responseData = '200;' + listCase[0].CaseNumber + ',' + listProject[0].Name + ',' + listProject[0].SPK__c+','+listProject[0].Id;
-
-                } else {
-
-                    responseData = '200;' + listCase[0].CaseNumber + ',' + listCase[0].Project__r.Name + ',' + listCase[0].Project__r.SPK__c+','+listCase[0].Project__c;
-
-                }
-            }else{
-                responseData = '401;Not Assign';
-            }
-
+      if (!pocMembers.isEmpty()) {
+        pocName = pocMembers[0].POC__r.Name;
+      } else {
+        List<POC__c> pocRecords = [
+          SELECT Id, Name
+          FROM POC__c
+          WHERE
+            Id = :pocId
+            AND (Project_Manager__c = :memberId
+            OR Presales__c = :memberId)
+          LIMIT 1
+        ];
+        if (pocRecords.isEmpty()) {
+          return TimesheetResponseModels.fail(
+            'NOT_ASSIGNED',
+            'You are not assigned to this POC.'
+          );
         }
-        return responseData;
+        pocName = pocRecords[0].Name;
+      }
 
+      TimesheetResponseModels.TimesheetLookupResult lookupResult = new TimesheetResponseModels.TimesheetLookupResult();
+      lookupResult.entryType = 'poc';
+      lookupResult.objectRecordId = (Id) pocId;
+      lookupResult.objectLabel = pocName;
+      lookupResult.projectId = pocProject.Id;
+      lookupResult.projectName = pocProject.Name;
+      lookupResult.spk = pocProject.SPK__c;
+
+      TimesheetResponseModels.ApproverPair approverPair = lwc_ApprovalTimesheetController.resolveApproverIds(
+        pocProject.Id,
+        (Id) memberId,
+        'poc'
+      );
+
+      lookupResult.approverId = approverPair.approverId;
+      lookupResult.approverOptionalId = approverPair.approverOptionalId;
+
+      return TimesheetResponseModels.ok(lookupResult, 'POC resolved.');
+    } catch (Exception caughtException) {
+      return TimesheetResponseModels.fail(
+        'SERVER_ERROR',
+        caughtException.getMessage()
+      );
     }
+  }
 
-    @AuraEnabled
-    public static string convertPOCNumber(String pocId, String memberId) {
+  // =========================
+  // Convert Opportunity
+  // =========================
+  @AuraEnabled
+  public static TimesheetResponseModels.ResponseWrapper convertOpportuniyId(
+    String OptyID,
+    String memberId
+  ) {
+    try {
+      if (String.isBlank(OptyID)) {
+        return TimesheetResponseModels.fail(
+          'INVALID_INPUT',
+          'OptyID is required.'
+        );
+      }
 
-        String responseData = '400;null';
+      List<Opportunity> opportunities = [
+        SELECT Id, Name, SPK__c
+        FROM Opportunity
+        WHERE Id = :OptyID
+        LIMIT 1
+      ];
 
-        if (!pocId.equals('')) {
-            List < POC_Member__c > listPOCMember = [
-                SELECT Id, Name, POC__r.Name
-                FROM POC_Member__c
-                WHERE
-                POC__c =: pocId
-                AND Employee__c =: memberId
-                LIMIT 1
-            ];
+      if (opportunities.isEmpty()) {
+        return TimesheetResponseModels.fail(
+          'NOT_FOUND',
+          'Opportunity not found.'
+        );
+      }
 
-            List < Project__c > pocProject = [
-                SELECT Id, Name, SPK__c FROM Project__c WHERE SPK__c = 'MSI001'
-                LIMIT 1
-            ];
+      List<Project__c> businessDevelopmentProjects = [
+        SELECT Id, Name, SPK__c
+        FROM Project__c
+        WHERE SPK__c = 'MSI001'
+        LIMIT 1
+      ];
+      if (businessDevelopmentProjects.isEmpty()) {
+        return TimesheetResponseModels.fail(
+          'NOT_FOUND',
+          'Default project (MSI001) not found.'
+        );
+      }
 
-            if (listPOCMember.size() > 0) {
-                responseData = '200;' + listPOCMember[0].POC__r.Name + ',' + pocProject[0].Name + ',' + pocProject[0].SPK__c+','+pocProject[0].Id;
-            }else{
+      Opportunity opportunityRecord = opportunities[0];
+      Project__c businessDevelopmentProject = businessDevelopmentProjects[0];
 
-                List<POC__c> listPoc = [
-                    SELECT Id, Name
-                    FROM POC__c
-                    WHERE 
-                    Id =: pocId
-                    AND Project_Manager__c =: memberId
-                    LIMIT 1
-                ];
-                if(listPoc.size() > 0){
-                    responseData = '200;' + listPoc[0].Name + ',' + pocProject[0].Name + ',' + pocProject[0].SPK__c+','+pocProject[0].Id;
-                }else{
-                    responseData = '401; not Assign to POC';
-                }
-            }
-        }
+      TimesheetResponseModels.TimesheetLookupResult lookupResult = new TimesheetResponseModels.TimesheetLookupResult();
+      lookupResult.entryType = 'opty';
+      lookupResult.objectRecordId = (Id) OptyID;
+      lookupResult.objectLabel = opportunityRecord.Name;
+      lookupResult.projectId = businessDevelopmentProject.Id;
+      lookupResult.projectName = businessDevelopmentProject.Name;
+      lookupResult.spk = opportunityRecord.SPK__c;
 
-        return responseData;
+      TimesheetResponseModels.ApproverPair approverPair = lwc_ApprovalTimesheetController.resolveApproverIds(
+        businessDevelopmentProject.Id,
+        (Id) memberId,
+        'opty'
+      );
 
+      lookupResult.approverId = approverPair.approverId;
+      lookupResult.approverOptionalId = approverPair.approverOptionalId;
+
+      return TimesheetResponseModels.ok(lookupResult, 'Opportunity resolved.');
+    } catch (Exception caughtException) {
+      return TimesheetResponseModels.fail(
+        'SERVER_ERROR',
+        caughtException.getMessage()
+      );
     }
+  }
+
+  // =========================
+  // Convert Campaign
+  // =========================
+  @AuraEnabled
+  public static TimesheetResponseModels.ResponseWrapper convertCampaign(
+    String campaignId,
+    String memberId
+  ) {
+    try {
+      if (String.isBlank(campaignId)) {
+        return TimesheetResponseModels.fail(
+          'INVALID_INPUT',
+          'campaignId is required.'
+        );
+      }
+
+      Project__c projectRecord = [
+        SELECT Id, SPK__c, Name
+        FROM Project__c
+        WHERE SPK__c = 'MSI009'
+        LIMIT 1
+      ];
+
+      Campaign campaignRecord = [
+        SELECT Id, Name
+        FROM Campaign
+        WHERE Id = :campaignId
+        LIMIT 1
+      ];
+
+      TimesheetResponseModels.TimesheetLookupResult lookupResult = new TimesheetResponseModels.TimesheetLookupResult();
+      lookupResult.entryType = 'campaign';
+      lookupResult.objectRecordId = (Id) campaignId;
+      lookupResult.objectLabel = campaignRecord.Name;
+      lookupResult.projectId = projectRecord.Id;
+      lookupResult.projectName = projectRecord.Name;
+      lookupResult.spk = projectRecord.SPK__c;
+
+      TimesheetResponseModels.ApproverPair approverPair = lwc_ApprovalTimesheetController.resolveApproverIds(
+        projectRecord.Id,
+        (Id) memberId,
+        'campaign'
+      );
+
+      lookupResult.approverId = approverPair.approverId;
+      lookupResult.approverOptionalId = approverPair.approverOptionalId;
+
+      return TimesheetResponseModels.ok(lookupResult, 'Campaign resolved.');
+    } catch (Exception caughtException) {
+      throw new AuraHandledException(caughtException.getMessage());
+    }
+  }
 }

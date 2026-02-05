@@ -1,564 +1,1201 @@
-/**
- * @author [AcekBecek]
- * @email [nurazispakaya16@mail.com]
- * @create date 2024-03-24 15:40:38
- * @modify date 2024-05-14 13:54:41
- * @desc [Controller for Add multiple Timehseet]
- */
-import {
-    LightningElement,
-    api,
-    track
-} from 'lwc';
-import convertPicName from '@salesforce/apex/lwc_RequestTimesheetController.convertEmployeeID'
-import convertProjectName from '@salesforce/apex/lwc_RequestTimesheetController.convertProjectName'
-import {
-    ShowToastEvent
-} from 'lightning/platformShowToastEvent'
-import submitMultiTimesheet from '@salesforce/apex/lwc_RequestTimesheetController.submitTimesheet'
-import convertCaseNumber from '@salesforce/apex/lwc_RequestTimesheetController.convertCaseNumber'
-import convertPOCNumber from '@salesforce/apex/lwc_RequestTimesheetController.convertPOCNumber'
-import {
-    CloseActionScreenEvent
-} from 'lightning/actions';
-import assignApprover from '@salesforce/apex/lwc_ApprovalTimesheetController.getProjectManager'
-import createMultiTimesheet from '@salesforce/apex/lwc_ApprovalTimesheetController.createMultiTimesheet'
+/* eslint-disable no-confusing-arrow */
+import { LightningElement, api, track, wire } from "lwc";
+import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import FORM_FACTOR from "@salesforce/client/formFactor";
 
-export default class AddMultipleTimesheet extends LightningElement {
-    @api recordId
+// Apex (wrapper-based)
+import convertEmployeeID from "@salesforce/apex/lwc_RequestTimesheetController.convertEmployeeID";
+import generateTimesheetRemark from "@salesforce/apex/TimesheetAIController.generateTimesheetRemark";
 
-    @track timesheets = []
-    @track listProjects = []
-    @track listCases = []
-    @track listPOCs = []
+import { CloseActionScreenEvent } from "lightning/actions";
 
-    @track countHours = 0
-    @track isLoading = false
+import createMultiTimesheet from "@salesforce/apex/lwc_ApprovalTimesheetController.createMultiTimesheet";
 
-    isValid = false
-    isVisible = true
+export default class RequestTimesheet extends LightningElement {
+  @api recordId; // Employee__c Id
 
-    @track validationErrors = []
-    showproject = true
-    showcase = false
-    showpoc = false
-    classProject = 'slds-col slds-size_2-of-8 slds-m-around_small'
+  // ========= UI flags =========
+  @track uiState = {
+    isLoadingEmployee: false,
+    isConvertingRow: false,
+    isSaving: false,
+    isSubmitting: false
+  };
 
-    selectedPicklist = 'Project'
-    fieldApiName = 'Project__c'
+  // ========= Header / Role =========
+  employeName = "Timesheet";
+  employeeRole = true; // same behavior with your existing HTML
+  selectedPicklist = "Project";
 
-    employeName = null
+  // used by your HTML
+  PicklistObject = [];
 
-    formFactorClass = 'slds-grid slds-grid_align-space'
-    mobileSupport
-    desktopSupport
+  // ========= Lists =========
+  @track listProjects = [];
+  @track listCases = [];
+  @track listPOCs = [];
+  @track listOpportunities = [];
+  @track listCampaigns = [];
 
-    get PicklistObject() {
-        return [{
-                label: 'Project',
-                value: 'Project'
-            },
-            {
-                label: 'Case',
-                value: 'Case'
-            },
-            {
-                label: 'POC',
-                value: 'POC'
-            },
-        ]
-    }
-    connectedCallback() {
-        this.isVisible = true
-        
-        if(FORM_FACTOR == 'Large'){
-            this.formFactorClass = 'slds-grid slds-grid_align-space'
-            this.desktopSupport = true
-        }else{
-            this.formFactorClass = 'slds-grid slds-grid_vertical'
-            this.mobileSupport = true
-        }
-    }
+  // ========= employee context (from wrapper) =========
+  @track employeeContext = {
+    employeeRecordId: null,
+    employeeName: "",
+    employeeNumber: "",
+    email: "",
+    role: ""
+  };
 
-    //* Field Handling
-    handleObject(event) {
-        if (this.timesheets.length < 0) {
-            this.toast('Unable to modify timesheet type when displaying more than one row.', 'warning', 'Warning')
-        } else {
-            this.selectedPicklist = event.detail.value;
+  @track uiMessage = {
+    visible: false,
+    variant: "info", // error | warning | info
+    title: "",
+    message: ""
+  };
 
-            if (this.selectedPicklist == 'Project') {
-                this.classProject = 'slds-col slds-size_2-of-8 slds-m-around_small'
-                this.showproject = true
-                this.showcase = false
-                this.showpoc = false
-            } else if (this.selectedPicklist == 'Case') {
-                this.classProject = 'slds-col slds-size_1-of-8 slds-m-around_small'
-                this.showproject = false
-                this.showcase = true
-                this.showpoc = false
-            } else {
-                this.showproject = false
-                this.showcase = false
-                this.showpoc = true
-            }
-        }
+  get uiMessageClass() {
+    return `ts-msg ts-msg--${this.uiMessage.variant || "info"}`;
+  }
 
+  showMessage(variant, title, message) {
+    this.uiMessage = {
+      visible: true,
+      variant: variant || "info",
+      title: title || "Notice",
+      message: message || ""
+    };
+  }
 
-    }
+  clearMessage() {
+    this.uiMessage = {
+      visible: false,
+      variant: "info",
+      title: "",
+      message: ""
+    };
+  }
 
-    fieldChangeHandler(event) {
-        //* define basic variable
-        let timesheetRow = this.timesheets.find(record => record.tempId == event.target.dataset.tempid)
-        let fieldValue = event.target.value
-        let fieldName = event.target.name
+  // ========= Computed =========
+  get desktopSupport() {
+    return FORM_FACTOR !== "Small";
+  }
 
-        //* add validation for null field required
-        this.controlValidityField()
+  get mobileSupport() {
+    return FORM_FACTOR === "Small";
+  }
 
-        //* set the data to the object
-        if (timesheetRow) {
-            switch (fieldName) {
-                case 'case':
-                    convertCaseNumber({
-                            caseId: fieldValue,
-                            memberId: this.recordId
-                        })
-                        .then(res => {
-                            let splitCode = res.split(';')
-                            if (splitCode[0] === '200') {
-                                let splitRes = splitCode[1].split(',')
-                                this.isValid = true;
-                                timesheetRow[fieldName] = splitRes[0];
-                                timesheetRow['project_name'] = splitRes[1];
-                                timesheetRow['spk'] = splitRes[2];
-                                timesheetRow['ProjectId'] = splitRes[3];
-                                timesheetRow['type'] = 'case'
+  // keep this for your HTML binding
+  get isLoading() {
+    return (
+      this.uiState.isLoadingEmployee ||
+      this.uiState.isSaving ||
+      this.uiState.isSubmitting
+    );
+  }
 
-                                assignApprover({
-                                    ProjectId : splitRes[3],
-                                    EmployeeID : this.recordId
-                                }).then((res)=>{
-                                    timesheetRow['Approver'] = res.split(';')[0];
-                                    timesheetRow['Approver_Optional'] = res.split(';')[1]
-                                })
+  // empty state flag used by HTML (your "isVisible")
+  get isVisible() {
+    const totalRows =
+      this.listProjects.length +
+      this.listCases.length +
+      this.listPOCs.length +
+      this.listOpportunities.length +
+      this.listCampaigns.length;
+    return totalRows === 0;
+  }
 
-                            } else if (splitCode[0] === '401') {
-                                this.toast('You are not assigned to this Case. Please ensure proper assignment for continued request Timesheet.', 'error', 'Case Invalid!!');
-                                this.isValid = false
-                            } else {
-                                this.isValid = false
-                            }
-                        });
-                    break;
+  get formFactorClass() {
+    return "slds-grid slds-gutters_small";
+  }
 
-                case 'project_name':
-                    convertProjectName({
-                            ProjectID: (event.detail.value)[0],
-                            memberId: this.recordId
-                        })
-                        .then(result => {
-                            if (result === 'null') {
-                                this.isValid = false;
-                                this.toast('You are not assigned to this project, or the project has been closed. Please contact the project manager for further assistance.', 'error', 'Project Invalid!!');
-                            } else if (result !== 'No Data') {
-                                const projectName = result.split(',');
-                                this.isValid = true;
-                                timesheetRow['project_name'] = projectName[0];
-                                timesheetRow['spk'] = projectName[1];
-                                timesheetRow['ProjectId'] = projectName[2];
-                                timesheetRow['type'] = 'project';
+  // Count hours for header
+  get countHours() {
+    const allRows = this.getAllRows();
+    let total = 0;
 
-                                assignApprover({
-                                    ProjectId : projectName[2],
-                                    EmployeeID : this.recordId
-                                }).then((res)=>{
-                                    timesheetRow['Approver'] = res.split(';')[0];
-                                    timesheetRow['Approver_Optional'] = res.split(';')[1]
-                                })
-                            } else {
-                                this.isValid = false
-                            }
-                        });
-                        
-                    break;
+    allRows.forEach((rowItem) => {
+      const value = Number(rowItem.stime);
+      if (!Number.isNaN(value)) total += value;
+    });
 
-                case 'poc_name':
-                    convertPOCNumber({
-                            pocId: fieldValue,
-                            memberId: this.recordId
-                        })
-                        .then(res => {
-                            let spliCode = res.split(';')
-                            if (spliCode[0] === '200') {
-                                let splitRes = spliCode[1].split(',')
-                                timesheetRow[fieldName] = splitRes[0];
-                                timesheetRow['project_name'] = splitRes[1];
-                                timesheetRow['spk'] = splitRes[2];
-                                timesheetRow['ProjectId'] = splitRes[3];
-                                timesheetRow['type'] = 'poc'
+    return total;
+  }
 
-                                assignApprover({
-                                    ProjectId : splitRes[3],
-                                    EmployeeID : this.recordId
-                                }).then((res)=>{
-                                    timesheetRow['Approver'] = res.split(';')[0];
-                                    timesheetRow['Approver_Optional'] = res.split(';')[1]
-                                })
+  // ========= Wire employee context =========
+  @wire(convertEmployeeID, { RecordID: "$recordId", render: "loaddata" })
+  wiredEmployeeContext(wireResult) {
+    const { data, error } = wireResult;
 
-                            } else if(spliCode[0] === '401'){
-                                this.toast('You are not assigned to this POC as a member or project manager. Please contact the POC administrator for further assistance.','error','POC Invalid')
-                                this.isValid = false
-                            }else{
-                                this.isValid = false;
-                            }
-                        });
-                        
-                    break;
+    this.uiState.isLoadingEmployee = true;
 
-                case 'stime' :
-                    
-                    let checkHours = this.validateField(fieldName, fieldValue);
-                    if(checkHours =='valid'){
-                        this.countHours = this.sumTotalHours(this.timesheets)
-                        timesheetRow[fieldName] = fieldValue    
-                    }else{
-                        this.toast(checkHours, 'error', 'Hours Invalid!!')
-                    }
-                    
-                    break;
-
-                case 'date' :
-                    
-                    let checkingDateField = this.validateField(fieldName, fieldValue);
-                    if(checkingDateField == 'valid'){
-                        timesheetRow['start_date'] = fieldValue
-                        timesheetRow['end_date'] = fieldValue
-                    }
-
-                default:
-                    let checkingField = this.validateField(fieldName, fieldValue);
-                    if (checkingField === 'valid') {
-                        timesheetRow[fieldName] = fieldValue;
-                    } else {
-                        timesheetRow[fieldName] = null
-                        this.toast(checkingField, 'error', 'Invalid');
-                    }
-            }
-            
-        }
-       
-
+    if (error) {
+      const normalizedError = this.normalizeApexError(error);
+      this.showMessage("error", "Employee", normalizedError.message);
+      this.uiState.isLoadingEmployee = false;
+      return;
     }
 
-    //* Button Function
+    if (data) {
+      const responseWrapper = this.normalizeResponse(data);
 
-    setPOCHandler(){
-        this.selectedPicklist = 'POC'
-        this.addNewHandler()
-    }
-
-    setProjectHandler(){
-        this.selectedPicklist = 'Project'
-        this.addNewHandler()
-    }
-    
-    setCaseHandler(){
-        this.selectedPicklist = 'Case'
-        this.addNewHandler()
-    }
-
-    addNewHandler(event) {
-        
-        if(this.timesheets.length > 4){
-            this.toast("You've reached the maximum limit of entries. You can't add more than 5 entries.", 'error', 'Invalid')
-            return
-        }
-
-        let typeTimesheet = this.selectedPicklist
-
-        if (typeTimesheet == 'Project') {
-            this.listProjects.push({
-                tempId: Date.now()
-            })
-        } else if (typeTimesheet == 'Case') {
-            this.listCases.push({
-                tempId: Date.now(),
-            })
-        } else if (typeTimesheet == 'POC') {
-            this.listPOCs.push({
-                tempId: Date.now()
-            })
-        }
-
-        this.timesheets = this.listProjects.concat(this.listCases, this.listPOCs)
-        this.isVisible = false
-        if (this.timesheets.length > 0) {
-            this.toast('Succesfully Add new Timesheet Entry', 'success', 'Info')
-        }
-
-    }
-
-    cancelHandler() {
-        this.timesheets = []
-        this.dispatchEvent(new CloseActionScreenEvent())
-    }
-
-    removeHandler(event) {
-        // if(this.timesheets.length==1){
-        //     this.toast('Cannot Remove Last Timesheet Entry. Please ensure there is at least one entry remaining.','error','Warning!!')
-        //     return
-        // }
-        let entity = event.target.dataset.entitytype
-        let entityId = event.target.dataset.tempid
-        if (entity === 'project') {
-            this.listProjects = this.listProjects.filter(record => record.tempId != entityId)
-        } else if (entity === 'case') {
-            this.listCases = this.listCases.filter(record => record.tempId != entityId)
-        } else {
-            this.listPOCs = this.listPOCs.filter(record => record.tempId != entityId)
-        }
-
-        this.timesheets = this.timesheets.filter(record => record.tempId != event.target.dataset.tempid)
-        this.toast('Successfully Remove Timesheet Entry', 'warning', 'Info')
-
-        if (this.timesheets.length == 0) {
-            this.isVisible = true
-        }
-    }
-
-    async submitTimesheet(event) {
-        this.handlingSaveRecord('Waiting for Approval')
-    }
-
-    async saveTimesheet(event){
-        this.handlingSaveRecord('Draft')
-    }
-
-    async handlingSaveRecord(setApprovalStatus){
-        try {
-            //* Validate fields
-            this.controlValidityField();
-            if (this.validationErrors.length !== 0) {
-                this.toast('Mandatory Fields Required. Please ensure all required fields are filled in.', 'error', 'Attention!!');
-                return;
-            }
-
-            //* Validate StartDate EndDate
-            if (!this.validateDateErrors(this.timesheets)) {
-                this.toast('Start Date must be less than End Date', 'error', 'Error!!');
-                return
-            }
-
-            //* validate Project Errors
-            if (!this.validateProjectErrors(this.timesheets)) {
-                this.toast('Kindly Ensure Valid Projects are Selected for Your Timesheet. Please check your Project on Case', 'error', 'Project Invalid!!')
-                return
-            }
-
-            //* Prepare data to send
-            if (!this.validateNullFields(this.timesheets)) {
-                this.toast("Please ensure the Start Date, End Date, and Time fields are entered in the correct Value.", 'error', 'Invalid!!')
-                return
-            }
-
-            //* Fetch PicName
-            const employe = await convertPicName({
-                RecordID: this.recordId,
-                render: 'submit'
-            });
-
-            //* Assign PicName and set billable flag
-            this.timesheets.forEach(record => {
-                record.pic_name = employe.split(';')[0];
-                record.Email = employe.split(';')[1]
-                record.EmployeeID = this.recordId;
-                record.billable = '1';
-            });
-
-            if (!this.isValid) {
-                this.toast('Please Check Your Inputs!', 'error', 'Error');
-                return;
-            }
-
-            //* Combine fields on array
-            this.timesheets = this.combineRemarkItem(this.timesheets);
-
-            //* Sort timesheets based on Start_date
-            this.timesheets = this.sortListCollection(this.timesheets);
-
-
-            //* Submit timesheet
-            if (this.timesheets.length == 0) {
-                this.toast('Please input at least one timesheet entry before submitting the request.', 'warning', 'Reminder!!')
-                return
-            }
-
-
-            this.isLoading = true
-            const resSubmit = await createMultiTimesheet({
-                Timesheet: JSON.stringify(this.timesheets),
-                ApprovalStatus : setApprovalStatus
-            });
-
-            const [resMSG, resCode] = resSubmit.split(',');
-            
-            if (resCode.includes('"000"')) {
-                this.toast('Successfully Request Timesheet', 'success', 'Success');
-                this.dispatchEvent(new CloseActionScreenEvent());
-                this.isLoading = false
-            } else {
-                this.toast(`Failed to request timesheet with error: ${resMSG.split(':')[1]}`, 'error', 'Error');
-                this.isLoading = false
-            }
-            // console.log(JSON.parse(resSubmit));
-            // console.log(setApprovalStatus)
-        } catch (error) {
-            console.error('Error:', error);
-            this.toast('An error occurred while processing the request.', 'error', 'Error!!');
-        }
-
-        // console.log(JSON.stringify(this.timesheets))
-    }
-
-    //* validation Fields
-    controlValidityField() {
-        this.validationErrors = []
-
-        const requiredFields = this.template.querySelectorAll('.validated')
-        requiredFields.forEach(field => {
-            if (!field.value) {
-                this.validationErrors.push(field.label + 'is Required')
-            }
-        })
-
-    }
-
-    validateField(fieldName, value) {
-
-        if (fieldName === 'stime' && value > 24) {
-            return 'Invalid Time Entry. The time should not exceed 24 hours. Please adjust your input.';
-        }
-
-        if ((fieldName === 'start_date' || fieldName === 'end_date') && (new Date(value) > new Date() || new Date(value) <= new Date().setDate(new Date().getDate() - 9))) {
-            return 'Please enter a date that is not later than today and not more than 7 days ago.';
-        }
-
-        if (fieldName === 'date' && (new Date(value) > new Date() || new Date(value) <= new Date().setDate(new Date().getDate() - 9)) ){
-            return 'Please enter a date that is not later than today and not more than 7 days ago.';
-        }
-
-        return 'valid';
-
-    }
-
-
-    //* utility Function
-    toast(message, variant, title) {
-        const callToast = new ShowToastEvent({
-            title: title,
-            message: message,
-            variant: variant
-        })
-        this.dispatchEvent(callToast);
-    }
-
-    compareDate(startDate, endDate) {
-        const validStartDate = new Date(startDate)
-        const validEndDate = new Date(endDate)
-
-        if (validEndDate < validStartDate) {
-            return false
-        }
-        return true
-    }
-
-    sumTotalHours(listArray) {
-        let total = 0;
-
-        for (let i = 0; i < listArray.length; i++) {
-            total += parseInt(listArray[i].stime)
-        }
-
-        return total
-
-    }
-
-    validateDateErrors(listArray) {
-        let dateErrors = [];
-        listArray.forEach(fields => {
-            if (!this.compareDate(fields.start_date, fields.end_date)) {
-                dateErrors.push(`Start Date ${fields.start_date}: End Date ${fields.end_date}`);
-            }else{
-                dateErrors = []
-            }
-
-        });
-
-        if (dateErrors.length > 0) {
-            return false
-        }
-        return true
-
-    }
-
-    validateNullFields(listArray) {
-        let nullFields = [];
-        listArray.forEach(item => {
-            if (item.stime == null) {
-                nullFields.push("Time is Null")
-            }else{
-                nullFields = []
-            }
-            if (item.start_date == null || item.end_date == null) {
-                nullFields.push('All dates must be filled');
-            }else{
-                nullFields = []
-            }
-
-            
-        })
-
-        if (nullFields.length > 0) {
-            return false
-        }
-        return true
-    }
-
-    validateProjectErrors(listArray) {
-        let ProjectError = []
-        listArray.forEach(fields => {
-            if (fields.spk == null) {
-                ProjectError.push("Project is required")
-            }else{
-                ProjectError = []
-            }
-        })
-        if (ProjectError.length > 0) {
-            return false
-        }
-        return true
-    }
-
-    combineRemarkItem(listArray) {
-        listArray.forEach(item => {
-            if (item.type === 'case') {
-                item.remark = `Case ${item.case} - ${item.temp_remark}`;
-            } else if (item.type === 'project') {
-                item.remark = `Project ${item.spk} - ${item.temp_remark}`;
-            } else {
-                item.remark = `${item.poc_name} - ${item.temp_remark}`;
-            }
-        });
-        return listArray;
-    }
-
-    sortListCollection(listArray) {
-        listArray = listArray.sort((recordCurrent, recordPrev) =>
-            new Date(recordCurrent.start_date) - new Date(recordPrev.start_date)
+      if (!responseWrapper.success) {
+        this.showMessage(
+          "error",
+          "Employee",
+          responseWrapper.message || "Failed to load employee context."
         );
-        return listArray;
+        this.uiState.isLoadingEmployee = false;
+        return;
+      }
+
+      const payload = responseWrapper.payload || {};
+      this.employeeContext = {
+        employeeRecordId: payload.employeeRecordId || this.recordId,
+        employeeName: payload.employeeName || "",
+        employeeNumber: payload.employeeNumber || "",
+        email: payload.email || "",
+        role: payload.role || ""
+      };
+
+      this.employeName = this.employeeContext.employeeName || "Timesheet";
+      this.applyRoleRules(this.employeeContext.role);
+
+      this.uiState.isLoadingEmployee = false;
+    }
+  }
+
+  applyRoleRules(roleValue) {
+    const role = roleValue || "";
+
+    if (role === "Presales") {
+      this.employeeRole = false;
+      this.selectedPicklist = "Opportunity";
+      this.PicklistObject = [
+        { label: "Opportunity", value: "Opportunity" },
+        { label: "Project", value: "Project" },
+        { label: "POC", value: "POC" }
+      ];
+      return;
     }
 
+    if (role === "Marketing") {
+      this.employeeRole = true;
+      this.selectedPicklist = "Campaign";
+      this.PicklistObject = [
+        { label: "Campaign", value: "Campaign" },
+        { label: "Project", value: "Project" }
+      ];
+      return;
+    }
+
+    // default
+    this.employeeRole = true;
+    this.selectedPicklist = "Project";
+    this.PicklistObject = [
+      { label: "Project", value: "Project" },
+      { label: "Case", value: "Case" },
+      { label: "POC", value: "POC" }
+    ];
+  }
+
+  // ========= Header handlers (menu) =========
+  setProjectHandler() {
+    this.selectedPicklist = "Project";
+  }
+  setCaseHandler() {
+    this.selectedPicklist = "Case";
+  }
+  setPOCHandler() {
+    this.selectedPicklist = "POC";
+  }
+  setOptyHandler() {
+    this.selectedPicklist = "Opportunity";
+  }
+  setCampaignHandler() {
+    this.selectedPicklist = "Campaign";
+  }
+
+  // ========= Add row =========
+  addNewHandler() {
+    const typeLabel = this.selectedPicklist;
+    this.addRowByTypeLabel(typeLabel);
+  }
+
+  addRowByTypeLabel(typeLabel) {
+    const tempId = this.generateTempId();
+
+    const newRow = {
+      tempId,
+
+      // lookup record selected by user
+      objectRecordId: null,
+
+      // resolved from Apex convert payload
+      objectLabel: "",
+      projectId: null,
+      projectName: "",
+      projectSpk: "",
+
+      // approver info (optional, if you return them)
+      approverId: null,
+      approverOptionalId: null,
+
+      // user fields
+      date: null,
+      stime: null,
+      temp_remark: ""
+    };
+
+    if (typeLabel === "Project")
+      this.listProjects = [...this.listProjects, newRow];
+    if (typeLabel === "Case") this.listCases = [...this.listCases, newRow];
+    if (typeLabel === "POC") this.listPOCs = [...this.listPOCs, newRow];
+    if (typeLabel === "Opportunity")
+      this.listOpportunities = [...this.listOpportunities, newRow];
+    if (typeLabel === "Campaign")
+      this.listCampaigns = [...this.listCampaigns, newRow];
+  }
+
+  // ========= Child events =========
+  handleRowRemove(event) {
+    try {
+      const { tempId, entityType } = event.detail || {};
+      if (!tempId || !entityType) return;
+
+      // IMPORTANT: blur active element to prevent base-component focusing/validation crash
+      const activeElement = this.template.activeElement;
+      if (activeElement && typeof activeElement.blur === "function") {
+        activeElement.blur();
+      }
+
+      if (entityType === "opty") {
+        this.listOpportunities = (this.listOpportunities || []).filter(
+          (row) => row.tempId !== tempId
+        );
+      } else if (entityType === "project") {
+        this.listProjects = (this.listProjects || []).filter(
+          (row) => row.tempId !== tempId
+        );
+      } else if (entityType === "case") {
+        this.listCases = (this.listCases || []).filter(
+          (row) => row.tempId !== tempId
+        );
+      } else if (entityType === "poc") {
+        this.listPOCs = (this.listPOCs || []).filter(
+          (row) => row.tempId !== tempId
+        );
+      } else if (entityType === "campaign") {
+        this.listCampaigns = (this.listCampaigns || []).filter(
+          (row) => row.tempId !== tempId
+        );
+      }
+
+      // optional:
+      // this.recalculateHours();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error("handleRowRemove crashed:", error);
+    }
+  }
+
+  async handleRowFieldChange(event) {
+    const { tempId, entityType, fieldName, value } = event.detail || {};
+    if (!tempId || !entityType || !fieldName) return;
+
+    // ---- get previous value (before we patch) ----
+    const prevRow = this.getRowByTempId(entityType, tempId);
+    const prevValue = prevRow ? prevRow[fieldName] : null;
+
+    // ---- VALIDATION: stime (hours) ----
+    if (fieldName === "stime") {
+      const num = Number(value);
+
+      // allow empty/null (user clearing input)
+      if (
+        value !== null &&
+        value !== undefined &&
+        value !== "" &&
+        Number.isFinite(num)
+      ) {
+        if (num > 24) {
+          const msg = "Hours cannot be more than 24 hours (1 day).";
+          this.showMessage("error", "Validation", msg);
+          this.notifyChildFieldError(tempId, "stime", msg, prevValue);
+          this.revertRowField(entityType, tempId, fieldName, prevValue);
+          return;
+        }
+        if (num < 0) {
+          const msg = "Hours cannot be less than 0.";
+          this.showMessage("error", "Validation", msg);
+          this.notifyChildFieldError(tempId, "stime", msg, prevValue);
+          this.revertRowField(entityType, tempId, fieldName, prevValue);
+          return;
+        }
+        this.clearMessage();
+      }
+    }
+
+    // ---- VALIDATION: date ----
+    if (fieldName === "date") {
+      // value biasanya "YYYY-MM-DD"
+      if (value) {
+        const selected = this.toLocalDate(value); // midnight local
+        const today = this.getTodayLocal(); // midnight local
+        const earliest = this.addDays(today, -7); // today - 7 days
+
+        if (selected > today || selected < earliest) {
+          const msg = "Date must be within the last 7 days (including today).";
+          this.showMessage("error", "Validation", msg);
+          this.notifyChildFieldError(tempId, "date", msg, prevValue);
+          this.revertRowField(entityType, tempId, fieldName, prevValue);
+          return;
+        }
+        this.clearMessage();
+      }
+    }
+    const rowCmp = this.getChildRowComponent(tempId);
+    if (rowCmp && typeof rowCmp.clearFieldError === "function") {
+      rowCmp.clearFieldError(fieldName);
+    }
+    // 1) always update local state first (ONLY if valid)
+    const patch = { [fieldName]: value };
+    if (entityType === "project") {
+      this.listProjects = this.updateRow(this.listProjects, tempId, patch);
+    } else if (entityType === "case") {
+      this.listCases = this.updateRow(this.listCases, tempId, patch);
+    } else if (entityType === "poc") {
+      this.listPOCs = this.updateRow(this.listPOCs, tempId, patch);
+    } else if (entityType === "opty") {
+      this.listOpportunities = this.updateRow(
+        this.listOpportunities,
+        tempId,
+        patch
+      );
+    } else if (entityType === "campaign") {
+      this.listCampaigns = this.updateRow(this.listCampaigns, tempId, patch);
+    }
+  }
+
+  handleRowLookupResolved(event) {
+    const { tempId, entityType, payload } = event.detail || {};
+    if (!tempId || !entityType) return;
+
+    const safePayload = payload || {};
+
+    // enforce objectRecordId exists
+    const patch = {
+      ...safePayload,
+      objectRecordId:
+        safePayload.objectRecordId ||
+        this.getRowByTempId(entityType, tempId)?.objectRecordId ||
+        null
+    };
+
+    this.applyResolvedPayloadToRow(entityType, tempId, patch);
+  }
+
+  updateRow(list = [], tempId, patch = {}) {
+    const rowIndex = list.findIndex((row) => row.tempId === tempId);
+    if (rowIndex === -1) return list;
+
+    const updatedRow = { ...list[rowIndex], ...patch };
+    const clonedList = [...list];
+    clonedList[rowIndex] = updatedRow;
+    return clonedList;
+  }
+
+  recalculateHours() {
+    const allRows = [
+      ...(this.listOpportunities || []),
+      ...(this.listProjects || []),
+      ...(this.listCases || []),
+      ...(this.listPOCs || []),
+      ...(this.listCampaigns || [])
+    ];
+
+    const totalHours = allRows.reduce((sum, rowItem) => {
+      const hoursValue = Number(rowItem.stime || 0);
+      return sum + (Number.isFinite(hoursValue) ? hoursValue : 0);
+    }, 0);
+
+    this.countHours = totalHours;
+  }
+
+  // ========= Row update helpers =========
+  updateRowValue(entityType, tempId, fieldName, value) {
+    const updater = (rows) =>
+      rows.map((rowItem) =>
+        rowItem.tempId === tempId ? { ...rowItem, [fieldName]: value } : rowItem
+      );
+
+    if (entityType === "project")
+      this.listProjects = updater(this.listProjects);
+    if (entityType === "case") this.listCases = updater(this.listCases);
+    if (entityType === "poc") this.listPOCs = updater(this.listPOCs);
+    if (entityType === "opty")
+      this.listOpportunities = updater(this.listOpportunities);
+    if (entityType === "campaign")
+      this.listCampaigns = updater(this.listCampaigns);
+  }
+
+  applyResolvedPayloadToRow(entityType, tempId, payload) {
+    // payload shape recommended from Apex:
+    // {
+    //   objectRecordId,
+    //   objectLabel,
+    //   projectId,
+    //   projectName,
+    //   projectSpk,
+    //   approverId,
+    //   approverOptionalId
+    // }
+
+    const safePayload = payload || {};
+
+    const patch = {
+      objectLabel: safePayload.objectLabel || "",
+      projectId: safePayload.projectId || null,
+      projectName: safePayload.projectName || "",
+      projectSpk: safePayload.spk || "",
+      approverId: safePayload.approverId || null,
+      approverOptionalId: safePayload.approverOptionalId || null,
+
+      // always keep selected objectRecordId if payload returns it
+      objectRecordId: safePayload.objectRecordId || null
+    };
+
+    Object.keys(patch).forEach((fieldName) => {
+      this.updateRowValue(entityType, tempId, fieldName, patch[fieldName]);
+    });
+  }
+
+  // ========= Save / Submit =========
+  async saveTimesheet() {
+    await this.persistTimesheet("Draft");
+  }
+
+  async submitTimesheet() {
+    await this.persistTimesheet("Waiting for Approval");
+  }
+
+  async persistTimesheet(statusValue) {
+    const payloadList = this.buildCreateTimesheetPayload();
+    // console.log("payloadList>>", JSON.stringify(payloadList, null, 2));
+    // console.log("isValid", this.uiMessage.visible);
+    // console.log("uiMessage", JSON.stringify(this.uiMessage, null, 2));
+
+    const result = this.validatePayloadList(payloadList);
+    if (!result.isValid) {
+      const first = result.errors[0];
+
+      this.uiMessage = {
+        visible: true,
+        variant: "error",
+        title: "Incomplete entry",
+        message:
+          first.rowIndex === null
+            ? first.message
+            : `Row ${first.rowIndex + 1}: ${first.message}`
+      };
+
+      console.table(result.errors);
+
+      return;
+    }
+
+    this.clearMessage();
+    // return;
+
+    const isSubmit = statusValue === "Submitted";
+    this.uiState.isSubmitting = isSubmit;
+    this.uiState.isSaving = !isSubmit;
+
+    try {
+      const rawResponse = await createMultiTimesheet({
+        Timesheet: JSON.stringify(payloadList),
+        ApprovalStatus: statusValue
+      });
+
+      const responseWrapper = this.normalizeResponse(rawResponse);
+
+      if (!responseWrapper.success) {
+        this.showMessage(
+          "error",
+          "Timesheet",
+          responseWrapper.message || "Failed to save."
+        );
+        this.uiState.isSubmitting = false;
+        this.uiState.isSaving = false;
+        return;
+      }
+      this.clearMessage();
+
+      this.toast(
+        "Success",
+        responseWrapper.message || "Timesheet saved.",
+        "success"
+      );
+
+      this.uiState.isSubmitting = false;
+      this.uiState.isSaving = false;
+      this.cancelHandler();
+      this.resetAllRows();
+    } catch (caughtError) {
+      const normalizedError = this.normalizeApexError(caughtError);
+      this.toast("Timesheet", normalizedError.message, "error");
+      this.uiState.isSubmitting = false;
+      this.uiState.isSaving = false;
+    }
+  }
+
+  cancelHandler() {
+    // up to you: close quick action / modal / navigate back
+
+    this.dispatchEvent(
+      new CloseActionScreenEvent({ bubbles: true, composed: true })
+    );
+  }
+
+  // ========= Validation =========
+  validateAllInputs() {
+    let isValid = true;
+
+    // 1) Validate child rows (desktop)
+    const rowComponents = this.template.querySelectorAll("c-timesheet-row");
+    rowComponents.forEach((rowComponent) => {
+      const childValid = rowComponent.reportValidity();
+      if (!childValid) isValid = false;
+    });
+
+    // 2) Validate inline mobile inputs (mobile section uses direct inputs)
+    // This will only find elements in parent template (mobile markup)
+    const mobileInputs = this.template.querySelectorAll(
+      "lightning-input.validated, lightning-textarea.validated, lightning-input-field.validated"
+    );
+
+    mobileInputs.forEach((inputElement) => {
+      if (typeof inputElement.reportValidity === "function") {
+        const ok = inputElement.reportValidity();
+        if (!ok) isValid = false;
+      }
+    });
+
+    return isValid;
+  }
+
+  // ========= Payload builder =========
+  buildCreateTimesheetPayload() {
+    const employeeId = this.employeeContext.employeeRecordId || this.recordId;
+
+    const mapRowToRecord = (rowItem, entityType) => ({
+      ProjectId: rowItem.projectId,
+      Approver: rowItem.approverId,
+      Approver_Optional: rowItem.approverOptionalId,
+      start_date: rowItem.date,
+      end_date: rowItem.date,
+      stime: rowItem.stime,
+      EmployeeID: employeeId,
+      //   remark: rowItem.temp_remark,
+      remark: this.buildCombinedRemark(rowItem, entityType),
+      Email: this.employeeContext.email,
+      type: entityType,
+      ObjectRecordId: rowItem.objectRecordId
+    });
+
+    const records = []
+      .concat(
+        this.listProjects.map((rowItem) => mapRowToRecord(rowItem, "project"))
+      )
+      .concat(this.listCases.map((rowItem) => mapRowToRecord(rowItem, "case")))
+      .concat(this.listPOCs.map((rowItem) => mapRowToRecord(rowItem, "poc")))
+      .concat(
+        this.listOpportunities.map((rowItem) => mapRowToRecord(rowItem, "opty"))
+      )
+      .concat(
+        this.listCampaigns.map((rowItem) => mapRowToRecord(rowItem, "campaign"))
+      );
+
+    return records;
+  }
+
+  buildCombinedRemark(rowItem, entityType) {
+    const r = rowItem || {};
+
+    // console.log(
+    //   "buildCombinedRemark rowItem",
+    //   JSON.stringify(rowItem, null, 2)
+    // );
+
+    // prefix rule:
+    // - project => SPK (fallback projectName)
+    // - others  => objectLabel (fallback objectRecordId)
+    let prefix = "";
+
+    if (entityType === "project") {
+      prefix = (r.projectSpk || r.projectName || "").trim();
+    } else {
+      prefix = (r.objectLabel || r.objectRecordId || "").trim();
+    }
+
+    const note = (r.temp_remark || "").trim();
+
+    // if both empty, return empty string
+    if (!prefix && !note) return "";
+
+    // if only one exists
+    if (!prefix) return note;
+    if (!note) return prefix;
+
+    // both exist
+    return `${prefix} - ${note}`;
+  }
+
+  // ========= Utility =========
+  getAllRows() {
+    return []
+      .concat(this.listProjects)
+      .concat(this.listCases)
+      .concat(this.listPOCs)
+      .concat(this.listOpportunities)
+      .concat(this.listCampaigns);
+  }
+
+  resetAllRows() {
+    this.listProjects = [];
+    this.listCases = [];
+    this.listPOCs = [];
+    this.listOpportunities = [];
+    this.listCampaigns = [];
+  }
+
+  generateTempId() {
+    return `${Date.now()}_${Math.random().toString(16).slice(2)}`;
+  }
+
+  toast(title, message, variant) {
+    // Only allow SUCCESS toast per requirement
+    if (variant !== "success") {
+      this.showMessage(variant || "info", title, message);
+      return;
+    }
+    this.dispatchEvent(new ShowToastEvent({ title, message, variant }));
+  }
+
+  normalizeResponse(apexData) {
+    let responseObject = apexData;
+
+    try {
+      if (typeof apexData === "string") {
+        responseObject = JSON.parse(apexData);
+      }
+    } catch (parseError) {
+      return {
+        success: false,
+        code: "INVALID_RESPONSE",
+        message: "Response is not valid JSON.",
+        payload: null
+      };
+    }
+
+    return {
+      success: responseObject?.success === true,
+      code: responseObject?.code,
+      message: responseObject?.message,
+      payload: responseObject?.payload
+    };
+  }
+
+  normalizeApexError(apexError) {
+    let message = "Unknown error.";
+    let code = "APEX_ERROR";
+
+    if (apexError?.body) {
+      if (Array.isArray(apexError.body)) {
+        message = apexError.body.map((item) => item.message).join(", ");
+      } else if (typeof apexError.body.message === "string") {
+        message = apexError.body.message;
+      }
+      code = apexError.body.errorCode || code;
+    } else if (apexError?.message) {
+      message = apexError.message;
+    }
+
+    return { code, message };
+  }
+
+  getListNameByEntityType(entityType) {
+    const mapEntityToList = {
+      opty: "listOpportunities",
+      project: "listProjects",
+      case: "listCases",
+      poc: "listPOCs",
+      campaign: "listCampaigns"
+    };
+    return mapEntityToList[entityType];
+  }
+
+  getRowByTempId(entityType, tempId) {
+    const list = this.getListByEntityType(entityType);
+    return (list || []).find((r) => r.tempId === tempId) || null;
+  }
+
+  getListByEntityType(entityType) {
+    if (entityType === "project") return this.listProjects;
+    if (entityType === "case") return this.listCases;
+    if (entityType === "poc") return this.listPOCs;
+    if (entityType === "opty") return this.listOpportunities;
+    if (entityType === "campaign") return this.listCampaigns;
+    return [];
+  }
+
+  revertRowField(entityType, tempId, fieldName, prevValue) {
+    // revert state ke value sebelumnya (atau null kalau gak ada)
+    const patch = { [fieldName]: prevValue ?? null };
+
+    if (entityType === "project") {
+      this.listProjects = this.updateRow(this.listProjects, tempId, patch);
+    } else if (entityType === "case") {
+      this.listCases = this.updateRow(this.listCases, tempId, patch);
+    } else if (entityType === "poc") {
+      this.listPOCs = this.updateRow(this.listPOCs, tempId, patch);
+    } else if (entityType === "opty") {
+      this.listOpportunities = this.updateRow(
+        this.listOpportunities,
+        tempId,
+        patch
+      );
+    } else if (entityType === "campaign") {
+      this.listCampaigns = this.updateRow(this.listCampaigns, tempId, patch);
+    }
+  }
+
+  /** Convert "YYYY-MM-DD" to a local Date at 00:00:00 */
+  toLocalDate(yyyyMmDd) {
+    // safer parsing: split not relying on Date(string) quirks
+    const [y, m, d] = (yyyyMmDd || "").split("-").map((x) => Number(x));
+    if (!y || !m || !d) return null;
+    return new Date(y, m - 1, d, 0, 0, 0, 0);
+  }
+
+  getTodayLocal() {
+    const now = new Date();
+    return new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      0,
+      0,
+      0,
+      0
+    );
+  }
+
+  addDays(dateObj, deltaDays) {
+    const d = new Date(dateObj);
+    d.setDate(d.getDate() + deltaDays);
+    return d;
+  }
+  getChildRowComponent(tempId) {
+    const nodes = this.template.querySelectorAll("c-timesheet-row");
+
+    // console.log("nodes", JSON.stringify(nodes));
+    return (
+      Array.from(nodes).find((n) => String(n.tempid) === String(tempId)) || null
+    );
+  }
+
+  notifyChildFieldError(tempId, fieldName, message, prevValue) {
+    const rowCmp = this.getChildRowComponent(tempId);
+    if (!rowCmp) return;
+
+    rowCmp.setFieldError(fieldName, message);
+    rowCmp.revertFieldValue(fieldName, prevValue);
+  }
+
+  validatePayloadList(payloadList = []) {
+    const errors = [];
+
+    // 1) empty payload
+    if (!Array.isArray(payloadList) || payloadList.length === 0) {
+      return {
+        isValid: false,
+        errors: [
+          {
+            rowIndex: null,
+            field: "payloadList",
+            message: "No timesheet entries to save or submit."
+          }
+        ]
+      };
+    }
+
+    // helpers
+    const parseYMD = (ymd) => {
+      // ymd: "YYYY-MM-DD"
+      if (!ymd || typeof ymd !== "string") return null;
+      const d = new Date(`${ymd}T00:00:00`);
+      return Number.isNaN(d.getTime()) ? null : d;
+    };
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const minDate = new Date(today);
+    minDate.setDate(minDate.getDate() - 7);
+
+    payloadList.forEach((row, idx) => {
+      // 2) required fields
+      this.validateRequiredFields(row, idx, errors);
+      // 3) stime validation
+      const hours = Number(row?.stime);
+      if (
+        row?.stime !== undefined &&
+        row?.stime !== null &&
+        row?.stime !== ""
+      ) {
+        if (Number.isNaN(hours)) {
+          errors.push({
+            rowIndex: idx,
+            field: "stime",
+            message: "Time must be a valid number."
+          });
+        } else if (hours <= 0) {
+          errors.push({
+            rowIndex: idx,
+            field: "stime",
+            message: "Time must be greater than 0."
+          });
+        } else if (hours > 24) {
+          errors.push({
+            rowIndex: idx,
+            field: "stime",
+            message: "Hours cannot be more than 24 hours (1 day)."
+          });
+        }
+      }
+
+      // 4) date range validation (start & end)
+      const start = parseYMD(row?.start_date);
+      const end = parseYMD(row?.end_date);
+
+      if (!start) {
+        errors.push({
+          rowIndex: idx,
+          field: "start_date",
+          message: "Start date must be a valid date."
+        });
+      } else if (start > today || start < minDate) {
+        errors.push({
+          rowIndex: idx,
+          field: "start_date",
+          message:
+            "Date must be within the last 7 days and cannot be in the future."
+        });
+      }
+
+      if (!end) {
+        errors.push({
+          rowIndex: idx,
+          field: "end_date",
+          message: "End date must be a valid date."
+        });
+      } else if (end > today || end < minDate) {
+        errors.push({
+          rowIndex: idx,
+          field: "end_date",
+          message:
+            "Date must be within the last 7 days and cannot be in the future."
+        });
+      }
+
+      // 5) OPTIONAL: kalau lu anggep entry harus 1 hari aja
+      // (kalau lu memang daily timesheet, ini recommended)
+      if (start && end && start.getTime() !== end.getTime()) {
+        errors.push({
+          rowIndex: idx,
+          field: "end_date",
+          message: "Start date and end date must be the same day."
+        });
+      }
+
+      if (!this.isEmptyValue(row?.remark)) {
+        const remark = String(row.remark).trim();
+        if (remark.length < 15) {
+          errors.push({
+            rowIndex: idx,
+            field: "remark",
+            message:
+              "Please add more details. Remarks must be at least 15 characters long."
+          });
+        }
+      }
+    });
+
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  }
+
+  // helper: friendly label per field + per type
+  getFieldLabel(field, rowType) {
+    const type = (rowType || "").toLowerCase();
+
+    // Lookup label depends on type
+    const lookupLabelByType = {
+      project: "Project SPK",
+      case: "Case Number",
+      poc: "POC Number",
+      opty: "Opportunity",
+      opportunity: "Opportunity",
+      campaign: "Campaign"
+    };
+
+    const base = {
+      EmployeeID: "Employee",
+      stime: "Hours",
+      start_date: "Date",
+      end_date: "Date",
+      remark: "Remarks",
+      type: "Type"
+    };
+
+    if (field === "ObjectRecordId") {
+      return lookupLabelByType[type] || "Record";
+    }
+
+    return base[field] || field;
+  }
+
+  isEmptyValue(val) {
+    return (
+      val === null ||
+      val === undefined ||
+      (typeof val === "string" && val.trim() === "")
+    );
+  }
+
+  // ✅ this one validates required fields with better messages
+  validateRequiredFields(row, idx, errors) {
+    const requiredFields = [
+      "type",
+      "EmployeeID",
+      "ObjectRecordId",
+      "stime",
+      "start_date",
+      "end_date",
+      "remark"
+    ];
+
+    const rowType = row?.type;
+
+    for (const f of requiredFields) {
+      const val = row?.[f];
+
+      if (this.isEmptyValue(val)) {
+        // Special: start_date & end_date -> "Date is required." (only once)
+        if (f === "start_date" || f === "end_date") {
+          const alreadyHasDateError = errors.some(
+            (e) => e.rowIndex === idx && e.field === "Date_required"
+          );
+          if (!alreadyHasDateError) {
+            errors.push({
+              rowIndex: idx,
+              field: "Date_required",
+              message: "Date is required."
+            });
+          }
+          continue;
+        }
+
+        errors.push({
+          rowIndex: idx,
+          field: f,
+          message: `${this.getFieldLabel(f, rowType)} is required.`
+        });
+      }
+    }
+  }
+  // =============================
+  // AI REMARK - HELPERS
+  // =============================
+  getListRefByType(type) {
+    switch (type) {
+      case "project":
+        return "listProjects";
+      case "case":
+        return "listCases";
+      case "poc":
+        return "listPOCs";
+      case "opty":
+        return "listOpportunities";
+      case "campaign":
+        return "listCampaigns";
+      default:
+        return null;
+    }
+  }
+
+  findRow(type, tempId) {
+    const listRef = this.getListRefByType(type);
+    if (!listRef || !Array.isArray(this[listRef])) return null;
+    return (
+      this[listRef].find((r) => String(r.tempId) === String(tempId)) || null
+    );
+  }
+
+  patchRow(type, tempId, patch) {
+    const listRef = this.getListRefByType(type);
+    if (!listRef || !Array.isArray(this[listRef])) return;
+
+    this[listRef] = this[listRef].map((r) => {
+      if (String(r.tempId) !== String(tempId)) return r;
+      return { ...r, ...patch };
+    });
+  }
+
+  buildAiPayload(row) {
+    // payload minimal yang kamu mau: ObjectRecordId sebagai primary + beberapa context row
+    // (ProjectId/ApproverId gak dipakai)
+    return {
+      ObjectRecordId: row?.objectRecordId || row?.ObjectRecordId || "",
+      type: row?.type || "",
+      EmployeeID:
+        this.employeeContext?.employeeRecordId || row?.EmployeeID || "",
+      Email: this.employeeContext?.employeeEmail || row?.Email || "",
+
+      // date range (kalau kamu simpan start/end, pakai itu; kalau single date, set keduanya sama)
+      start_date: row?.start_date || row?.date || "",
+      end_date: row?.end_date || row?.date || "",
+
+      stime: row?.stime || "",
+
+      // remark existing bisa bantu AI ngerti prefix
+      remark: row?.temp_remark || row?.remark || ""
+    };
+  }
+
+  // prefix helper: keep “SPK - ” / “CASE# - ” kalau udah ada
+  extractPrefix(remark) {
+    if (!remark) return "";
+    const s = String(remark).trim();
+
+    // ambil prefix sebelum " - " kalau ada
+    const idx = s.indexOf(" - ");
+    if (idx > 0) return s.slice(0, idx).trim();
+
+    // fallback: kalau user udah isi manual tanpa separator, prefix kosong biar gak maksa
+    return "";
+  }
+
+  clamp255(text) {
+    if (!text) return "";
+    const s = String(text);
+    return s.length > 255 ? s.slice(0, 255) : s;
+  }
+
+  // =============================
+  // AI REMARK - EVENTS
+  // =============================
+  async handleRowRemarkGenerate(event) {
+    const { tempId, entityType } = event.detail || {};
+    const row = this.findRow(entityType, tempId);
+
+    if (!row) return;
+
+    // minimal gate: harus ada recordId biar AI bisa baca record
+    const objectId = row?.objectRecordId || row?.ObjectRecordId;
+    if (!objectId) {
+      this.patchRow(entityType, tempId, {
+        aiError:
+          "Please select a record first. AI remark generation needs a valid record.",
+        aiPreviewText: null,
+        isGeneratingRemark: false
+      });
+      return;
+    }
+
+    // set loading
+    this.patchRow(entityType, tempId, {
+      isGeneratingRemark: true,
+      aiError: null
+    });
+
+    try {
+      const payload = this.buildAiPayload({
+        ...row,
+        type: entityType
+      });
+
+      console.log("AI payload:", JSON.stringify(payload, null, 2));
+      // call Apex
+      const result = await generateTimesheetRemark({
+        payloadJson: JSON.stringify(payload)
+      });
+
+      // result asumsi: string remark suggestion
+      console.log("AI result:", JSON.stringify(result, null, 2));
+      const suggestion = (result?.suggestedRemark || "").trim();
+
+      if (!suggestion) {
+        this.patchRow(entityType, tempId, {
+          aiError: "No suggestion was generated. Please try again.",
+          aiPreviewText: null,
+          isGeneratingRemark: false
+        });
+        return;
+      }
+
+      this.patchRow(entityType, tempId, {
+        aiPreviewText: suggestion,
+        isGeneratingRemark: false,
+        aiError: null
+      });
+    } catch (e) {
+      const msg =
+        e?.body?.message ||
+        e?.message ||
+        "Something went wrong while generating the remark.";
+
+      this.patchRow(entityType, tempId, {
+        aiError: msg,
+        aiPreviewText: null,
+        isGeneratingRemark: false
+      });
+    }
+  }
+
+  handleRowRemarkDiscard(event) {
+    const { tempId, entityType } = event.detail || {};
+    this.patchRow(entityType, tempId, {
+      aiPreviewText: null,
+      aiError: null,
+      isGeneratingRemark: false
+    });
+  }
+
+  handleRowRemarkApply(event) {
+    const { tempId, entityType, previewText } = event.detail || {};
+    const row = this.findRow(entityType, tempId);
+    if (!row) return;
+
+    const existingRemark = row?.temp_remark || "";
+    const prefix = this.extractPrefix(existingRemark);
+
+    // apply: keep prefix kalau ada, lalu tempel preview text
+    const finalRemark = prefix
+      ? `${prefix} - ${String(previewText || "").trim()}`
+      : String(previewText || "").trim();
+
+    this.patchRow(entityType, tempId, {
+      temp_remark: this.clamp255(finalRemark),
+      aiPreviewText: null,
+      aiError: null,
+      isGeneratingRemark: false
+    });
+
+    // optional: kalau kamu butuh parent logic yg sama kaya blur change,
+    // kamu bisa panggil handleRowFieldChange manual di sini.
+    // tapi biasanya patchRow udah cukup karena row state tersimpan.
+  }
 }

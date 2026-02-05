@@ -3,7 +3,7 @@ name: Deploy LWC
 on:
   push:
     paths:
-      - 'force-app/lwc/**'
+      - 'force-app/main/default/lwc/**'
     branches: 
       - 'Dev-*'
 
@@ -15,17 +15,7 @@ jobs:
           with:
             fetch-depth: 0
 
-        - name: Cache Salesforce CLI
-          id: cache-sfdx
-          uses: actions/cache@v2
-          with:
-            path: ~/.local/share/sfdx
-            key: sfdx-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
-            restore-keys: |
-                sfdx-${{ runner.os }}-
-        
-        - name: Install Salesforce CLI if not cached
-          if: steps.cache-sfdx.outputs.cache-hit != 'true'
+        - name: Install Salesforce CLI 
           run: |
             npm install @salesforce/cli --global
 

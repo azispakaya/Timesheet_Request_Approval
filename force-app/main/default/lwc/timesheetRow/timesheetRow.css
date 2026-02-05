@@ -1,0 +1,301 @@
+:host {
+  display: block;
+}
+
+.ts-rowCard {
+  background: var(--lwc-colorBackgroundAlt, #ffffff);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.ts-rowTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.custom-icon-btn {
+  cursor: pointer;
+  opacity: 0.85;
+}
+
+.custom-icon-btn:hover {
+  opacity: 1;
+  transform: translateY(-1px);
+}
+/* Badge base */
+.ts-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  line-height: 1;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* Type variants (feel free tweak) */
+.ts-badge--project {
+  background: rgba(26, 115, 232, 0.1);
+  border-color: rgba(26, 115, 232, 0.25);
+}
+
+.ts-badge--case {
+  background: rgba(219, 68, 55, 0.1);
+  border-color: rgba(219, 68, 55, 0.25);
+}
+
+.ts-badge--poc {
+  background: rgba(244, 180, 0, 0.14);
+  border-color: rgba(244, 180, 0, 0.3);
+}
+
+.ts-badge--opty {
+  background: rgba(15, 157, 88, 0.12);
+  border-color: rgba(15, 157, 88, 0.28);
+}
+
+.ts-badge--campaign {
+  background: rgba(142, 36, 170, 0.1);
+  border-color: rgba(142, 36, 170, 0.25);
+}
+/* subtle delete icon button */
+.ts-removeBtn {
+  --slds-c-icon-color-foreground-default: rgba(0, 0, 0, 0.55);
+  --slds-c-icon-color-foreground: rgba(0, 0, 0, 0.55);
+
+  border-radius: 10px;
+}
+
+/* hover/focus ring yang soft */
+.ts-removeBtn:hover {
+  --slds-c-icon-color-foreground-default: rgba(0, 0, 0, 0.75);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.ts-removeBtn:focus {
+  outline: none;
+}
+
+.ts-removeBtn:focus-visible {
+  box-shadow: 0 0 0 2px rgba(27, 150, 255, 0.35);
+  background: rgba(27, 150, 255, 0.08);
+}
+/* =========================
+   MOBILE VERSION (TimesheetRow)
+   - use formFactorClass = "ts-grid--mobile"
+   ========================= */
+
+.ts-grid--mobile {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Date & Time side-by-side */
+  gap: 12px;
+  align-items: start;
+}
+
+/* helper wrappers (optional, but recommended for consistency) */
+.ts-m-col {
+  min-width: 0;
+}
+
+.ts-m-col--full {
+  grid-column: 1 / -1;
+}
+
+.ts-m-col--half {
+  grid-column: auto;
+}
+
+/* Jika layar kecil banget, Date & Time stack */
+@media (max-width: 380px) {
+  .ts-grid--mobile {
+    grid-template-columns: 1fr;
+  }
+
+  .ts-m-col--half {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Lookup error spacing biar rapih */
+.slds-form-element__help {
+  margin-top: 6px;
+  font-size: 11px;
+  line-height: 14px;
+}
+
+/* Optional: bikin input lebih "touch friendly" di mobile */
+@media (max-width: 768px) {
+  :host {
+    --slds-c-input-radius-border: 12px;
+    --slds-c-textarea-radius-border: 12px;
+  }
+
+  /* kasih jarak sedikit supaya ga dempet */
+  .ts-rowCard .slds-p-around_medium {
+    padding: 14px;
+  }
+}
+/* =========================
+   Mobile Layout Overrides
+   Keep SLDS classes, but make it responsive
+   ========================= */
+@media (max-width: 480px) {
+  /* grid wrapper jadi wrap (tetep SLDS) */
+  .ts-rowCard .slds-grid {
+    flex-wrap: wrap;
+    row-gap: 10px; /* spacing vertical */
+  }
+
+  /* default: semua kolom full width dulu */
+  .ts-rowCard .slds-col {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  /* hapus padding-right SLDS di mobile biar ga sempit */
+  .ts-rowCard .slds-p-right_small {
+    padding-right: 0 !important;
+  }
+
+  /* LOOKUP full width */
+  .ts-rowCard .ts-col--lookup {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  /* DATE + TIME setengah-setengah */
+  .ts-rowCard .ts-col--date,
+  .ts-rowCard .ts-col--time {
+    flex: 0 0 calc(50% - 6px);
+    max-width: calc(50% - 6px);
+  }
+
+  /* bikin gap horizontal antara date & time */
+  .ts-rowCard .ts-col--date {
+    margin-right: 12px;
+  }
+
+  /* REMARKS full width */
+  .ts-rowCard .ts-col--remarks {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+/* ===== Remark header ===== */
+.ts-remarkHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.ts-remarkLabel {
+  font-size: 12px;
+  /* font-weight: 700; */
+  letter-spacing: 0.2px;
+  color: rgba(0, 0, 0, 0.7);
+}
+
+/* Einstein icon button (soft) */
+.ts-aiBtn {
+  --slds-c-icon-color-foreground-default: rgba(0, 0, 0, 0.55);
+  --slds-c-icon-color-foreground: rgba(0, 0, 0, 0.55);
+  border-radius: 10px;
+}
+.ts-aiBtn:hover {
+  --slds-c-icon-color-foreground-default: rgba(0, 0, 0, 0.75);
+  background: rgba(0, 0, 0, 0.04);
+}
+.ts-aiBtn:focus-visible {
+  box-shadow: 0 0 0 2px rgba(27, 150, 255, 0.25);
+  background: rgba(27, 150, 255, 0.08);
+}
+
+/* ===== AI Preview panel ===== */
+.ts-aiPreview {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 12px;
+  padding: 10px 10px 8px 10px;
+  margin-bottom: 10px;
+}
+
+.ts-aiPreviewTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.ts-aiPreviewTitle {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.ts-aiPreviewActions {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.ts-aiSmallBtn {
+  border-radius: 10px;
+  padding: 0 10px;
+  height: 28px;
+  line-height: 28px;
+  font-size: 12px;
+}
+
+.ts-aiPreviewBody {
+  font-size: 12px;
+  line-height: 16px;
+  color: rgba(0, 0, 0, 0.78);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.ts-aiPreviewHint {
+  margin-top: 6px;
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.55);
+}
+.ts-remarkHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  /* biar sejajar sama label field lain */
+  margin-bottom: 0.25rem;
+}
+
+.ts-remarkLabelWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ts-remarkLabel {
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.75);
+}
+
+/* optional: biar iconnya gak “ngambang” */
+.ts-aiBtn {
+  --slds-c-icon-color-foreground-default: rgba(0, 0, 0, 0.55);
+}
+.ts-aiBtn:hover {
+  --slds-c-icon-color-foreground-default: rgba(0, 0, 0, 0.75);
+}
