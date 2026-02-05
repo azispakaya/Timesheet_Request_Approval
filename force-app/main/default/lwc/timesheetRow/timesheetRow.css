@@ -191,3 +191,111 @@
     max-width: 100%;
   }
 }
+/* ===== Remark header ===== */
+.ts-remarkHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.ts-remarkLabel {
+  font-size: 12px;
+  /* font-weight: 700; */
+  letter-spacing: 0.2px;
+  color: rgba(0, 0, 0, 0.7);
+}
+
+/* Einstein icon button (soft) */
+.ts-aiBtn {
+  --slds-c-icon-color-foreground-default: rgba(0, 0, 0, 0.55);
+  --slds-c-icon-color-foreground: rgba(0, 0, 0, 0.55);
+  border-radius: 10px;
+}
+.ts-aiBtn:hover {
+  --slds-c-icon-color-foreground-default: rgba(0, 0, 0, 0.75);
+  background: rgba(0, 0, 0, 0.04);
+}
+.ts-aiBtn:focus-visible {
+  box-shadow: 0 0 0 2px rgba(27, 150, 255, 0.25);
+  background: rgba(27, 150, 255, 0.08);
+}
+
+/* ===== AI Preview panel ===== */
+.ts-aiPreview {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 12px;
+  padding: 10px 10px 8px 10px;
+  margin-bottom: 10px;
+}
+
+.ts-aiPreviewTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.ts-aiPreviewTitle {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.ts-aiPreviewActions {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.ts-aiSmallBtn {
+  border-radius: 10px;
+  padding: 0 10px;
+  height: 28px;
+  line-height: 28px;
+  font-size: 12px;
+}
+
+.ts-aiPreviewBody {
+  font-size: 12px;
+  line-height: 16px;
+  color: rgba(0, 0, 0, 0.78);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.ts-aiPreviewHint {
+  margin-top: 6px;
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.55);
+}
+.ts-remarkHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  /* biar sejajar sama label field lain */
+  margin-bottom: 0.25rem;
+}
+
+.ts-remarkLabelWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ts-remarkLabel {
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.75);
+}
+
+/* optional: biar iconnya gak “ngambang” */
+.ts-aiBtn {
+  --slds-c-icon-color-foreground-default: rgba(0, 0, 0, 0.55);
+}
+.ts-aiBtn:hover {
+  --slds-c-icon-color-foreground-default: rgba(0, 0, 0, 0.75);
+}

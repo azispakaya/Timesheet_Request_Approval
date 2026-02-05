@@ -24,6 +24,11 @@ export default class TimesheetRow extends LightningElement {
 
   @api memberId;
 
+  // AI preview inputs controlled by parent
+  @api aiPreviewText; // string | null
+  @api isGeneratingRemark = false; // boolean
+  @api aiError; // string | null
+
   // last valid lookup for revert
   _lastValidLookup = null;
   _isResolvingLookup = false;
@@ -73,10 +78,52 @@ export default class TimesheetRow extends LightningElement {
   }
 
   // =============================
+  // REMARK AI - UI HANDLERS
+  // =============================
+  handleGenerateRemarkClick() {
+    // request generation to parent (parent will call Apex & set aiPreviewText)
+    this.dispatchEvent(
+      new CustomEvent("rowremarkgenerate", {
+        detail: {
+          tempId: this.tempid,
+          entityType: this.entityType
+        },
+        bubbles: true,
+        composed: true
+      })
+    );
+  }
+
+  handleDiscardPreviewClick() {
+    this.dispatchEvent(
+      new CustomEvent("rowremarkdiscard", {
+        detail: {
+          tempId: this.tempid,
+          entityType: this.entityType
+        },
+        bubbles: true,
+        composed: true
+      })
+    );
+  }
+
+  handleApplyPreviewClick() {
+    // apply preview to remark (parent can merge prefix + patch timesheet row)
+    this.dispatchEvent(
+      new CustomEvent("rowremarkapply", {
+        detail: {
+          tempId: this.tempid,
+          entityType: this.entityType,
+          previewText: this.aiPreviewText || ""
+        },
+        bubbles: true,
+        composed: true
+      })
+    );
+  }
+
+  // =============================
   // LOOKUP
-  // =============================
-  // =============================
-  // LOOKUP CHANGE -> resolve async in child
   // =============================
   async handleLookupChange(event) {
     const el = event.target;
@@ -278,6 +325,10 @@ export default class TimesheetRow extends LightningElement {
   }
 
   dispatchRowFieldChange({ fieldName, value }) {
+    // console.log(
+    //   "dispatchRowFieldChange",
+    //   JSON.stringify({ fieldName, value }, null, 2)
+    // );
     this.dispatchEvent(
       new CustomEvent("rowfieldchange", {
         detail: {

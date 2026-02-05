@@ -5,6 +5,8 @@ import FORM_FACTOR from "@salesforce/client/formFactor";
 
 // Apex (wrapper-based)
 import convertEmployeeID from "@salesforce/apex/lwc_RequestTimesheetController.convertEmployeeID";
+import generateTimesheetRemark from "@salesforce/apex/TimesheetAIController.generateTimesheetRemark";
+
 import { CloseActionScreenEvent } from "lightning/actions";
 
 import createMultiTimesheet from "@salesforce/apex/lwc_ApprovalTimesheetController.createMultiTimesheet";
@@ -1013,5 +1015,187 @@ export default class RequestTimesheet extends LightningElement {
         });
       }
     }
+  }
+  // =============================
+  // AI REMARK - HELPERS
+  // =============================
+  getListRefByType(type) {
+    switch (type) {
+      case "project":
+        return "listProjects";
+      case "case":
+        return "listCases";
+      case "poc":
+        return "listPOCs";
+      case "opty":
+        return "listOpportunities";
+      case "campaign":
+        return "listCampaigns";
+      default:
+        return null;
+    }
+  }
+
+  findRow(type, tempId) {
+    const listRef = this.getListRefByType(type);
+    if (!listRef || !Array.isArray(this[listRef])) return null;
+    return (
+      this[listRef].find((r) => String(r.tempId) === String(tempId)) || null
+    );
+  }
+
+  patchRow(type, tempId, patch) {
+    const listRef = this.getListRefByType(type);
+    if (!listRef || !Array.isArray(this[listRef])) return;
+
+    this[listRef] = this[listRef].map((r) => {
+      if (String(r.tempId) !== String(tempId)) return r;
+      return { ...r, ...patch };
+    });
+  }
+
+  buildAiPayload(row) {
+    // payload minimal yang kamu mau: ObjectRecordId sebagai primary + beberapa context row
+    // (ProjectId/ApproverId gak dipakai)
+    return {
+      ObjectRecordId: row?.objectRecordId || row?.ObjectRecordId || "",
+      type: row?.type || "",
+      EmployeeID:
+        this.employeeContext?.employeeRecordId || row?.EmployeeID || "",
+      Email: this.employeeContext?.employeeEmail || row?.Email || "",
+
+      // date range (kalau kamu simpan start/end, pakai itu; kalau single date, set keduanya sama)
+      start_date: row?.start_date || row?.date || "",
+      end_date: row?.end_date || row?.date || "",
+
+      stime: row?.stime || "",
+
+      // remark existing bisa bantu AI ngerti prefix
+      remark: row?.temp_remark || row?.remark || ""
+    };
+  }
+
+  // prefix helper: keep “SPK - ” / “CASE# - ” kalau udah ada
+  extractPrefix(remark) {
+    if (!remark) return "";
+    const s = String(remark).trim();
+
+    // ambil prefix sebelum " - " kalau ada
+    const idx = s.indexOf(" - ");
+    if (idx > 0) return s.slice(0, idx).trim();
+
+    // fallback: kalau user udah isi manual tanpa separator, prefix kosong biar gak maksa
+    return "";
+  }
+
+  clamp255(text) {
+    if (!text) return "";
+    const s = String(text);
+    return s.length > 255 ? s.slice(0, 255) : s;
+  }
+
+  // =============================
+  // AI REMARK - EVENTS
+  // =============================
+  async handleRowRemarkGenerate(event) {
+    const { tempId, entityType } = event.detail || {};
+    const row = this.findRow(entityType, tempId);
+
+    if (!row) return;
+
+    // minimal gate: harus ada recordId biar AI bisa baca record
+    const objectId = row?.objectRecordId || row?.ObjectRecordId;
+    if (!objectId) {
+      this.patchRow(entityType, tempId, {
+        aiError:
+          "Please select a record first. AI remark generation needs a valid record.",
+        aiPreviewText: null,
+        isGeneratingRemark: false
+      });
+      return;
+    }
+
+    // set loading
+    this.patchRow(entityType, tempId, {
+      isGeneratingRemark: true,
+      aiError: null
+    });
+
+    try {
+      const payload = this.buildAiPayload({
+        ...row,
+        type: entityType
+      });
+
+      console.log("AI payload:", JSON.stringify(payload, null, 2));
+      // call Apex
+      const result = await generateTimesheetRemark({
+        payloadJson: JSON.stringify(payload)
+      });
+
+      // result asumsi: string remark suggestion
+      console.log("AI result:", JSON.stringify(result, null, 2));
+      const suggestion = (result?.suggestedRemark || "").trim();
+
+      if (!suggestion) {
+        this.patchRow(entityType, tempId, {
+          aiError: "No suggestion was generated. Please try again.",
+          aiPreviewText: null,
+          isGeneratingRemark: false
+        });
+        return;
+      }
+
+      this.patchRow(entityType, tempId, {
+        aiPreviewText: suggestion,
+        isGeneratingRemark: false,
+        aiError: null
+      });
+    } catch (e) {
+      const msg =
+        e?.body?.message ||
+        e?.message ||
+        "Something went wrong while generating the remark.";
+
+      this.patchRow(entityType, tempId, {
+        aiError: msg,
+        aiPreviewText: null,
+        isGeneratingRemark: false
+      });
+    }
+  }
+
+  handleRowRemarkDiscard(event) {
+    const { tempId, entityType } = event.detail || {};
+    this.patchRow(entityType, tempId, {
+      aiPreviewText: null,
+      aiError: null,
+      isGeneratingRemark: false
+    });
+  }
+
+  handleRowRemarkApply(event) {
+    const { tempId, entityType, previewText } = event.detail || {};
+    const row = this.findRow(entityType, tempId);
+    if (!row) return;
+
+    const existingRemark = row?.temp_remark || "";
+    const prefix = this.extractPrefix(existingRemark);
+
+    // apply: keep prefix kalau ada, lalu tempel preview text
+    const finalRemark = prefix
+      ? `${prefix} - ${String(previewText || "").trim()}`
+      : String(previewText || "").trim();
+
+    this.patchRow(entityType, tempId, {
+      temp_remark: this.clamp255(finalRemark),
+      aiPreviewText: null,
+      aiError: null,
+      isGeneratingRemark: false
+    });
+
+    // optional: kalau kamu butuh parent logic yg sama kaya blur change,
+    // kamu bisa panggil handleRowFieldChange manual di sini.
+    // tapi biasanya patchRow udah cukup karena row state tersimpan.
   }
 }

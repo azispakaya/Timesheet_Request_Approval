@@ -70,7 +70,7 @@
         </div>
 
         <!-- REMARKS -->
-        <div class="slds-col slds-size_3-of-8">
+        <!-- <div class="slds-col slds-size_3-of-8">
           <lightning-textarea
             class="validated"
             max-length="255"
@@ -78,10 +78,95 @@
             value={tempRemark}
             placeholder="type here..."
             variant="standard"
-            onchange={handleInputChange}
+            onblur={handleInputChange}
             label="Remarks"
             required
           ></lightning-textarea>
+        </div> -->
+        <!-- REMARKS -->
+        <!-- REMARKS -->
+        <div class="slds-col slds-size_3-of-8">
+          <div class="slds-form-element">
+            <!-- Custom label row -->
+            <div class="ts-remarkHeader slds-form-element__label">
+              <div class="ts-remarkLabelWrap">
+                <abbr class="slds-required" title="required">*</abbr>
+                <span class="ts-remarkLabel">Remarks</span>
+              </div>
+
+              <lightning-button-icon
+                class="ts-aiBtn"
+                icon-name="utility:einstein"
+                alternative-text="Generate remark"
+                title="Generate remark"
+                variant="bare"
+                size="small"
+                onclick={handleGenerateRemarkClick}
+                disabled={isGeneratingRemark}
+              ></lightning-button-icon>
+            </div>
+
+            <div class="slds-form-element__control">
+              <lightning-textarea
+                class="validated"
+                max-length="255"
+                name="temp_remark"
+                value={tempRemark}
+                placeholder="type here..."
+                variant="label-hidden"
+                label="Remarks"
+                onblur={handleInputChange}
+              ></lightning-textarea>
+            </div>
+
+            <template if:true={isGeneratingRemark}>
+              <div class="slds-form-element__help">Generating remark…</div>
+            </template>
+          </div>
+
+          <!-- Preview panel (muncul kalau ada aiPreviewText) -->
+          <template if:true={aiPreviewText}>
+            <div
+              class="slds-m-top_small ts-aiPreview"
+              role="status"
+              aria-live="polite"
+            >
+              <div class="ts-aiPreviewTop">
+                <span class="ts-aiPreviewTitle">AI Preview</span>
+
+                <div class="ts-aiPreviewActions">
+                  <button
+                    class="slds-button slds-button_neutral ts-aiSmallBtn"
+                    type="button"
+                    onclick={handleDiscardPreviewClick}
+                    disabled={isGeneratingRemark}
+                  >
+                    Discard
+                  </button>
+
+                  <button
+                    class="slds-button slds-button_brand ts-aiSmallBtn"
+                    type="button"
+                    onclick={handleApplyPreviewClick}
+                    disabled={isGeneratingRemark}
+                  >
+                    Apply
+                  </button>
+                </div>
+              </div>
+
+              <div class="ts-aiPreviewBody">{aiPreviewText}</div>
+              <div class="ts-aiPreviewHint">
+                Review the suggestion before applying it to your remark.
+              </div>
+            </div>
+          </template>
+
+          <template if:true={aiError}>
+            <div class="slds-text-color_error slds-form-element__help">
+              {aiError}
+            </div>
+          </template>
         </div>
       </div>
     </div>
