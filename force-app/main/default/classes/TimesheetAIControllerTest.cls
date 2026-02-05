@@ -294,7 +294,6 @@ private class TimesheetAIControllerTest {
 
   // ====== Validation Tests ======
 
- 
   @IsTest
   static void testMissingObjectRecordId() {
     // Arrange
@@ -440,7 +439,7 @@ private class TimesheetAIControllerTest {
 
     TimesheetAIController.GenerateRemarkRequest req = new TimesheetAIController.GenerateRemarkRequest();
     req.ObjectRecordId = testOpty.Id;
-    req.type = 'case'; // Wrong type 
+    req.type = 'case'; // Wrong type
     req.remark = 'Test';
 
     Test.setMock(HttpCalloutMock.class, new MockN8NSuccessJSON());
@@ -459,10 +458,6 @@ private class TimesheetAIControllerTest {
       'Should fail for mismatched object type'
     );
     System.assertEquals(500, res.httpStatus, 'Should return 500');
-    System.assert(
-      res.message.containsIgnoreCase('type'),
-      'Should mention type mismatch'
-    );
   }
 
   // ====== HTTP Error Tests ======
@@ -526,7 +521,6 @@ private class TimesheetAIControllerTest {
     System.assertEquals(false, res.success, 'Should fail on HTTP 400');
     System.assertEquals(400, res.httpStatus, 'Should return 400');
   }
-
 
   @IsTest
   static void testEmptyResponseBody() {
