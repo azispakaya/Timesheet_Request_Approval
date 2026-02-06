@@ -2,116 +2,140 @@
  * @author [AcekBecek]
  * @email [nurazispakaya16@mail.com]
  * @create date 2024-03-24 15:46:12
- * @modify date 2024-06-26 14:52:12
+ * @modify date 2026-02-06 14:51:40
  * @desc [Controller for Header Information]
  */
 
-import { LightningElement, api, wire } from 'lwc';
+import { LightningElement, api, wire } from "lwc";
 import { gql, graphql } from "lightning/uiGraphQLApi";
-import employee from "@salesforce/apex/lwc_ApprovalTimesheetController.ApproverName"
-import FORM_FACTOR from "@salesforce/client/formFactor"
+import getApproverInfo from "@salesforce/apex/lwc_ApprovalTimesheetController.ApproverName";
+import FORM_FACTOR from "@salesforce/client/formFactor";
 
 export default class PageHeaderTimesheetApproval extends LightningElement {
+  resultEmployees;
+  totalTimesheets = 0;
+  errors;
 
-    resultEmployees
-    totalTimesheets
-    errors
-    @api recordId
-    employeId
-    desktopSupport
-    mobileSupport
-    
-    get AvatarProfile(){
-        return 'standard:people_score'
-    }
+  @api recordId;
 
-    @wire(graphql, {
-        query : gql`
-            query approver($ApproverId : ID, $employeID : ID, $approvalStatus : Picklist){
-                uiapi{
-                    query{
-                        Timesheet_Approval__c(where :{Id:{ eq : $ApproverId}}){
-                            edges{
-                                node{
-                                    Id
-                                    Name{
-                                        value
-                                    }
-                                    Approver__r{
-                                        Id
-                                        Name{
-                                            value
-                                        }
-                                        Employee_ID__c{
-                                            value
-                                        }
-                                        Role__c{
-                                            value
-                                        }
-                                        Department__c{
-                                            value
-                                        }
-                                        Email__c{
-                                            value
-                                        }
-                                        Mobile_Phone__c{
-                                            value
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        Timesheet__c(
-                            where:{
-                                and:[
-                                    {or:[
-                                        {Timesheet_Approver__c:{eq : $employeID}},
-                                        {Timesheet_Approver_Optional__c:{eq: $employeID}}
-                                    ]},
-                                    {Approval_Status__c:{eq: $approvalStatus}}
-                                ]
-                                
-                            }
-                        ){
-                            totalCount
-                        }
+  employeId;
+  desktopSupport;
+  mobileSupport;
+
+  get AvatarProfile() {
+    return "standard:people_score";
+  }
+
+  @wire(graphql, {
+    query: gql`
+      query approver(
+        $ApproverId: ID
+        $employeID: ID
+        $approvalStatus: Picklist
+      ) {
+        uiapi {
+          query {
+            Timesheet_Approval__c(where: { Id: { eq: $ApproverId } }) {
+              edges {
+                node {
+                  Id
+                  Name {
+                    value
+                  }
+                  Approver__r {
+                    Id
+                    Name {
+                      value
                     }
+                    Employee_ID__c {
+                      value
+                    }
+                    Role__c {
+                      value
+                    }
+                    Department__c {
+                      value
+                    }
+                    Email__c {
+                      value
+                    }
+                    Mobile_Phone__c {
+                      value
+                    }
+                  }
                 }
+              }
             }
-        `,
-        variables: "$variables"
-    })
-    graphqlResult({data, error}){
-        if(data){
-             this.resultEmployees = data.uiapi.query.Timesheet_Approval__c.edges.map((edge)=> edge.node);
-             this.totalTimesheets = data.uiapi.query.Timesheet__c.totalCount;
-        }else{
-            this.errors = error
+
+            Timesheet__c(
+              where: {
+                and: [
+                  {
+                    or: [
+                      { Timesheet_Approver__c: { eq: $employeID } }
+                      { Timesheet_Approver_Optional__c: { eq: $employeID } }
+                    ]
+                  }
+                  { Approval_Status__c: { eq: $approvalStatus } }
+                ]
+              }
+            ) {
+              totalCount
+            }
+          }
         }
+      }
+    `,
+    variables: "$variables"
+  })
+  graphqlResult(result) {
+    const { data, errors } = result;
+
+    if (data) {
+      const edges = data?.uiapi?.query?.Timesheet_Approval__c?.edges || [];
+      this.resultEmployees = edges.map((edge) => edge.node);
+
+      this.totalTimesheets = data?.uiapi?.query?.Timesheet__c?.totalCount || 0;
+      this.errors = undefined;
+      return;
     }
 
-    connectedCallback(){
-        employee({recordPageId:this.recordId})
-        .then((res)=>{
-            this.employeId = res.split(';')[1];
-        })
+    if (errors) {
+      this.errors = errors;
+    }
+  }
 
-        if(FORM_FACTOR == 'Large'){
-            this.desktopSupport = true
-        }else{
-            this.mobileSupport = true
-        }
-        
+  async connectedCallback() {
+    // form factor
+    if (FORM_FACTOR === "Large") {
+      this.desktopSupport = true;
+      this.mobileSupport = false;
+    } else {
+      this.mobileSupport = true;
+      this.desktopSupport = false;
     }
 
-    get variables(){
+    // resolve employee id from wrapper-based Apex
+    try {
+      const res = await getApproverInfo({ recordPageId: this.recordId });
 
-        return{
-            ApproverId : this.recordId,
-            employeID : this.employeId,
-            approvalStatus : 'Waiting for Approval'
-        }
+      if (!res || res.success !== true) {
+        this.errors = res?.message || "Failed to load approver info.";
+        return;
+      }
+
+      // wrapper.data = { name, id }
+      this.employeId = res?.data?.id;
+    } catch (e) {
+      this.errors = e?.body?.message || e?.message || "Server error.";
     }
+  }
 
-    
+  get variables() {
+    return {
+      ApproverId: this.recordId,
+      employeID: this.employeId,
+      approvalStatus: "Waiting for Approval"
+    };
+  }
 }
